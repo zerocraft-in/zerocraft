@@ -1,0 +1,10 @@
+.menu-action-btn {
+  position: relative;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+}
+.nav-link {
+  color: var(--secondary);
+}
