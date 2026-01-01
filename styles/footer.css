@@ -1,5 +1,5 @@
 #footer-section {
-  background-color: var(--secondary);
+  color: var(--color-secondary);
 }
 .footer-content {
   display: grid;
@@ -14,16 +14,16 @@
   padding-block: calc(var(--spacing) * 5);
 }
 .footer-link {
-  font-size: var(--text-xs);
-  color: var(--primary);
+  font-size: var(--text-sm);
+  color: var(--color-secondary);
 
   &:hover {
     color: var(--foreground);
   }
 }
 .footer-copyrights {
-  font-size: var(--text-xs);
-  color: var(--footer-link-color);
+  font-size: var(--text-sm);
+  color: var(--color-secondary);
 }
 .footer-policy {
   display: flex;
@@ -43,9 +43,9 @@ li {
 .footer_nav,
 a {
   font-size: var(--text-sm);
-  color: var(--footer-link-color);
+  color: var(--color-secondary);
   &:hover {
-    color: var(--foreground);
+    color: var(--color-accent-hover);
   }
 }
 

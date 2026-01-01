@@ -44,23 +44,23 @@ export const FAQSection = () => {
       viewport={{ once: true, amount: 0.3 }}
     >
       <MaxWidthWrapper>
-        <h2 className="text-2xl font-bold text-center mb-6">FAQ&apos;s</h2>
+        <h2 className="text-2xl font-bold text-accent-primary text-center mb-6">FAQ&apos;s</h2>
         <div className="space-y-4 max-w-lg mx-auto">
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="border bg-background rounded-2xl p-4 cursor-pointer"
+              className="bg-background/5 backdrop-blur-md rounded-2xl p-4 cursor-pointer"
             >
               <div
                 className="flex justify-between items-center"
                 onClick={() => toggleFAQ(index)}
               >
-                <h3 className="text-sm font-medium">{faq.question}</h3>
+                <h3 className="text-base font-medium text-muted-foreground">{faq.question}</h3>
                 <motion.div
                   animate={{ rotate: openIndex === index ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <ChevronDown className="w-5 h-5" />
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
                 </motion.div>
               </div>
               <motion.div
@@ -72,7 +72,7 @@ export const FAQSection = () => {
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden"
               >
-                <p className="mt-2 text-xs text-gray-600">{faq.answer}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{faq.answer}</p>
               </motion.div>
             </div>
           ))}

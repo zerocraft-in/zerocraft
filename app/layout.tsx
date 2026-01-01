@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn()}>
-      <body id="zerocraft-app" className={` antialiased ivd` }>
+      <body id="zerocraft-app" className={` antialiased ivd bg-black` }>
         <Header />
         <main className="ivd-ui relative ivd-UCnZZ pt-10">{children}</main>
         <Footer />

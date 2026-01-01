@@ -20,10 +20,10 @@ const IvdLink: React.FC<IvdLinkProps> = ({
       href={href}
       className={`flex items-center flex-nowrap gap-1 p-2 cursor-pointer group text-sm ${className}`}
     >
-      <span className="px-2"> {title}</span>
+      <span className="px-2 text-primary"> {title}</span>
       {children}
-      <span className="border rounded-full backdrop-blur-md bg-primary/80 w-6 h-6 flex items-center justify-center">
-        <ArrowUpRight className="w-4 h-4 text-background  transition-transform duration-300 group-hover:rotate-45" />
+      <span className="rounded-full backdrop-blur-md border-primary border bg-accent-primary w-6 h-6 flex items-center justify-center">
+        <ArrowUpRight className="w-4 h-4 text-primary  transition-transform duration-300 group-hover:rotate-45" />
       </span>
     </Link>
   );

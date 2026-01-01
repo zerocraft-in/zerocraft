@@ -188,17 +188,17 @@ export const OurServices = () => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: true, amount: 0.3 }}
-        className="z-10 max-w-screen-md mx-auto px-4"
+        className="z-10 max-w-3xl mx-auto px-4"
       >
         <header className="text-center mb-16">
-          <div className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-primary text-background mb-4">
-            <div className="h-2 w-2 rounded-full bg-background mr-2" />
+          <div className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-accent-primary text-primary mb-4">
+            <div className="h-2 w-2 rounded-full bg-primary mr-2" />
             Our Services
           </div>
-          <h2 className="text-3xl font-bold mt-4 text-primary">
+          <h2 className="text-3xl font-bold mt-4 text-accent-primary">
             What We Offer
           </h2>
-          <p className="text-primary/60 max-w-xl mx-auto mt-2">
+          <p className="text-muted-foreground max-w-xl mx-auto mt-2">
             Explore the wide range of services we provide to elevate your brand
             and business.
           </p>
@@ -208,7 +208,7 @@ export const OurServices = () => {
           {services.map((service, idx) => (
             <motion.div
               key={idx}
-              className="relative bg-background backdrop-blur-md p-6 group rounded-xl flex flex-col items-center text-center border border-white/20 transition-all duration-300 hover:bg-primary hover:shadow-lg hover:border-white/30 w-full min-h-[300px]"
+              className="relative bg-background/5 backdrop-blur-md p-6 group rounded-xl flex flex-col items-start text-start border border-white/20 transition-all duration-300 hover:bg-primary hover:shadow-lg hover:border-white/30 w-full min-h-[300px]"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{
@@ -219,23 +219,23 @@ export const OurServices = () => {
               }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <div className="absolute top-4 right-4 text-xs font-bold text-primary/70 group-hover:text-secondary/70">
+              <div className="absolute top-4 right-4 text-xs font-bold text-accent group-hover:text-secondary/70">
                 {service.number}
               </div>
 
-              <div className="text-primary group-hover:text-secondary transition-colors duration-300">
+              <div className="text-accent-primary group-hover:text-secondary transition-colors duration-300">
                 {service.icon}
               </div>
 
-              <h3 className="text-base font-bold text-primary group-hover:text-secondary transition-colors duration-300 mt-4">
+              <h3 className="text-base font-bold text-secondary group-hover:text-secondary transition-colors duration-300 mt-4">
                 {service.title}
               </h3>
 
-              <p className="text-primary/70 text-xs group-hover:text-secondary/80 leading-relaxed mt-2">
+              <p className="text-muted-foreground text-xs group-hover:text-secondary/80 leading-relaxed mt-2">
                 {service.description}
               </p>
 
-              <div className="absolute bottom-4 h-1 bg-primary rounded-full w-0 group-hover:w-1/2 group-hover:bg-secondary transition-all duration-300" />
+              <div className="absolute bottom-4 h-1 bg-accent rounded-full w-0 group-hover:w-1/2 group-hover:bg-secondary transition-all duration-300" />
             </motion.div>
           ))}
         </div>

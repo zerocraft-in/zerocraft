@@ -38,8 +38,8 @@ export const CTASection = () => {
   return (
     <MaxWidthWrapper>
       <div className="space-y-4 py-10 max-w-lg flex items-center justify-center flex-col mx-auto">
-        <h2 className="font-bold text-lg">Looking to craft your brand with us?</h2>
-        <p className="text-center text-sm">
+        <h2 className="font-bold text-lg text-accent-primary">Looking to craft your brand with us?</h2>
+        <p className="text-center text-sm text-muted-foreground">
           Experience creative solutions that enhance your brand and drive
           meaningful growth for your business!
         </p>
