@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+
 import "@/styles/wrapper.scss"
 const MaxWidthWrapper = ({
   className,
@@ -10,7 +10,7 @@ const MaxWidthWrapper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className={cn("max-wrapper", className)} id={id}>
+    <div className={`max-wrapper ${className}`} id={id}>
       {children}
     </div>
   );

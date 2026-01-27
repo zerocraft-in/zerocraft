@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
 import MaxWidthWrapper from "@/components/wrapper/max-width.wrapper";
 import { InteractiveHoverButton } from "../buttons/interactive.btn";
 

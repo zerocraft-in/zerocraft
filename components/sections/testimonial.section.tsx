@@ -1,6 +1,5 @@
 "use client";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
-import React from "react";
 import TestimonialSlider from "./testimonials";
 import Image from "next/image";
 import { motion } from "framer-motion"; // Import Framer Motion

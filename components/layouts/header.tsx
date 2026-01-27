@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { LayoutGrid, LineChart, FolderKanban, Star } from "lucide-react";
-import IvdLink from "@/components/ui/ivd-link";
+import IvdLink from "@/components/ui/link";
 import "@/styles/header.css";
 
 export default function Header() {

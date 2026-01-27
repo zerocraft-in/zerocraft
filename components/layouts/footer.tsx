@@ -6,7 +6,7 @@ import {
   IconCirclePlusFilled,
   IconCopyright,
 } from "@tabler/icons-react";
-import MaxWidthWrapper from "../wrapper/max-width.wrapper";
+import MaxWidthWrapper from "@/components/wrapper/max-width.wrapper";
 
 const footerData = {
   contact: {

@@ -2,7 +2,9 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import type { Easing } from "framer-motion";
 
+const easeOut: Easing = [0.16, 1, 0.3, 1];
 /* ===============================
    Premium Motion Variants
 ================================ */
@@ -30,7 +32,7 @@ const cardVariants = {
     filter: "blur(0px)",
     transition: {
       duration: 0.7,
-      ease: [0.22, 1, 0.36, 1], // premium easing
+      ease: easeOut, // premium easing
     },
   },
 };
@@ -49,7 +51,13 @@ export const OurServices = () => {
             stroke="currentColor"
             strokeWidth="1.5"
           />
-          <circle cx="40" cy="40" r="10" stroke="currentColor" strokeWidth="1.5" />
+          <circle
+            cx="40"
+            cy="40"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
         </svg>
       ),
     },
@@ -95,7 +103,11 @@ export const OurServices = () => {
             stroke="currentColor"
             strokeWidth="1.5"
           />
-          <path d="M45 40L55 30V50L45 40Z" stroke="currentColor" strokeWidth="1.5" />
+          <path
+            d="M45 40L55 30V50L45 40Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
         </svg>
       ),
     },
@@ -161,7 +173,7 @@ export const OurServices = () => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: true, amount: 0.3 }}
-        className="z-10 max-w-6xl mx-auto px-4"
+        className="z-10  container mx-auto px-4"
       >
         {/* Header */}
         <header className="text-center mb-16">
@@ -196,7 +208,7 @@ export const OurServices = () => {
               }}
               className="relative bg-background/5 backdrop-blur-md p-6 rounded-xl border border-white/20
                          hover:bg-primary hover:shadow-[0_20px_40px_rgba(0,0,0,0.25)]
-                         transition-all duration-300 min-h-[300px] group"
+                         transition-all duration-300 min-h-75 h-full group"
             >
               <span className="absolute top-4 right-4 text-xs font-bold opacity-70">
                 {service.number}
@@ -210,9 +222,7 @@ export const OurServices = () => {
                 {service.icon}
               </motion.div>
 
-              <h3 className="mt-4 font-bold text-secondary">
-                {service.title}
-              </h3>
+              <h3 className="mt-4 font-bold text-secondary">{service.title}</h3>
 
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                 {service.description}
@@ -222,7 +232,7 @@ export const OurServices = () => {
                 initial={{ width: 0 }}
                 whileHover={{ width: "50%" }}
                 transition={{ duration: 0.4 }}
-                className="absolute bottom-4 h-[2px] bg-secondary rounded-full"
+                className="absolute bottom-4 h-0.5 bg-secondary rounded-full"
               />
             </motion.div>
           ))}

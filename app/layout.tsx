@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "@/styles/globals.css";
-import { cn } from "@/lib/utils";
 import Header from "@/components/layouts/header";
 import Footer from "@/components/layouts/footer";
 
@@ -95,14 +94,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn(dmSans.variable)}>
-      <body
-        id="zerocraft-app"
-        className="antialiased bg-black text-white"
-      >
+    <html lang="en" className={`${dmSans.variable}`}>
+      <body id="zerocraft-app" className="antialiased bg-black text-white">
         <Header />
         <main className="relative pt-10">{children}</main>
-        <Footer />
+        {/* <Footer /> */}
       </body>
     </html>
   );
