@@ -6,7 +6,7 @@ import Hero from "@/components/sections/hero.section";
 
 export default function Home() {
   return (
-    <div className="py-10">
+    <div id="home-page">
       <Hero />
       {/* <OurServices />
       <FAQSection /> */}

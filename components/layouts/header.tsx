@@ -37,7 +37,7 @@ export default function Header() {
           </Link>
         </div>
 
-        <div className="flex items-center">
+        <div style={{padding: "8px"}}>
           {/* CTA */}
           <IvdLink href="/contact" className="cta-button" title="Let's Talk" />
         </div>

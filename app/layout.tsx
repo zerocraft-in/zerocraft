@@ -95,9 +95,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${dmSans.variable}`}>
-      <body id="zerocraft-app" className="antialiased bg-black text-white">
+      <body id="zerocraft-app">
         <Header />
-        <main className="relative pt-10">{children}</main>
+        <main>{children}</main>
         {/* <Footer /> */}
       </body>
     </html>

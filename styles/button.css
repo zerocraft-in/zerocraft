@@ -1,5 +1,6 @@
 /* Base button */
 .btn {
+  width: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -32,6 +33,7 @@
 /* ---------------- VARIANTS ---------------- */
 
 .btn-default {
+  font-weight: 700;
   background: var(--primary);
   color: var(--secondary);
   box-shadow: var(--shadow-xs);

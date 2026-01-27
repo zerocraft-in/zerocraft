@@ -29,7 +29,7 @@ const Hero = () => {
   };
 
   return (
-    <section id="home" className="hero">
+    <section id="hero-section" className="hero">
       {/* Background blobs */}
       <div className="hero-bg hero-bg--right" />
       <div className="hero-bg hero-bg--left" />
@@ -63,14 +63,12 @@ const Hero = () => {
 
         {/* CTA */}
         <motion.div variants={itemVariants} className="hero-cta">
-          <Button size="lg" className="hero-btn-primary">
+          <button className="hero-btn-secondary">
             Start Your Project
             <ArrowRight className="hero-btn-icon" />
-          </Button>
+          </button>
 
-          <Button size="lg" className="hero-btn-secondary">
-            View Our Work
-          </Button>
+          <button className=" hero-btn-primary">View Our Work</button>
         </motion.div>
 
         {/* Scroll */}

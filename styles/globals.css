@@ -54,6 +54,8 @@
 
 body {
   background-color: var(--primary);
+  margin: 0px;
+  
 }
 /* text */
 .text-accent-primary {
