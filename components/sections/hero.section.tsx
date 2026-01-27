@@ -1,9 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Easing } from "framer-motion";
 
+const easeOut: Easing = [0.16, 1, 0.3, 1];
 const Hero = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -21,16 +23,7 @@ const Hero = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
-    },
-  };
-
-  const textVariants = {
-    hidden: { opacity: 0, x: -30 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
+      transition: { duration: 0.8, ease: easeOut },
     },
   };
 
@@ -61,10 +54,10 @@ const Hero = () => {
           variants={itemVariants}
           className="text-5xl sm:text-6xl lg:text-7xl font-bold text-transparent mb-6 leading-tight"
         >
-          <span className="block bg-gradient-to-r from-primary  via-muted/80 to-primary bg-clip-text">
+          <span className="block bg-linear-to-r from-primary  via-muted/80 to-primary bg-clip-text">
             Craft Your
           </span>
-          <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          <span className="block bg-linear-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
             Digital Future
           </span>
         </motion.h1>
@@ -121,7 +114,7 @@ const Hero = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1, duration: 0.8 }}
-          className="bg-foreground bg-gradient-to-r from-foreground shadow-sm  to-primary rounded-lg p-4 w-48 backdrop-blur-sm"
+          className="bg-foreground bg-linear-to-r from-foreground shadow-sm  to-primary rounded-lg p-4 w-48 backdrop-blur-sm"
         >
           <p className="text-accent text-sm">
             <span className="text-muted/80 font-semibold">30+</span> Projects
@@ -134,7 +127,7 @@ const Hero = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="bg-foreground bg-gradient-to-r from-primary via-foreground shadow-sm  to-foreground  rounded-lg p-4 w-48 backdrop-blur-sm"
+          className="bg-foreground bg-linear-to-r from-primary via-foreground shadow-sm  to-foreground  rounded-lg p-4 w-48 backdrop-blur-sm"
         >
           <p className="text-muted/80 text-sm">
             <span className="text-accent font-semibold">5 Years</span>{" "}
