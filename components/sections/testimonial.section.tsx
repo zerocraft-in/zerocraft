@@ -1,5 +1,4 @@
 "use client";
-import { AvatarCircles } from "@/components/ui/avatar-circles";
 import TestimonialSlider from "./testimonials";
 import Image from "next/image";
 import { motion } from "framer-motion"; // Import Framer Motion
@@ -46,7 +45,7 @@ const TestimoinalsSection = () => {
           <h2 className="section-title text-accent-primary">Words from my clients</h2>
           <div className="flex flex-col py-5 justify-center items-center">
             <div className="border p-1 rounded-full bg-background">
-              <AvatarCircles numPeople={99} avatarUrls={avatars} />
+              {/* <AvatarCircles numPeople={99} avatarUrls={avatars} /> */}
             </div>
             <div className="py-5">
               <span className="text-sm text-primary">Loved by those</span>
