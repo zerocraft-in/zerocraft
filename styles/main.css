@@ -14,8 +14,8 @@
 /* Title text */
 .zc-link__title {
   padding: 0 8px;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--primary);
 }
 

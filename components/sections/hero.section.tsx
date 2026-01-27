@@ -106,7 +106,7 @@ const Hero = () => {
           className="hero-card-box hero-card-years"
         >
           <p>
-            <strong>5 Years</strong> Excellence
+            <strong>2 Years</strong> Serve
           </p>
         </motion.div>
       </div>

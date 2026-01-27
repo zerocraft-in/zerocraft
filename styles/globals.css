@@ -1,11 +1,26 @@
-
 @import "./section.scss";
 @import "./testimonials.scss";
 @import "./footer.css";
 @import "./main.css";
 
-
+/* globals.css */
+@font-face {
+  font-family: "zcmono";
+  src: url("/fonts/mono.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "zcsans";
+  src: url("/fonts/sans.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
+  --zc-mono: "zcmono", monospace;
+  --zc-sans: "zcsans", sans-serif;
   --color-accent-primary: #ddf730;
   --color-accent-hover: #c4e02a;
   --color-accent-active: #bedd05;
@@ -15,7 +30,7 @@
   --text-base: 1rem;
   --text-lg: 1.125rem;
   --breakpoint-xl: 80rem;
-  --font-sans: "DM Sans", sans-serif;
+  --font-sans: "Inter", sans-serif;
   --footer-link-color: rgba(0, 0, 0, 0.72);
   --radius: 0.75rem;
   --background: oklch(1 0 0);
@@ -51,11 +66,18 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
-
 body {
+  font-family: "zcmono", monospace;
   background-color: var(--primary);
   margin: 0px;
-  
+}
+
+.zc-mono {
+  font-family: var(--zc-mono);
+}
+
+.zc-sans {
+  font-family: var(--zc-sans);
 }
 /* text */
 .text-accent-primary {
@@ -69,7 +91,6 @@ body {
 .fill-accent-primary {
   fill: var(--color-accent-primary);
 }
-
 
 .container {
   max-width: 64rem;

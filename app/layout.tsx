@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
 import "@/styles/globals.css";
 import Header from "@/components/layouts/header";
 import Footer from "@/components/layouts/footer";
 
-const dmSans = DM_Sans({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zerocraft.in"),
@@ -94,7 +88,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${dmSans.variable}`}>
+    <html lang="en">
       <body id="zerocraft-app">
         <Header />
         <main>{children}</main>
