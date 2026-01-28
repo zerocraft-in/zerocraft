@@ -1,5 +1,7 @@
 @import "./hero.css";
 @import "./button.css";
+@import "./why.css";
+@import "./process.css";
 .zc-link {
   display: flex;
   align-items: center;

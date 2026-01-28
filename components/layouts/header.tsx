@@ -23,7 +23,12 @@ export default function Header() {
     <header className="header">
       <div className="header-container">
         {/* Logo */}
-        <div className="logo-wrapper">
+        <motion.div
+          className="logo-wrapper"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+        >
           <Link href="/">
             <div className="logo-box">
               <svg
@@ -35,12 +40,17 @@ export default function Header() {
               </svg>
             </div>
           </Link>
-        </div>
+        </motion.div>
 
-        <div style={{padding: "8px"}}>
+        <motion.div
+          style={{ padding: "8px" }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
+        >
           {/* CTA */}
           <IvdLink href="/contact" className="cta-button" title="Let's Talk" />
-        </div>
+        </motion.div>
       </div>
 
       {/* Mobile Navigation */}

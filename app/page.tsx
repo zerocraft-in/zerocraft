@@ -1,16 +1,14 @@
 
-import { CTASection } from "@/components/sections/cta.section";
-import { FAQSection } from "@/components/sections/faq.section";
-import { OurServices } from "@/components/sections/services.section";
 import Hero from "@/components/sections/hero.section";
+import Approach from "@/components/sections/process.section";
+import WhyZerocraft from "@/components/sections/why.section";
 
 export default function Home() {
   return (
     <div id="home-page">
       <Hero />
-      {/* <OurServices />
-      <FAQSection /> */}
-      {/* <CTASection /> */}
+      <WhyZerocraft />
+      <Approach />
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { Easing } from "framer-motion";
 
 const easeOut: Easing = [0.16, 1, 0.3, 1];
@@ -31,8 +30,18 @@ const Hero = () => {
   return (
     <section id="hero-section" className="hero">
       {/* Background blobs */}
-      <div className="hero-bg hero-bg--right" />
-      <div className="hero-bg hero-bg--left" />
+      <motion.div
+        className="hero-bg hero-bg--right"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+      />
+      <motion.div
+        className="hero-bg hero-bg--left"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+      />
 
       <motion.div
         variants={containerVariants}
@@ -68,7 +77,7 @@ const Hero = () => {
             <ArrowRight className="hero-btn-icon" />
           </button>
 
-          <button className=" hero-btn-primary">View Our Work</button>
+          <button className="hero-btn-primary">View Our Work</button>
         </motion.div>
 
         {/* Scroll */}
