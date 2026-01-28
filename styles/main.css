@@ -1,7 +1,11 @@
+@import "./header.css";
+@import "./footer.css";
 @import "./hero.css";
 @import "./button.css";
 @import "./why.css";
 @import "./process.css";
+@import "./cta.css";
+@import "./contact.css";
 .zc-link {
   display: flex;
   align-items: center;

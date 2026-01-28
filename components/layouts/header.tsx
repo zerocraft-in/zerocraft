@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { LayoutGrid, LineChart, FolderKanban, Star } from "lucide-react";
 import IvdLink from "@/components/ui/link";
-import "@/styles/header.css";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);

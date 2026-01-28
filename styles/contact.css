@@ -1,0 +1,346 @@
+/* Main spacing */
+.contact-main {
+  padding-top: 6rem;
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 768px) {
+  .contact-main {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}
+
+/* Hero Section */
+.contact-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 0 1rem;
+  margin-bottom: 5rem;
+}
+
+@media (min-width: 768px) {
+  .contact-hero {
+    margin-bottom: 8rem;
+  }
+}
+
+/* Glow */
+.contact-hero-glow {
+  position: absolute;
+  top: 0;
+  right: 2.5rem;
+  width: 20rem;
+  height: 20rem;
+  background: var(--accent);
+  opacity: 0.1;
+  border-radius: 999px;
+  filter: blur(96px);
+  z-index: -1;
+}
+
+/* Hero container */
+.contact-hero-container {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+/* Badge */
+.contact-badge {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(221, 247, 48, 0.1);
+  border: 1px solid rgba(221, 247, 48, 0.2);
+}
+
+.contact-badge span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+/* Title */
+.contact-title {
+  font-family: var(--zc-sans);
+  font-size: clamp(3rem, 7vw, 4.5rem);
+  font-weight: 300;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.05;
+}
+
+.contact-title-accent {
+  display: block;
+  color: var(--accent);
+}
+
+/* Description */
+.contact-description {
+  font-size: 1.125rem;
+  color: var(--muted-foreground);
+  max-width: 42rem;
+  line-height: 1.75;
+}
+
+/* Contact Section */
+.contact-section {
+  padding: 0 1rem;
+}
+
+.contact-container {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* Grid */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+}
+
+@media (min-width: 1024px) {
+  .contact-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.contact-form-col {
+  grid-column: span 1;
+}
+
+@media (min-width: 1024px) {
+  .contact-form-col {
+    grid-column: span 1;
+  }
+}
+
+/* Form wrapper */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Field */
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+/* Inputs */
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-family: var(--zc-mono);
+  transition: all 0.25s ease;
+}
+
+.form-field textarea {
+  resize: none;
+}
+
+/* Placeholder */
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+/* Focus */
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: rgba(221, 247, 48, 0.4);
+  box-shadow: 0 0 0 1px rgba(221, 247, 48, 0.2);
+}
+
+/* Submit button */
+.form-submit {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  border: none;
+  border-radius: 0.75rem;
+  font-family: var(--zc-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.form-submit:hover {
+  box-shadow: 0 10px 30px rgba(221, 247, 48, 0.25);
+}
+
+/* Success state */
+.form-success {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: rgba(221, 247, 48, 0.1);
+  border: 1px solid rgba(221, 247, 48, 0.3);
+  border-radius: 0.75rem;
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+
+/* Wrapper */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Contact card */
+.contact-card {
+  display: block;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-decoration: none;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.contact-card:hover {
+  border-color: rgba(221, 247, 48, 0.4);
+  background: rgba(221, 247, 48, 0.05);
+}
+
+/* Card inner */
+.contact-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+/* Icon */
+.contact-icon {
+  font-size: 1.75rem;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.contact-card:hover .contact-icon {
+  opacity: 1;
+}
+
+/* Content */
+.contact-content {
+  flex: 1;
+}
+
+.contact-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.contact-value {
+  font-size: 1.125rem;
+  font-weight: 300;
+  color: var(--muted);
+  transition: color 0.3s ease;
+}
+
+.contact-card:hover .contact-value {
+  color: var(--accent);
+}
+
+/* Arrow */
+.contact-arrow {
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.contact-card:hover .contact-arrow {
+  opacity: 1;
+}
+
+/* Availability */
+.contact-availability {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  background: rgba(221, 247, 48, 0.05);
+  border: 1px solid rgba(221, 247, 48, 0.2);
+}
+
+.availability-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.availability-text {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.availability-accent {
+  margin-left: 0.25rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Social */
+.contact-icon svg,
+.social-link svg {
+  stroke: var(--accent);
+}
+
+.contact-social {
+  margin-top: 0.5rem;
+}
+
+.social-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.social-links {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.social-link {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.social-link:hover {
+  background: rgba(221, 247, 48, 0.2);
+  color: var(--accent);
+}
