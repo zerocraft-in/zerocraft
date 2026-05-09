@@ -1,0 +1,347 @@
+/* ==========================================
+   SERVICES PAGE
+========================================== */
+
+:root {
+  --services-accent: #ddf730;
+  --services-dark: #000000;
+  --services-light: #ffffff;
+  --services-muted: #e8e8e8;
+  --services-muted-dark: #6b6b6b;
+}
+
+.services-page {
+  min-height: 100vh;
+  background: var(--services-dark);
+  color: var(--services-muted);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background */
+.services-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.services-bg-element {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+  filter: blur(80px);
+}
+
+.services-bg-1 {
+  width: 600px;
+  height: 600px;
+  background: var(--services-accent);
+  top: 10%;
+  right: -200px;
+}
+
+.services-bg-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--services-light);
+  bottom: -100px;
+  left: -100px;
+}
+
+.services-bg-3 {
+  width: 400px;
+  height: 400px;
+  background: var(--services-accent);
+  top: 50%;
+  left: 5%;
+}
+
+/* Header */
+.services-header {
+  position: relative;
+  z-index: 2;
+  padding: 6rem 1rem 4rem;
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.services-header-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.services-badge {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background: rgba(221, 247, 48, 0.15);
+  border: 1px solid rgba(221, 247, 48, 0.3);
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+
+.services-badge-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--services-accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.services-title {
+  font-family: "zcsans", sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--services-muted);
+  margin: 0 0 1rem 0;
+}
+
+.services-title .text-accent {
+  color: var(--services-accent);
+}
+
+.services-subtitle {
+  font-size: 1.25rem;
+  color: var(--services-muted-dark);
+  margin: 0;
+}
+
+/* Main */
+.services-main {
+  position: relative;
+  z-index: 2;
+  padding: 2rem 1rem;
+  margin-bottom: 4rem;
+}
+
+.services-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .services-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Card wrapper and container */
+.services-card-wrapper {
+  position: relative;
+  height: 100%;
+}
+
+.services-card {
+  position: relative;
+  height: 100%;
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+
+/* Liquid glass background */
+.services-card-glass {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  z-index: 0;
+}
+
+.services-card-border {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1.5rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.services-card-content {
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.services-card:hover {
+  box-shadow: 0 20px 60px rgba(221, 247, 48, 0.2);
+}
+
+.services-card:hover .services-card-glass {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.services-card:hover .services-card-border {
+  border-color: rgba(221, 247, 48, 0.3);
+}
+
+/* Badge */
+.services-card-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 0.35rem 0.85rem;
+  background: rgba(221, 247, 48, 0.2);
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--services-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Icon */
+.services-card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(221, 247, 48, 0.15);
+  border-radius: 1rem;
+  color: var(--services-accent);
+}
+
+/* Text */
+.services-card-title {
+  font-family: "zcsans", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--services-muted);
+  margin: 0;
+}
+
+.services-card-description {
+  font-size: 1rem;
+  color: var(--services-muted-dark);
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+}
+
+/* Features list */
+.services-card-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.services-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--services-muted-dark);
+}
+
+.services-feature-item svg {
+  color: var(--services-accent);
+  flex-shrink: 0;
+}
+
+/* CTA Button */
+.services-card-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(221, 247, 48, 0.15);
+  border: 1px solid rgba(221, 247, 48, 0.2);
+  border-radius: 0.75rem;
+  color: var(--services-accent);
+  font-family: "zcmono", monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: auto;
+}
+
+.services-card-cta:hover {
+  background: rgba(221, 247, 48, 0.25);
+  border-color: var(--services-accent);
+}
+
+/* CTA Section */
+.services-cta-section {
+  position: relative;
+  z-index: 2;
+  padding: 5rem 1rem;
+  background: rgba(221, 247, 48, 0.08);
+  border-top: 1px solid rgba(221, 247, 48, 0.2);
+  border-bottom: 1px solid rgba(221, 247, 48, 0.2);
+}
+
+.services-cta-content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.services-cta-title {
+  font-family: "zcsans", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--services-muted);
+  margin: 0 0 1rem 0;
+}
+
+.services-cta-description {
+  font-size: 1.125rem;
+  color: var(--services-muted-dark);
+  margin: 0 0 2rem 0;
+}
+
+.services-cta-button {
+  padding: 1rem 2.5rem;
+  background: linear-gradient(135deg, var(--services-accent), #c4e02a);
+  border: none;
+  border-radius: 0.75rem;
+  color: var(--services-dark);
+  font-family: "zcmono", monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.services-cta-button:hover {
+  box-shadow: 0 15px 40px rgba(221, 247, 48, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .services-header {
+    padding: 4rem 1rem 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .services-card-content {
+    padding: 1.5rem;
+  }
+
+  .services-cta-section {
+    padding: 3rem 1rem;
+  }
+
+  .services-cta-title {
+    font-size: 2rem;
+  }
+}
