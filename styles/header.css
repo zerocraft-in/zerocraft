@@ -37,6 +37,21 @@
   fill: var(--accent);
 }
 
+.logo-icon
+.fill-icon {
+  width: 32px;
+  height: 32px;
+  fill: var(--accent);
+}
+
+
+.fill-stroke {
+  width: 32px;
+  height: 32px;
+  fill: none;
+  stroke: var(--accent);
+}
+
 /* CTA */
 .cta-button {
   background: var(--accent);

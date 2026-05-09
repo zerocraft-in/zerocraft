@@ -111,7 +111,7 @@
 
 
 /* Icon */
-.icon-box {
+.step-content .icon-box {
   width: 64px;
   height: 64px;
   border-radius: 14px;
@@ -127,11 +127,11 @@
   margin-bottom: 1.5rem;
 }
 
-.icon-inner {
+.step-content .icon-inner {
   color: var(--accent);
 }
 
-.icon-glow {
+.step-content .icon-glow {
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -140,7 +140,7 @@
   z-index: -1;
 }
 
-.icon-border {
+.step-content .icon-border {
   position: absolute;
   inset: 0;
   border-radius: inherit;

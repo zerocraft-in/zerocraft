@@ -181,11 +181,7 @@ const ServicesPage = () => {
             className="services-grid"
           >
             {services.map((service, index) => {
-              const scale = useTransform(
-                scrollYProgress,
-                [1, 0.90],
-                [0.80, 1]
-              );
+
 
               return (
                 <motion.div
@@ -203,7 +199,7 @@ const ServicesPage = () => {
                     {/* Content */}
                     <motion.div
                       className="services-card-content"
-                      style={{ scale }}
+
                     >
                       {/* Badge */}
                       <motion.div

@@ -1,7 +1,7 @@
+
+
 import type { Metadata } from "next";
 import "@/styles/globals.css";
-import Header from "@/components/layouts/header";
-import Footer from "@/components/layouts/footer";
 
 
 export const metadata: Metadata = {
@@ -90,9 +90,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body id="zerocraft-app">
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        {children}
+
       </body>
     </html>
   );
