@@ -1,72 +1,467 @@
-/* Footer Wrapper */
-.footer {
+/* ==========================================
+   MINIMAL MODERN PREMIUM FOOTER STYLES (ENHANCED)
+========================================== */
+
+.footer-minimal {
   position: relative;
+  background: #030303;
+  color: #e5e5e5;
   overflow: hidden;
-  background: var(--primary);
+  padding: 5rem 0 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Glow Effect */
-.footer-glow {
+.footer-top-border-glow {
   position: absolute;
   top: 0;
-  right: 50%;
-  width: 24rem;
-  height: 24rem;
-  background: var(--accent);
-  opacity: 0.05;
-  border-radius: 999px;
-  filter: blur(96px);
-  z-index: -1;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(221, 247, 48, 0.6) 50%,
+    transparent 100%
+  );
+  box-shadow: 0 0 15px rgba(221, 247, 48, 0.4);
 }
 
-/* Container */
 .footer-container {
-  max-width: 80rem;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem 1rem;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
-@media (min-width: 768px) {
-  .footer-container {
-    padding: 5rem 1rem;
-  }
-}
-
-/* Bottom Section */
-.footer-bottom {
+/* Hero CTA Banner Card */
+.footer-hero-banner {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
   align-items: center;
   justify-content: space-between;
+  gap: 2rem;
+  padding: 3rem 2.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(221, 247, 48, 0.04) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  margin-bottom: 4rem;
+  transition: border-color 0.3s ease;
 }
 
-@media (min-width: 768px) {
-  .footer-bottom {
-    flex-direction: row;
+.footer-hero-banner:hover {
+  border-color: rgba(221, 247, 48, 0.3);
+}
+
+@media (max-width: 768px) {
+  .footer-hero-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 2rem 1.5rem;
+    gap: 1.5rem;
   }
 }
 
-/* Copyright */
-.footer-copy {
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
+.footer-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 650px;
 }
 
-/* Status */
-.footer-status {
-  display: flex;
+.footer-kicker {
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
+  font-family: "zcmono", monospace;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-/* Status Dot */
-.status-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  background: var(--accent);
+.footer-hero-heading {
+  font-family: "zcsans", sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: #ffffff;
+  margin: 0;
+}
+
+.footer-hero-heading .text-accent {
+  color: var(--accent);
+}
+
+.footer-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, var(--accent), #c4e02a);
+  border: none;
+  padding: 0.9rem 1.75rem;
   border-radius: 999px;
+  color: #000000;
+  text-decoration: none;
+  font-family: "zcmono", monospace;
+  font-size: 0.95rem;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 8px 25px rgba(221, 247, 48, 0.3);
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .footer-hero-cta {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.footer-hero-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(221, 247, 48, 0.5);
+}
+
+.cta-arrow-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #000000;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.footer-hero-cta:hover .cta-arrow-circle {
+  transform: rotate(45deg);
+}
+
+.footer-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin-bottom: 4rem;
+}
+
+/* Main Minimal Grid */
+.footer-minimal-grid {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1fr 1.25fr;
+  gap: 3rem;
+  margin-bottom: 4rem;
+}
+
+@media (max-width: 1024px) {
+  .footer-minimal-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-minimal-grid {
+    grid-template-columns: 1fr;
+    gap: 2.25rem;
+  }
+}
+
+/* Brand & Email Box */
+.footer-brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.footer-minimal-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.footer-minimal-logo .logo-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(221, 247, 48, 0.15);
+  border: 1px solid rgba(221, 247, 48, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.footer-minimal-logo:hover .logo-box {
+  transform: rotate(180deg);
+  background: var(--accent);
+}
+
+.footer-minimal-logo:hover .logo-icon {
+  fill: #000;
+}
+
+.footer-minimal-logo .logo-icon {
+  width: 20px;
+  height: 20px;
+  fill: var(--accent);
+  transition: fill 0.3s ease;
+}
+
+.footer-minimal-logo .logo-text {
+  font-family: "zcsans", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+
+.footer-tagline {
+  font-size: 0.925rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 380px;
+}
+
+/* Email Copy Box */
+.footer-email-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.email-label {
+  font-family: "zcmono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+}
+
+.email-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.email-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(221, 247, 48, 0.3);
+}
+
+.email-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.email-address {
+  font-family: "zcmono", monospace;
+  font-size: 0.875rem;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email-address:hover {
+  color: var(--accent);
+}
+
+.copy-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.copy-btn:hover {
+  background: var(--accent);
+  color: #000000;
+}
+
+/* Columns */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.col-title {
+  font-family: "zcmono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+}
+
+.col-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.col-links a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-family: "zcmono", monospace;
+  font-size: 0.9rem;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.col-links a:hover {
+  color: var(--accent);
+  transform: translateX(6px);
+}
+
+.office-info {
+  font-family: "zcmono", monospace;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.office-info p {
+  margin: 0;
+}
+
+.office-location {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(137, 243, 54, 0.1);
+  border: 1px solid rgba(137, 243, 54, 0.25);
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-family: "zcmono", monospace;
+  font-size: 0.75rem;
+  color: #89f336;
+  width: fit-content;
+  margin-top: 0.5rem;
+}
+
+.status-dot-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #89f336;
+  box-shadow: 0 0 10px #89f336;
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.5;
+  }
+}
+
+/* Watermark Typography */
+.footer-watermark {
+  font-family: "zcsans", sans-serif;
+  font-size: clamp(2.5rem, 13vw, 8.5rem);
+  font-weight: 900;
+  letter-spacing: -1px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  user-select: none;
+  pointer-events: none;
+  line-height: 0.95;
+  margin: 3rem 0 1.5rem;
+  overflow: hidden;
+}
+
+/* Bottom Bar */
+.footer-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .footer-bottom-bar {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.25rem;
+  }
+}
+
+.footer-copy {
+  margin: 0;
+  font-family: "zcmono", monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.scroll-top-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.75);
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  font-family: "zcmono", monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+}
+
+.scroll-top-btn:hover {
+  background: rgba(221, 247, 48, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
 }

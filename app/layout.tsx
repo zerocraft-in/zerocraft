@@ -1,8 +1,9 @@
 
 
 import type { Metadata } from "next";
+import Header from "./header";
+import Footer from "./footer";
 import "@/styles/globals.css";
-
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zerocraft.in"),
@@ -70,7 +71,7 @@ export const metadata: Metadata = {
     description:
       "A premium digital agency delivering branding, web, UI/UX, marketing, video & print solutions.",
     images: ["/og-image.jpg"],
-    creator: "@zerocraftstudio", // optional
+    creator: "@zerocraftstudio",
   },
 
   icons: {
@@ -90,9 +91,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body id="zerocraft-app">
-        {children}
-
+        <Header />
+        <main className="app-main-content">{children}</main>
+        <Footer />
       </body>
     </html>
   );
 }
+

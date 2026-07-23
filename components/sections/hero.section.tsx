@@ -72,12 +72,14 @@ const Hero = () => {
 
         {/* CTA */}
         <motion.div variants={itemVariants} className="hero-cta">
-          <button className="hero-btn-secondary">
+          <button className="hero-btn-secondary" onClick={() => window.location.href = '/create-project'}>
             Start Your Project
             <ArrowRight className="hero-btn-icon" />
           </button>
 
-          <button className="hero-btn-primary">View Our Work</button>
+          <button className="hero-btn-primary" onClick={() => window.location.href = '/works'}>
+            View Our Work
+          </button>
         </motion.div>
 
         {/* Scroll */}
