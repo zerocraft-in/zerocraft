@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zerocraft Studio ✦
 
-## Getting Started
+A premium, award-level creative agency website and bespoke CMS built with a relentless focus on minimalist design, smooth micro-interactions, and robust backend architecture. 
 
-First, run the development server:
+---
+
+## ⚡ Overview
+
+Zerocraft Studio is a dual-layered web application:
+1. **The Frontend Showcase:** A meticulously crafted, high-performance landing experience featuring scroll-linked parallax, editorial layouts, and dynamic GSAP/Framer Motion animations.
+2. **The Studio CMS (Backend):** A completely custom, role-based content management system built to manage works, blogs, clients, real-time appointment bookings, and automated WhatsApp notifications.
+
+## ✨ Features
+
+- **Modern & Minimal UI:** Editorial typography, glassmorphism, and dark-mode by default.
+- **Fluid Animations:** Complex scroll sequences, hover state expansions, and smooth page transitions using Lenis Smooth Scroll, Framer Motion, and GSAP.
+- **Headless CMS Studio:** Full CRUD operations for portfolio works, services, testimonials, and team members.
+- **Real-Time Booking:** Client appointment scheduling synchronized with live notifications.
+- **n8n Automation:** Integrated WhatsApp triggers for client communication directly from the CMS.
+- **Global Reach:** Multi-currency switching (USD, EUR, GBP, INR) persisting via cookies.
+- **Security:** Supabase SSR Auth with Role-Based Access Control (Admin, Manager, Staff, Client).
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework:** [Next.js 15](https://nextjs.org/) (App Router, Turbopack)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + Custom CSS Architecture
+- **UI Components:** [shadcn/ui](https://ui.shadcn.com/) + Radix UI
+- **Animations:** Framer Motion, GSAP, Lenis
+- **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL, SSR Auth, Realtime)
+- **Automations:** n8n Webhooks
+
+---
+
+## 🚀 Getting Started
+
+First, ensure you have your `.env.local` configured with your Supabase credentials:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then, install dependencies and run the development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. To access the CMS, navigate to `/login` and authenticate to reach `/studio`.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 👨‍💻 Developer
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Manimaran R**
+- Social Profiles: [@ivd.maran](https://instagram.com/ivd.maran)
+- Role: Senior Frontend Engineer, Creative Developer, UI/UX Designer, & Motion Designer.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<div align="center">
+  <sub>Built with 🖤 by Manimaran R.</sub>
+</div>

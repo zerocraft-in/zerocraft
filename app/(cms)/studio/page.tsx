@@ -7,11 +7,7 @@ import {
   IconUsers,
   IconBriefcase,
   IconCalendar,
-  IconStar,
   IconTrendingUp,
-  IconSparkles,
-  IconArrowUpRight,
-  IconPlus,
   IconClock,
   IconCircleCheck,
   IconLoader2,
@@ -64,10 +60,6 @@ import {
 import {
   ChartConfig,
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 
 // Mock Data for Top Customers Radial Chart
@@ -666,7 +658,7 @@ export default function StudioDashboardHome() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           <div className="w-full max-w-[220px] aspect-square relative">
             <ChartContainer config={topCustomersConfig} className="w-full h-full min-h-[220px]">
               <RadialBarChart
@@ -690,13 +682,13 @@ export default function StudioDashboardHome() {
                 />
               </RadialBarChart>
             </ChartContainer>
-            
+
             {/* Center Label manually positioned */}
             <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none pb-1">
               <span className="text-3xl font-black text-foreground tracking-tight">630k</span>
             </div>
           </div>
-          
+
           {/* Custom Legend */}
           <div className="w-full flex items-center justify-center gap-4 mt-2">
             <div className="flex items-center gap-1.5">
@@ -726,38 +718,38 @@ export default function StudioDashboardHome() {
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
           </div>
-          
+
           <div>
             <div className="text-4xl font-black tracking-tight text-foreground">+350%</div>
           </div>
-          
+
           <div className="w-full h-[180px] mt-4 relative">
             <ChartContainer config={revenueConfig} className="w-full h-full min-h-[180px]">
               <BarChart data={revenueData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }} barGap={6}>
-                <XAxis 
-                  dataKey="month" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                   dy={10}
                 />
                 {/* Remove YAxis, only show labels if needed, or completely hide */}
                 <YAxis hide domain={[0, 600]} />
-                <Bar 
-                  dataKey="revenue" 
+                <Bar
+                  dataKey="revenue"
                   radius={[8, 8, 8, 8]}
                   barSize={40}
                 >
                   {revenueData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.highlight ? revenueConfig.revenue.color : "hsl(var(--muted-foreground) / 0.2)"} 
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.highlight ? revenueConfig.revenue.color : "hsl(var(--muted-foreground) / 0.2)"}
                     />
                   ))}
                 </Bar>
               </BarChart>
             </ChartContainer>
-            
+
             {/* Optional floating value label for the highlighted bar (just styling trick) */}
             <div className="absolute right-0 top-0 text-[10px] font-bold text-muted-foreground mr-1">
               $5.6 m
@@ -765,7 +757,7 @@ export default function StudioDashboardHome() {
           </div>
         </div>
       </div>
-      
+
       {/* THIRD ROW: DATABASE ENGINE OVERVIEW */}
       <div className="w-full">
         <div className="p-6 rounded-2xl bg-muted/70 border border-border space-y-5">

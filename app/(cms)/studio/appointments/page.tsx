@@ -161,7 +161,7 @@ export default function StudioAppointmentsCRUD() {
     if (confirm("Delete this appointment slot?")) {
       try {
         await deleteAppointmentInSupabase(id);
-      } catch (e) {}
+      } catch (e) { }
       setAppointments((prev) => prev.filter((a) => a.id !== id));
       setSelectedRows((prev) => prev.filter((rId) => rId !== id));
     }
@@ -281,8 +281,8 @@ export default function StudioAppointmentsCRUD() {
             <button
               onClick={() => setActiveTab("all")}
               className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${activeTab === "all"
-                  ? "bg-accent text-foreground border border-border shadow-md"
-                  : "text-muted-foreground hover:text-accent-foreground"
+                ? "bg-accent text-foreground border border-border shadow-md"
+                : "text-muted-foreground hover:text-accent-foreground"
                 }`}
             >
               <span>All Bookings</span>
@@ -294,8 +294,8 @@ export default function StudioAppointmentsCRUD() {
             <button
               onClick={() => setActiveTab("confirmed")}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "confirmed"
-                  ? "bg-accent text-foreground border border-border shadow-md"
-                  : "text-muted-foreground hover:text-accent-foreground"
+                ? "bg-accent text-foreground border border-border shadow-md"
+                : "text-muted-foreground hover:text-accent-foreground"
                 }`}
             >
               <span>Confirmed</span>
@@ -307,8 +307,8 @@ export default function StudioAppointmentsCRUD() {
             <button
               onClick={() => setActiveTab("pending")}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "pending"
-                  ? "bg-accent text-foreground border border-border shadow-md"
-                  : "text-muted-foreground hover:text-accent-foreground"
+                ? "bg-accent text-foreground border border-border shadow-md"
+                : "text-muted-foreground hover:text-accent-foreground"
                 }`}
             >
               <span>Pending</span>
@@ -483,8 +483,8 @@ export default function StudioAppointmentsCRUD() {
                             size="sm"
                             onClick={() => handleTriggerN8n(appt)}
                             className={`h-8 rounded-full text-[10px] font-bold gap-1.5 border ${appt.whatsapp_sent
-                                ? "bg-[#22C55E]/15 border-[#22C55E]/30 text-[#4ADE80] hover:bg-[#22C55E]/25"
-                                : "bg-muted border-border text-foreground hover:text-accent-foreground"
+                              ? "bg-[#22C55E]/15 border-[#22C55E]/30 text-[#4ADE80] hover:bg-[#22C55E]/25"
+                              : "bg-muted border-border text-foreground hover:text-accent-foreground"
                               }`}
                           >
                             <IconSend className="w-3 h-3 text-[#22C55E]" />

@@ -14,20 +14,16 @@ import {
   IconSettings,
   IconSearch,
   IconLogout,
-  IconShieldCheck,
   IconArrowRight,
-  IconLifebuoy,
   IconSparkles,
   IconFileText,
   IconBriefcase,
   IconCalendar,
   IconStar,
   IconChevronDown,
-  IconMenu,
   IconKeyboard,
 } from "@tabler/icons-react";
 import {
-  UserRole,
   StudioUser,
   ensureUserProfile,
   StudioNotification,
@@ -36,13 +32,11 @@ import {
   markAllNotificationsAsReadInSupabase,
 } from "@/lib/supabase-client";
 import { useCurrency } from "@/lib/currency-context";
-import { CURRENCIES, CurrencyCode } from "@/lib/currency";
 import { CurrencySwitcherCombobox } from "@/components/currency-switcher-combobox";
 import { createClient } from "@/utils/supabase/client";
 import { useTheme } from "next-themes";
 import { Kbd } from "@/components/ui/kbd";
 // shadcn UI components
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -65,28 +59,20 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
-  InputGroupText,
-  InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { useAuthStore } from "@/store/useAuthStore";
 import dynamic from "next/dynamic";
-import { AuthProvider } from "@/components/providers/auth-provider";
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { CurrencyProvider } from "@/lib/currency-context";
 import { Providers } from "@/components/providers/provider";
 const SettingsModal = dynamic(
   () => import("@/components/settings-modal").then((mod) => mod.SettingsModal),
