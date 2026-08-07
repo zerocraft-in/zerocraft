@@ -30,7 +30,10 @@ export default function About() {
           <Reveal delay={0.1} className="about__statement">
             <h2 className="about__heading">
               We are a creative development agency that transforms ideas into
-              <span className="about__heading--muted"> exceptional digital experiences.</span>
+              <span className="about__heading--muted">
+                {" "}
+                exceptional digital experiences.
+              </span>
             </h2>
           </Reveal>
 
@@ -38,24 +41,26 @@ export default function About() {
           <div className="about__content">
             <Reveal delay={0.2}>
               <p className="about__description">
-                At Zerocraft Studio, we blend strategy, design, and technology to build
-                brands that stand out. Our multidisciplinary team brings together
-                creative thinking with technical precision to deliver solutions that
-                drive real results.
+                At Zerocraft Studio, we blend strategy, design, and technology
+                to build brands that stand out. Our multidisciplinary team
+                brings together creative thinking with technical precision to
+                deliver solutions that drive real results.
               </p>
             </Reveal>
             <Reveal delay={0.3}>
               <p className="about__description">
-                From brand identity systems to complex web applications, we approach
-                every project with the same dedication to craft and quality. We believe
-                in the power of thoughtful design to create meaningful connections
-                between brands and their audiences.
+                From brand identity systems to complex web applications, we
+                approach every project with the same dedication to craft and
+                quality. We believe in the power of thoughtful design to create
+                meaningful connections between brands and their audiences.
               </p>
             </Reveal>
             <Reveal delay={0.4}>
               <a href="/about" className="btn btn--outline">
                 Learn More About Us
-                <span className="btn__arrow" aria-hidden="true">→</span>
+                <span className="btn__arrow" aria-hidden="true">
+                  →
+                </span>
               </a>
             </Reveal>
           </div>

@@ -41,9 +41,7 @@ export default function Process() {
               <span className="process__label text-label">Our Process</span>
             </Reveal>
             <Reveal delay={0.1}>
-              <h2 className="process__heading">
-                How we bring ideas to life.
-              </h2>
+              <h2 className="process__heading">How we bring ideas to life.</h2>
             </Reveal>
           </div>
 
@@ -55,7 +53,9 @@ export default function Process() {
                   <div className="process__step-number">{step.number}</div>
                   <div className="process__step-content">
                     <h3 className="process__step-title">{step.title}</h3>
-                    <p className="process__step-description">{step.description}</p>
+                    <p className="process__step-description">
+                      {step.description}
+                    </p>
                   </div>
                 </Reveal>
               </div>

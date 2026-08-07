@@ -23,15 +23,11 @@ import {
 } from "@/components/ui/card";
 import {
   Field,
-  FieldContent,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSeparator,
   FieldSet,
-  FieldTitle,
 } from "@/components/ui/field";
 import {
   InputOTP,
@@ -374,8 +370,7 @@ export function OtpLoginForm() {
 
       <CardFooter>
         <p className="text-muted-foreground w-full text-center text-xs">
-          By signing in, you agree to our{" "}
-          <br />
+          By signing in, you agree to our <br />
           <a
             href="/terms"
             className="hover:text-primary underline underline-offset-4 transition-colors"

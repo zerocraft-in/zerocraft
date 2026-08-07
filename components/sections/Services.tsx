@@ -11,7 +11,12 @@ const services = [
     title: "Brand Identity",
     description:
       "We craft distinctive brand identities that capture your vision and resonate with your audience. From logos to comprehensive brand systems, every element is thoughtfully designed.",
-    tags: ["Logo Design", "Brand Guidelines", "Visual Identity", "Brand Strategy"],
+    tags: [
+      "Logo Design",
+      "Brand Guidelines",
+      "Visual Identity",
+      "Brand Strategy",
+    ],
   },
   {
     number: "02",
@@ -54,7 +59,11 @@ export default function Services() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <section className="section services" id="services" aria-label="Our services">
+    <section
+      className="section services"
+      id="services"
+      aria-label="Our services"
+    >
       <Container>
         <Reveal>
           <span className="services__label text-label">What We Do</span>
@@ -76,7 +85,9 @@ export default function Services() {
                 onBlur={() => setActiveIndex(null)}
               >
                 <div className="services__item-header">
-                  <span className="services__item-number">{service.number}</span>
+                  <span className="services__item-number">
+                    {service.number}
+                  </span>
                   <h3 className="services__item-title">{service.title}</h3>
                   <span className="services__item-toggle" aria-hidden="true">
                     {activeIndex === i ? "−" : "+"}
@@ -92,10 +103,17 @@ export default function Services() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{
                         duration: 0.5,
-                        ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+                        ease: [0.16, 1, 0.3, 1] as [
+                          number,
+                          number,
+                          number,
+                          number,
+                        ],
                       }}
                     >
-                      <p className="services__item-description">{service.description}</p>
+                      <p className="services__item-description">
+                        {service.description}
+                      </p>
                       <div className="services__item-tags">
                         {service.tags.map((tag) => (
                           <span key={tag} className="services__item-tag">

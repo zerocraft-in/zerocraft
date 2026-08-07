@@ -11,9 +11,7 @@ import {
   IconShieldCheck,
   IconDatabase,
   IconDeviceFloppy,
-  IconCircleCheck,
   IconCrown,
-  IconSparkles,
   IconLoader2,
   IconSend,
   IconKey,
@@ -30,7 +28,7 @@ import {
 import { useCurrency } from "@/lib/currency-context";
 import { CURRENCIES, CurrencyCode } from "@/lib/currency";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "@/components/ui/toast"
+import { toast } from "@/components/ui/toast";
 
 import {
   Dialog,
@@ -78,7 +76,8 @@ export function SettingsModal() {
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [whatsappAlerts, setWhatsappAlerts] = useState(true);
   const [bookingAlerts, setBookingAlerts] = useState(true);
-  const [pushPermission, setPushPermission] = useState<NotificationPermission>("default");
+  const [pushPermission, setPushPermission] =
+    useState<NotificationPermission>("default");
 
   // Auth User & Profiles State
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -133,7 +132,11 @@ export function SettingsModal() {
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
-      history.pushState(null, "", window.location.pathname + window.location.search);
+      history.pushState(
+        null,
+        "",
+        window.location.pathname + window.location.search,
+      );
     }
   };
 
@@ -148,7 +151,7 @@ export function SettingsModal() {
     try {
       await updateProfileRoleInSupabase(userId, newRole);
       setProfiles((prev) =>
-        prev.map((p) => (p.id === userId ? { ...p, role: newRole } : p))
+        prev.map((p) => (p.id === userId ? { ...p, role: newRole } : p)),
       );
       toast.add({ title: "Role updated successfully!", type: "success" });
     } catch (error) {
@@ -193,7 +196,7 @@ export function SettingsModal() {
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute(
       "download",
-      `zerocraft_profiles_backup_${new Date().toISOString().split("T")[0]}.json`
+      `zerocraft_profiles_backup_${new Date().toISOString().split("T")[0]}.json`,
     );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
@@ -223,18 +226,20 @@ export function SettingsModal() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 text-sm rounded-xl transition-all ${isActive
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 text-sm rounded-xl transition-all ${
+                      isActive
                         ? "bg-accent/60 text-foreground font-semibold"
                         : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                      }`}
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="w-4 h-4" />
                       {tab.label}
                     </div>
-                    {tab.id === "notifications" && pushPermission === "granted" && (
-                      <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
-                    )}
+                    {tab.id === "notifications" &&
+                      pushPermission === "granted" && (
+                        <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
+                      )}
                     {tab.id === "account" && isOwner && (
                       <IconCrown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                     )}
@@ -262,7 +267,9 @@ export function SettingsModal() {
                   </button>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">Manage your preferences for this section.</p>
+              <p className="text-sm text-muted-foreground">
+                Manage your preferences for this section.
+              </p>
             </div>
 
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-2xl w-full">
@@ -273,17 +280,30 @@ export function SettingsModal() {
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-bold text-foreground">Theme & Appearance</h4>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Dark glassmorphism tuned for Zerocraft Studio.</p>
+                        <h4 className="text-sm font-bold text-foreground">
+                          Theme & Appearance
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Dark glassmorphism tuned for Zerocraft Studio.
+                        </p>
                       </div>
-                      <Select value={theme} onValueChange={(val) => val && setTheme(val)}>
+                      <Select
+                        value={theme}
+                        onValueChange={(val) => val && setTheme(val)}
+                      >
                         <SelectTrigger className="w-[140px] h-8 rounded-xl text-xs bg-background">
                           <SelectValue placeholder="Select theme" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
-                          <SelectItem value="system" className="text-xs">System</SelectItem>
-                          <SelectItem value="light" className="text-xs">Light</SelectItem>
-                          <SelectItem value="dark" className="text-xs">Dark</SelectItem>
+                          <SelectItem value="system" className="text-xs">
+                            System
+                          </SelectItem>
+                          <SelectItem value="light" className="text-xs">
+                            Light
+                          </SelectItem>
+                          <SelectItem value="dark" className="text-xs">
+                            Dark
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -291,30 +311,36 @@ export function SettingsModal() {
                     <div className="flex items-center gap-3 pt-2">
                       <button
                         onClick={() => setAccentColor("emerald")}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 ${accentColor === "emerald"
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 ${
+                          accentColor === "emerald"
                             ? "bg-[#22C55E]/15 border-[#22C55E] text-[#22C55E]"
                             : "bg-muted border-border text-muted-foreground"
-                          }`}
+                        }`}
                       >
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" /> Emerald
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />{" "}
+                        Emerald
                       </button>
                       <button
                         onClick={() => setAccentColor("purple")}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 ${accentColor === "purple"
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 ${
+                          accentColor === "purple"
                             ? "bg-purple-500/15 border-purple-500 text-purple-300"
                             : "bg-muted border-border text-muted-foreground"
-                          }`}
+                        }`}
                       >
-                        <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Purple
+                        <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />{" "}
+                        Purple
                       </button>
                       <button
                         onClick={() => setAccentColor("blue")}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 ${accentColor === "blue"
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 ${
+                          accentColor === "blue"
                             ? "bg-blue-500/15 border-blue-500 text-blue-300"
                             : "bg-muted border-border text-muted-foreground"
-                          }`}
+                        }`}
                       >
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Blue
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />{" "}
+                        Blue
                       </button>
                     </div>
                   </div>
@@ -322,17 +348,30 @@ export function SettingsModal() {
                   {/* Sync Protocol */}
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-bold text-foreground">Database Sync Protocol</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Select WebSocket realtime or polling interval.</p>
+                      <h4 className="text-sm font-bold text-foreground">
+                        Database Sync Protocol
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Select WebSocket realtime or polling interval.
+                      </p>
                     </div>
-                    <Select value={autoSyncProtocol} onValueChange={(val) => val && setAutoSyncProtocol(val)}>
+                    <Select
+                      value={autoSyncProtocol}
+                      onValueChange={(val) => val && setAutoSyncProtocol(val)}
+                    >
                       <SelectTrigger className="h-8 w-44 bg-background border-border text-xs rounded-xl">
                         <SelectValue placeholder="Protocol" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        <SelectItem value="realtime" className="text-xs">Realtime WebSockets</SelectItem>
-                        <SelectItem value="5s" className="text-xs">5s Polling Interval</SelectItem>
-                        <SelectItem value="15s" className="text-xs">15s Polling Interval</SelectItem>
+                        <SelectItem value="realtime" className="text-xs">
+                          Realtime WebSockets
+                        </SelectItem>
+                        <SelectItem value="5s" className="text-xs">
+                          5s Polling Interval
+                        </SelectItem>
+                        <SelectItem value="15s" className="text-xs">
+                          15s Polling Interval
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -340,22 +379,37 @@ export function SettingsModal() {
                   {/* Studio Base Currency */}
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-bold text-foreground">Studio Base Currency</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Default display currency across all revenue KPIs.</p>
+                      <h4 className="text-sm font-bold text-foreground">
+                        Studio Base Currency
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Default display currency across all revenue KPIs.
+                      </p>
                     </div>
-                    <Select value={currency} onValueChange={(val) => val && setCurrency(val as CurrencyCode)}>
+                    <Select
+                      value={currency}
+                      onValueChange={(val) =>
+                        val && setCurrency(val as CurrencyCode)
+                      }
+                    >
                       <SelectTrigger className="h-8 w-44 bg-background border-border text-xs rounded-xl font-bold">
                         <SelectValue placeholder="Select Currency" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        {(Object.keys(CURRENCIES) as CurrencyCode[]).map((code) => {
-                          const c = CURRENCIES[code];
-                          return (
-                            <SelectItem key={code} value={code} className="text-xs">
-                              {c.flag} {c.name} ({c.symbol.trim()})
-                            </SelectItem>
-                          );
-                        })}
+                        {(Object.keys(CURRENCIES) as CurrencyCode[]).map(
+                          (code) => {
+                            const c = CURRENCIES[code];
+                            return (
+                              <SelectItem
+                                key={code}
+                                value={code}
+                                className="text-xs"
+                              >
+                                {c.flag} {c.name} ({c.symbol.trim()})
+                              </SelectItem>
+                            );
+                          },
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -370,10 +424,12 @@ export function SettingsModal() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                          <IconBell className="w-4 h-4 text-[#22C55E]" /> Native Browser Desktop Push
+                          <IconBell className="w-4 h-4 text-[#22C55E]" /> Native
+                          Browser Desktop Push
                         </h4>
                         <p className="text-[11px] text-muted-foreground mt-1">
-                          Receive instant OS notification banners when new bookings occur.
+                          Receive instant OS notification banners when new
+                          bookings occur.
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -398,28 +454,53 @@ export function SettingsModal() {
 
                   {/* Notification Channels */}
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border space-y-4">
-                    <h4 className="text-sm font-bold text-foreground">Alert Channel Triggers</h4>
+                    <h4 className="text-sm font-bold text-foreground">
+                      Alert Channel Triggers
+                    </h4>
                     <div className="space-y-4 divide-y divide-border/60">
                       <div className="pt-2 flex items-center justify-between">
                         <div>
-                          <div className="text-sm font-semibold text-foreground">Passwordless Email OTP Login Alerts</div>
-                          <div className="text-[11px] text-muted-foreground">Send 6-digit codes branded for in.zerocraft@gmail.com</div>
+                          <div className="text-sm font-semibold text-foreground">
+                            Passwordless Email OTP Login Alerts
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            Send 6-digit codes branded for
+                            in.zerocraft@gmail.com
+                          </div>
                         </div>
-                        <Switch checked={emailAlerts} onCheckedChange={setEmailAlerts} />
+                        <Switch
+                          checked={emailAlerts}
+                          onCheckedChange={setEmailAlerts}
+                        />
                       </div>
                       <div className="pt-4 flex items-center justify-between">
                         <div>
-                          <div className="text-sm font-semibold text-foreground">n8n WhatsApp Webhook Notifications</div>
-                          <div className="text-[11px] text-muted-foreground">Trigger active n8n automation flow on client booking</div>
+                          <div className="text-sm font-semibold text-foreground">
+                            n8n WhatsApp Webhook Notifications
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            Trigger active n8n automation flow on client booking
+                          </div>
                         </div>
-                        <Switch checked={whatsappAlerts} onCheckedChange={setWhatsappAlerts} />
+                        <Switch
+                          checked={whatsappAlerts}
+                          onCheckedChange={setWhatsappAlerts}
+                        />
                       </div>
                       <div className="pt-4 flex items-center justify-between">
                         <div>
-                          <div className="text-sm font-semibold text-foreground">Consultation Booking Triggers</div>
-                          <div className="text-[11px] text-muted-foreground">Notify owner ivd.maran@gmail.com on scheduled meetings</div>
+                          <div className="text-sm font-semibold text-foreground">
+                            Consultation Booking Triggers
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            Notify owner ivd.maran@gmail.com on scheduled
+                            meetings
+                          </div>
                         </div>
-                        <Switch checked={bookingAlerts} onCheckedChange={setBookingAlerts} />
+                        <Switch
+                          checked={bookingAlerts}
+                          onCheckedChange={setBookingAlerts}
+                        />
                       </div>
                     </div>
                   </div>
@@ -433,18 +514,29 @@ export function SettingsModal() {
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10 border border-border">
-                        <AvatarImage src={`https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&fit=crop`} />
+                        <AvatarImage
+                          src={`https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&fit=crop`}
+                        />
                         <AvatarFallback>ZS</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                          {isOwner ? "Maran (Owner)" : currentUserEmail.split("@")[0]}
-                          {isOwner && <IconCrown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />}
+                          {isOwner
+                            ? "Maran (Owner)"
+                            : currentUserEmail.split("@")[0]}
+                          {isOwner && (
+                            <IconCrown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                          )}
                         </div>
-                        <div className="text-[11px] text-muted-foreground">{currentUserEmail}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {currentUserEmail}
+                        </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E] text-xs font-bold px-3 py-1">
+                    <Badge
+                      variant="outline"
+                      className="bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E] text-xs font-bold px-3 py-1"
+                    >
                       {isOwner ? "System Owner (Admin)" : "Registered User"}
                     </Badge>
                   </div>
@@ -453,9 +545,12 @@ export function SettingsModal() {
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <IconUsers className="w-4 h-4 text-[#22C55E]" /> Registered Profiles in Supabase
+                        <IconUsers className="w-4 h-4 text-[#22C55E]" />{" "}
+                        Registered Profiles in Supabase
                       </h4>
-                      <span className="text-[11px] text-muted-foreground font-mono">{profiles.length} Profiles</span>
+                      <span className="text-[11px] text-muted-foreground font-mono">
+                        {profiles.length} Profiles
+                      </span>
                     </div>
 
                     <div className="overflow-x-auto rounded-xl border border-border bg-background">
@@ -471,52 +566,95 @@ export function SettingsModal() {
                         <tbody className="divide-y divide-border">
                           {loadingProfiles ? (
                             <tr>
-                              <td colSpan={4} className="p-4 text-center text-muted-foreground">
+                              <td
+                                colSpan={4}
+                                className="p-4 text-center text-muted-foreground"
+                              >
                                 <IconLoader2 className="w-4 h-4 animate-spin mx-auto text-[#22C55E]" />
                               </td>
                             </tr>
                           ) : (
                             profiles.map((prof) => {
-                              const isProfOwner = prof.email === "ivd.maran@gmail.com";
+                              const isProfOwner =
+                                prof.email === "ivd.maran@gmail.com";
                               return (
-                                <tr key={prof.id} className="hover:bg-muted/40 transition-colors">
+                                <tr
+                                  key={prof.id}
+                                  className="hover:bg-muted/40 transition-colors"
+                                >
                                   <td className="p-3 font-semibold flex items-center gap-2">
                                     <Avatar className="w-6 h-6">
                                       <AvatarImage src={prof.avatar_url} />
                                       <AvatarFallback>ZS</AvatarFallback>
                                     </Avatar>
                                     <span>{prof.full_name}</span>
-                                    {isProfOwner && <IconCrown className="w-3 h-3 text-amber-400 fill-amber-400" />}
+                                    {isProfOwner && (
+                                      <IconCrown className="w-3 h-3 text-amber-400 fill-amber-400" />
+                                    )}
                                   </td>
-                                  <td className="p-3 text-muted-foreground font-mono">{prof.email}</td>
+                                  <td className="p-3 text-muted-foreground font-mono">
+                                    {prof.email}
+                                  </td>
                                   <td className="p-3">
                                     {isProfOwner ? (
                                       <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px]">
                                         Owner
                                       </Badge>
                                     ) : (
-                                      <Badge variant="outline" className="text-[10px]">Staff</Badge>
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[10px]"
+                                      >
+                                        Staff
+                                      </Badge>
                                     )}
                                   </td>
                                   <td className="p-3">
                                     {isOwner ? (
                                       <Select
                                         value={prof.role}
-                                        onValueChange={(val) => handleRoleChange(prof.id, val as UserRole)}
+                                        onValueChange={(val) =>
+                                          handleRoleChange(
+                                            prof.id,
+                                            val as UserRole,
+                                          )
+                                        }
                                         disabled={isProfOwner}
                                       >
                                         <SelectTrigger className="h-7 w-28 bg-background border-border text-xs rounded-lg">
                                           <SelectValue placeholder="Role" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl">
-                                          <SelectItem value="admin" className="text-xs">Admin</SelectItem>
-                                          <SelectItem value="manager" className="text-xs">Manager</SelectItem>
-                                          <SelectItem value="staff" className="text-xs">Staff</SelectItem>
-                                          <SelectItem value="client" className="text-xs">Client</SelectItem>
+                                          <SelectItem
+                                            value="admin"
+                                            className="text-xs"
+                                          >
+                                            Admin
+                                          </SelectItem>
+                                          <SelectItem
+                                            value="manager"
+                                            className="text-xs"
+                                          >
+                                            Manager
+                                          </SelectItem>
+                                          <SelectItem
+                                            value="staff"
+                                            className="text-xs"
+                                          >
+                                            Staff
+                                          </SelectItem>
+                                          <SelectItem
+                                            value="client"
+                                            className="text-xs"
+                                          >
+                                            Client
+                                          </SelectItem>
                                         </SelectContent>
                                       </Select>
                                     ) : (
-                                      <span className="capitalize font-bold text-foreground">{prof.role}</span>
+                                      <span className="capitalize font-bold text-foreground">
+                                        {prof.role}
+                                      </span>
                                     )}
                                   </td>
                                 </tr>
@@ -535,28 +673,56 @@ export function SettingsModal() {
                 <div className="space-y-6 max-w-2xl">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="p-4 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">Quick Search Modal</span>
-                      <div className="flex items-center gap-1"><Kbd>âŒ˜</Kbd><Kbd>K</Kbd></div>
+                      <span className="text-sm font-medium text-foreground">
+                        Quick Search Modal
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Kbd>âŒ˜</Kbd>
+                        <Kbd>K</Kbd>
+                      </div>
                     </div>
                     <div className="p-4 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">Save Preferences</span>
-                      <div className="flex items-center gap-1"><Kbd>âŒ˜</Kbd><Kbd>S</Kbd></div>
+                      <span className="text-sm font-medium text-foreground">
+                        Save Preferences
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Kbd>âŒ˜</Kbd>
+                        <Kbd>S</Kbd>
+                      </div>
                     </div>
                     <div className="p-4 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">Add Client / Work</span>
-                      <div className="flex items-center gap-1"><Kbd>âŒ˜</Kbd><Kbd>N</Kbd></div>
+                      <span className="text-sm font-medium text-foreground">
+                        Add Client / Work
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Kbd>âŒ˜</Kbd>
+                        <Kbd>N</Kbd>
+                      </div>
                     </div>
                     <div className="p-4 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">Close Search / Dialog</span>
+                      <span className="text-sm font-medium text-foreground">
+                        Close Search / Dialog
+                      </span>
                       <Kbd>Esc</Kbd>
                     </div>
                     <div className="p-4 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">Toggle Theme</span>
-                      <div className="flex items-center gap-1"><Kbd>âŒ˜</Kbd><Kbd>Shift</Kbd><Kbd>D</Kbd></div>
+                      <span className="text-sm font-medium text-foreground">
+                        Toggle Theme
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Kbd>âŒ˜</Kbd>
+                        <Kbd>Shift</Kbd>
+                        <Kbd>D</Kbd>
+                      </div>
                     </div>
                     <div className="p-4 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">Refresh Supabase DB</span>
-                      <div className="flex items-center gap-1"><Kbd>âŒ˜</Kbd><Kbd>R</Kbd></div>
+                      <span className="text-sm font-medium text-foreground">
+                        Refresh Supabase DB
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Kbd>âŒ˜</Kbd>
+                        <Kbd>R</Kbd>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -567,7 +733,8 @@ export function SettingsModal() {
                 <div className="space-y-6 max-w-2xl">
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border space-y-3">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <IconSend className="w-4 h-4 text-purple-400" /> n8n WhatsApp Automation Webhook URL
+                      <IconSend className="w-4 h-4 text-purple-400" /> n8n
+                      WhatsApp Automation Webhook URL
                     </h4>
                     <input
                       type="url"
@@ -580,7 +747,8 @@ export function SettingsModal() {
 
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border space-y-3">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <IconKey className="w-4 h-4 text-[#22C55E]" /> Supabase Backend Connection URL
+                      <IconKey className="w-4 h-4 text-[#22C55E]" /> Supabase
+                      Backend Connection URL
                     </h4>
                     <input
                       type="text"
@@ -593,7 +761,8 @@ export function SettingsModal() {
 
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border space-y-3">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <IconShieldCheck className="w-4 h-4 text-blue-400" /> Role-Based Access Matrix (RBAC)
+                      <IconShieldCheck className="w-4 h-4 text-blue-400" />{" "}
+                      Role-Based Access Matrix (RBAC)
                     </h4>
                     <div className="overflow-x-auto rounded-xl border border-border bg-background">
                       <table className="w-full text-left text-xs text-foreground">
@@ -610,20 +779,38 @@ export function SettingsModal() {
                             <td className="p-3 font-bold text-amber-400 flex items-center gap-1">
                               <IconCrown className="w-3.5 h-3.5" /> Admin
                             </td>
-                            <td className="p-3 text-emerald-400 font-semibold">Full Access</td>
-                            <td className="p-3 text-emerald-400 font-semibold">Full CRUD</td>
-                            <td className="p-3 text-emerald-400 font-semibold">Manage All</td>
+                            <td className="p-3 text-emerald-400 font-semibold">
+                              Full Access
+                            </td>
+                            <td className="p-3 text-emerald-400 font-semibold">
+                              Full CRUD
+                            </td>
+                            <td className="p-3 text-emerald-400 font-semibold">
+                              Manage All
+                            </td>
                           </tr>
                           <tr>
-                            <td className="p-3 font-bold text-blue-400">Manager</td>
-                            <td className="p-3 text-emerald-400 font-semibold">Full Access</td>
-                            <td className="p-3 text-emerald-400 font-semibold">Full CRUD</td>
+                            <td className="p-3 font-bold text-blue-400">
+                              Manager
+                            </td>
+                            <td className="p-3 text-emerald-400 font-semibold">
+                              Full Access
+                            </td>
+                            <td className="p-3 text-emerald-400 font-semibold">
+                              Full CRUD
+                            </td>
                             <td className="p-3 text-red-400">Restricted</td>
                           </tr>
                           <tr>
-                            <td className="p-3 font-bold text-purple-400">Staff</td>
-                            <td className="p-3 text-emerald-400 font-semibold">View Only</td>
-                            <td className="p-3 text-muted-foreground">Read Only</td>
+                            <td className="p-3 font-bold text-purple-400">
+                              Staff
+                            </td>
+                            <td className="p-3 text-emerald-400 font-semibold">
+                              View Only
+                            </td>
+                            <td className="p-3 text-muted-foreground">
+                              Read Only
+                            </td>
                             <td className="p-3 text-red-400">Restricted</td>
                           </tr>
                         </tbody>
@@ -638,14 +825,19 @@ export function SettingsModal() {
                 <div className="space-y-6 max-w-2xl">
                   <div className="p-5 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-bold text-foreground">Export Profiles & Database Backup</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Download full JSON snapshot of user profiles.</p>
+                      <h4 className="text-sm font-bold text-foreground">
+                        Export Profiles & Database Backup
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Download full JSON snapshot of user profiles.
+                      </p>
                     </div>
                     <button
                       onClick={exportCrmBackup}
                       className="px-4 py-2 rounded-xl bg-background border border-border text-foreground text-xs font-bold hover:bg-accent flex items-center gap-2 transition-all"
                     >
-                      <IconDownload className="w-4 h-4 text-[#22C55E]" /> Export Backup
+                      <IconDownload className="w-4 h-4 text-[#22C55E]" /> Export
+                      Backup
                     </button>
                   </div>
                 </div>

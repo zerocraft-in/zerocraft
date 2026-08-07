@@ -11,17 +11,12 @@ import {
   IconClock,
   IconCircleCheck,
   IconLoader2,
-  IconFileText,
-  IconEye,
-  IconSend,
   IconSearch,
   IconFilter,
   IconChevronLeft,
   IconChevronRight,
   IconChevronDown,
-  IconDotsVertical,
   IconColumns,
-  IconCheck,
   IconExternalLink,
   IconLayoutDashboard,
   IconDatabase,
@@ -29,8 +24,6 @@ import {
   IconActivity,
   IconRefresh,
   IconShieldCheck,
-  IconCpu,
-  IconKey,
   IconPlug,
   IconListCheck,
 } from "@tabler/icons-react";
@@ -51,16 +44,11 @@ import {
   PolarAngleAxis,
   BarChart,
   Bar,
-  CartesianGrid,
   XAxis,
   YAxis,
   Cell,
-  Label,
 } from "recharts";
-import {
-  ChartConfig,
-  ChartContainer,
-} from "@/components/ui/chart";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
 // Mock Data for Top Customers Radial Chart
 const topCustomersData = [
@@ -101,7 +89,7 @@ const revenueConfig = {
   revenue: {
     label: "Revenue",
     color: "#F05D23", // Orange highlight
-  }
+  },
 } satisfies ChartConfig;
 
 // shadcn UI components
@@ -176,7 +164,9 @@ interface TableCountMetrics {
 
 export default function StudioDashboardHome() {
   const { formatAmount } = useCurrency();
-  const [activeTab, setActiveTab] = useState<"works" | "blogs" | "clients" | "appointments">("works");
+  const [activeTab, setActiveTab] = useState<
+    "works" | "blogs" | "clients" | "appointments"
+  >("works");
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
@@ -185,8 +175,12 @@ export default function StudioDashboardHome() {
   const [refreshingDb, setRefreshingDb] = useState(false);
 
   // Calendar Date & Period Filter State (Daily, Monthly, Yearly)
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [dateFilterMode, setDateFilterMode] = useState<"daily" | "monthly" | "yearly">("monthly");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
+  const [dateFilterMode, setDateFilterMode] = useState<
+    "daily" | "monthly" | "yearly"
+  >("monthly");
 
   // Database MVP Configs State
   const [autoSyncMode, setAutoSyncMode] = useState("realtime");
@@ -225,7 +219,14 @@ export default function StudioDashboardHome() {
     setLoading(true);
     const startTime = performance.now();
     try {
-      const [worksData, blogsData, clientsData, apptsData, reviewsData, profilesData] = await Promise.all([
+      const [
+        worksData,
+        blogsData,
+        clientsData,
+        apptsData,
+        reviewsData,
+        profilesData,
+      ] = await Promise.all([
         fetchWorksFromSupabase(),
         fetchBlogsFromSupabase(),
         fetchClientsFromSupabase(),
@@ -333,7 +334,11 @@ export default function StudioDashboardHome() {
       // Process Appointments
       if (apptsData && apptsData.length > 0) {
         apptsData.forEach((a: any) => {
-          const d = a.scheduled_at ? new Date(a.scheduled_at) : a.created_at ? new Date(a.created_at) : new Date();
+          const d = a.scheduled_at
+            ? new Date(a.scheduled_at)
+            : a.created_at
+              ? new Date(a.created_at)
+              : new Date();
           records.push({
             id: a.id,
             header: a.client_name || "Consultation Booking",
@@ -383,13 +388,9 @@ export default function StudioDashboardHome() {
     const supabase = createClient();
     const channel = supabase
       .channel("realtime-studio-dashboard")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public" },
-        () => {
-          loadDashboardData();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public" }, () => {
+        loadDashboardData();
+      })
       .subscribe();
 
     return () => {
@@ -518,18 +519,42 @@ export default function StudioDashboardHome() {
         <div className="flex items-center gap-2 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="lg" className="h-9 px-3.5 gap-2 rounded-xl text-xs font-semibold">
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-9 px-3.5 gap-2 rounded-xl text-xs font-semibold"
+              >
                 <IconFilter className="w-3.5 h-3.5 text-[#22C55E]" />
                 <span className="capitalize">{dateFilterMode} Horizon</span>
                 <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 rounded-xl">
-              <DropdownMenuLabel className="text-xs">Time Horizon</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-xs">
+                Time Horizon
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem checked={dateFilterMode === "daily"} onCheckedChange={() => setDateFilterMode("daily")} className="text-xs">Daily</DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem checked={dateFilterMode === "monthly"} onCheckedChange={() => setDateFilterMode("monthly")} className="text-xs">Monthly</DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem checked={dateFilterMode === "yearly"} onCheckedChange={() => setDateFilterMode("yearly")} className="text-xs">Yearly</DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={dateFilterMode === "daily"}
+                onCheckedChange={() => setDateFilterMode("daily")}
+                className="text-xs"
+              >
+                Daily
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={dateFilterMode === "monthly"}
+                onCheckedChange={() => setDateFilterMode("monthly")}
+                className="text-xs"
+              >
+                Monthly
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={dateFilterMode === "yearly"}
+                onCheckedChange={() => setDateFilterMode("yearly")}
+                className="text-xs"
+              >
+                Yearly
+              </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -540,13 +565,20 @@ export default function StudioDashboardHome() {
             disabled={refreshingDb}
             className="h-9 px-3.5 rounded-xl text-xs font-semibold"
           >
-            <IconRefresh className={`w-3.5 h-3.5 text-[#22C55E] ${refreshingDb ? "animate-spin" : ""}`} />
+            <IconRefresh
+              className={`w-3.5 h-3.5 text-[#22C55E] ${refreshingDb ? "animate-spin" : ""}`}
+            />
             <span>Sync</span>
           </Button>
 
           <Link
             href="/studio/clients"
-            className={buttonVariants({ size: "lg", variant: "default", className: "h-9 px-3.5 rounded-xl text-xs font-bold" })}>
+            className={buttonVariants({
+              size: "lg",
+              variant: "default",
+              className: "h-9 px-3.5 rounded-xl text-xs font-bold",
+            })}
+          >
             <IconUsers className="w-3.5 h-3.5" />
             <span>Manage Clients</span>
           </Link>
@@ -562,7 +594,10 @@ export default function StudioDashboardHome() {
               <IconCurrencyDollar className="w-4 h-4 text-[#22C55E]" />
               <span className="capitalize">{dateFilterMode}</span> Revenue
             </span>
-            <Badge variant="outline" className="bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E] text-[10px] font-bold">
+            <Badge
+              variant="outline"
+              className="bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E] text-[10px] font-bold"
+            >
               <IconTrendingUp className="w-3 h-3 mr-1" /> +14.2%
             </Badge>
           </div>
@@ -582,9 +617,13 @@ export default function StudioDashboardHome() {
         <div className="p-5 rounded-2xl bg-muted/70 border border-border space-y-3 relative overflow-hidden group hover:border-purple-500/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <IconUsers className="w-4 h-4 text-purple-400" /> Account Touchpoints
+              <IconUsers className="w-4 h-4 text-purple-400" /> Account
+              Touchpoints
             </span>
-            <Badge variant="outline" className="bg-purple-500/10 border-purple-500/30 text-purple-300 text-[10px] font-bold">
+            <Badge
+              variant="outline"
+              className="bg-purple-500/10 border-purple-500/30 text-purple-300 text-[10px] font-bold"
+            >
               {periodMetrics.clientsCount} Accounts
             </Badge>
           </div>
@@ -593,7 +632,9 @@ export default function StudioDashboardHome() {
             <div className="text-2xl font-black tracking-tight text-foreground">
               {periodMetrics.clientsCount} Accounts
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Active client retainers in timeframe</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Active client retainers in timeframe
+            </p>
           </div>
           <div className="absolute right-3 bottom-3 w-16 h-16 rounded-full bg-purple-500/5 filter blur-xl group-hover:bg-purple-500/15 transition-all" />
         </div>
@@ -602,9 +643,13 @@ export default function StudioDashboardHome() {
         <div className="p-5 rounded-2xl bg-muted/70 border border-border space-y-3 relative overflow-hidden group hover:border-blue-500/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <IconBriefcase className="w-4 h-4 text-blue-400" /> Projects Completed
+              <IconBriefcase className="w-4 h-4 text-blue-400" /> Projects
+              Completed
             </span>
-            <Badge variant="outline" className="bg-blue-500/10 border-blue-500/30 text-blue-300 text-[10px] font-bold">
+            <Badge
+              variant="outline"
+              className="bg-blue-500/10 border-blue-500/30 text-blue-300 text-[10px] font-bold"
+            >
               {periodMetrics.worksCount} Works
             </Badge>
           </div>
@@ -613,7 +658,9 @@ export default function StudioDashboardHome() {
             <div className="text-2xl font-black tracking-tight text-foreground">
               {periodMetrics.worksCount} Works
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">3D CGI & SaaS deliverables</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              3D CGI & SaaS deliverables
+            </p>
           </div>
           <div className="absolute right-3 bottom-3 w-16 h-16 rounded-full bg-blue-500/5 filter blur-xl group-hover:bg-blue-500/15 transition-all" />
         </div>
@@ -622,9 +669,13 @@ export default function StudioDashboardHome() {
         <div className="p-5 rounded-2xl bg-muted/70 border border-border space-y-3 relative overflow-hidden group hover:border-amber-500/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <IconCalendar className="w-4 h-4 text-amber-400" /> Booked Consultations
+              <IconCalendar className="w-4 h-4 text-amber-400" /> Booked
+              Consultations
             </span>
-            <Badge variant="outline" className="bg-amber-500/10 border-amber-500/30 text-amber-300 text-[10px] font-bold">
+            <Badge
+              variant="outline"
+              className="bg-amber-500/10 border-amber-500/30 text-amber-300 text-[10px] font-bold"
+            >
               {periodMetrics.apptsCount} Scheduled
             </Badge>
           </div>
@@ -633,7 +684,9 @@ export default function StudioDashboardHome() {
             <div className="text-2xl font-black tracking-tight text-foreground">
               {periodMetrics.apptsCount} Consultations
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Strategy meetings in period</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Strategy meetings in period
+            </p>
           </div>
           <div className="absolute right-3 bottom-3 w-16 h-16 rounded-full bg-amber-500/5 filter blur-xl group-hover:bg-amber-500/15 transition-all" />
         </div>
@@ -647,7 +700,11 @@ export default function StudioDashboardHome() {
             <h2 className="text-sm font-bold text-foreground">Top customers</h2>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-7 text-xs px-2 gap-1 rounded-md bg-background border-transparent hover:bg-background/80">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs px-2 gap-1 rounded-md bg-background border-transparent hover:bg-background/80"
+                >
                   Weekly
                   <IconChevronDown className="w-3 h-3 text-muted-foreground" />
                 </Button>
@@ -660,7 +717,10 @@ export default function StudioDashboardHome() {
           </div>
 
           <div className="w-full max-w-[220px] aspect-square relative">
-            <ChartContainer config={topCustomersConfig} className="w-full h-full min-h-[220px]">
+            <ChartContainer
+              config={topCustomersConfig}
+              className="w-full h-full min-h-[220px]"
+            >
               <RadialBarChart
                 innerRadius="40%"
                 outerRadius="100%"
@@ -685,23 +745,40 @@ export default function StudioDashboardHome() {
 
             {/* Center Label manually positioned */}
             <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none pb-1">
-              <span className="text-3xl font-black text-foreground tracking-tight">630k</span>
+              <span className="text-3xl font-black text-foreground tracking-tight">
+                630k
+              </span>
             </div>
           </div>
 
           {/* Custom Legend */}
           <div className="w-full flex items-center justify-center gap-4 mt-2">
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: topCustomersConfig.social.color }} />
-              <span className="text-[11px] font-medium text-foreground">Social app</span>
+              <div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: topCustomersConfig.social.color }}
+              />
+              <span className="text-[11px] font-medium text-foreground">
+                Social app
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: topCustomersConfig.web.color }} />
-              <span className="text-[11px] font-medium text-foreground">Web</span>
+              <div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: topCustomersConfig.web.color }}
+              />
+              <span className="text-[11px] font-medium text-foreground">
+                Web
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: topCustomersConfig.ecommerce.color }} />
-              <span className="text-[11px] font-medium text-foreground">E-commerce</span>
+              <div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: topCustomersConfig.ecommerce.color }}
+              />
+              <span className="text-[11px] font-medium text-foreground">
+                E-commerce
+              </span>
             </div>
           </div>
         </div>
@@ -709,7 +786,11 @@ export default function StudioDashboardHome() {
         {/* Revenue Last Quarter Bar Chart */}
         <div className="lg:col-span-2 p-6 rounded-2xl bg-muted/70 border border-border flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <Button variant="outline" size="sm" className="h-8 rounded-full bg-background border-border text-xs px-3 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-full bg-background border-border text-xs px-3 gap-2"
+            >
               <IconTrendingUp className="w-3.5 h-3.5" />
               <span className="font-semibold">Revenue last quarter</span>
             </Button>
@@ -720,12 +801,21 @@ export default function StudioDashboardHome() {
           </div>
 
           <div>
-            <div className="text-4xl font-black tracking-tight text-foreground">+350%</div>
+            <div className="text-4xl font-black tracking-tight text-foreground">
+              +350%
+            </div>
           </div>
 
           <div className="w-full h-[180px] mt-4 relative">
-            <ChartContainer config={revenueConfig} className="w-full h-full min-h-[180px]">
-              <BarChart data={revenueData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }} barGap={6}>
+            <ChartContainer
+              config={revenueConfig}
+              className="w-full h-full min-h-[180px]"
+            >
+              <BarChart
+                data={revenueData}
+                margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                barGap={6}
+              >
                 <XAxis
                   dataKey="month"
                   axisLine={false}
@@ -735,15 +825,15 @@ export default function StudioDashboardHome() {
                 />
                 {/* Remove YAxis, only show labels if needed, or completely hide */}
                 <YAxis hide domain={[0, 600]} />
-                <Bar
-                  dataKey="revenue"
-                  radius={[8, 8, 8, 8]}
-                  barSize={40}
-                >
+                <Bar dataKey="revenue" radius={[8, 8, 8, 8]} barSize={40}>
                   {revenueData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={entry.highlight ? revenueConfig.revenue.color : "hsl(var(--muted-foreground) / 0.2)"}
+                      fill={
+                        entry.highlight
+                          ? revenueConfig.revenue.color
+                          : "hsl(var(--muted-foreground) / 0.2)"
+                      }
                     />
                   ))}
                 </Bar>
@@ -764,10 +854,12 @@ export default function StudioDashboardHome() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                <IconDatabase className="w-4.5 h-4.5 text-[#22C55E]" /> Supabase Database Engine & Configs
+                <IconDatabase className="w-4.5 h-4.5 text-[#22C55E]" /> Supabase
+                Database Engine & Configs
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Real-time PostgreSQL engine status, RLS policies, table counts, and synchronization settings.
+                Real-time PostgreSQL engine status, RLS policies, table counts,
+                and synchronization settings.
               </p>
             </div>
 
@@ -788,28 +880,37 @@ export default function StudioDashboardHome() {
               <div className="text-[10px] text-muted-foreground font-medium uppercase flex items-center gap-1">
                 <IconServer className="w-3 h-3 text-purple-400" /> Project Ref
               </div>
-              <div className="text-xs font-mono font-bold text-foreground truncate">{dbStatus.projectRef}</div>
+              <div className="text-xs font-mono font-bold text-foreground truncate">
+                {dbStatus.projectRef}
+              </div>
             </div>
 
             <div className="p-3 rounded-xl bg-background/70 border border-border space-y-1">
               <div className="text-[10px] text-muted-foreground font-medium uppercase flex items-center gap-1">
                 <IconActivity className="w-3 h-3 text-[#22C55E]" /> DB Latency
               </div>
-              <div className="text-xs font-bold text-foreground">{dbStatus.latency}</div>
+              <div className="text-xs font-bold text-foreground">
+                {dbStatus.latency}
+              </div>
             </div>
 
             <div className="p-3 rounded-xl bg-background/70 border border-border space-y-1">
               <div className="text-[10px] text-muted-foreground font-medium uppercase flex items-center gap-1">
-                <IconShieldCheck className="w-3 h-3 text-blue-400" /> RLS Security
+                <IconShieldCheck className="w-3 h-3 text-blue-400" /> RLS
+                Security
               </div>
-              <div className="text-xs font-bold text-emerald-400">14 Active Rules</div>
+              <div className="text-xs font-bold text-emerald-400">
+                14 Active Rules
+              </div>
             </div>
 
             <div className="p-3 rounded-xl bg-background/70 border border-border space-y-1">
               <div className="text-[10px] text-muted-foreground font-medium uppercase flex items-center gap-1">
                 <IconPlug className="w-3 h-3 text-amber-400" /> Engine Sync
               </div>
-              <div className="text-xs font-bold text-foreground capitalize">{autoSyncMode}</div>
+              <div className="text-xs font-bold text-foreground capitalize">
+                {autoSyncMode}
+              </div>
             </div>
           </div>
 
@@ -817,16 +918,23 @@ export default function StudioDashboardHome() {
           <div className="space-y-2">
             <div className="text-xs font-bold text-foreground flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <IconListCheck className="w-3.5 h-3.5 text-[#22C55E]" /> Registered Supabase Database Tables
+                <IconListCheck className="w-3.5 h-3.5 text-[#22C55E]" />{" "}
+                Registered Supabase Database Tables
               </span>
-              <span className="text-[10px] text-muted-foreground">6 Active Tables</span>
+              <span className="text-[10px] text-muted-foreground">
+                6 Active Tables
+              </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               <div className="p-3 rounded-xl bg-background/50 border border-border flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-foreground">public.profiles</div>
-                  <div className="text-[10px] text-muted-foreground">Users & RBAC</div>
+                  <div className="text-xs font-bold text-foreground">
+                    public.profiles
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Users & RBAC
+                  </div>
                 </div>
                 <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-300 font-bold text-xs">
                   {dbCounts.profiles}
@@ -835,8 +943,12 @@ export default function StudioDashboardHome() {
 
               <div className="p-3 rounded-xl bg-background/50 border border-border flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-foreground">public.clients</div>
-                  <div className="text-[10px] text-muted-foreground">Accounts & CRM</div>
+                  <div className="text-xs font-bold text-foreground">
+                    public.clients
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Accounts & CRM
+                  </div>
                 </div>
                 <span className="px-2 py-0.5 rounded-md bg-[#22C55E]/10 text-[#22C55E] font-bold text-xs">
                   {dbCounts.clients}
@@ -845,8 +957,12 @@ export default function StudioDashboardHome() {
 
               <div className="p-3 rounded-xl bg-background/50 border border-border flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-foreground">public.works</div>
-                  <div className="text-[10px] text-muted-foreground">Portfolio Projects</div>
+                  <div className="text-xs font-bold text-foreground">
+                    public.works
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Portfolio Projects
+                  </div>
                 </div>
                 <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-300 font-bold text-xs">
                   {dbCounts.works}
@@ -855,8 +971,12 @@ export default function StudioDashboardHome() {
 
               <div className="p-3 rounded-xl bg-background/50 border border-border flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-foreground">public.blogs</div>
-                  <div className="text-[10px] text-muted-foreground">Articles & Posts</div>
+                  <div className="text-xs font-bold text-foreground">
+                    public.blogs
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Articles & Posts
+                  </div>
                 </div>
                 <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 font-bold text-xs">
                   {dbCounts.blogs}
@@ -865,8 +985,12 @@ export default function StudioDashboardHome() {
 
               <div className="p-3 rounded-xl bg-background/50 border border-border flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-foreground">public.appointments</div>
-                  <div className="text-[10px] text-muted-foreground">Booked Meetings</div>
+                  <div className="text-xs font-bold text-foreground">
+                    public.appointments
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Booked Meetings
+                  </div>
                 </div>
                 <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 font-bold text-xs">
                   {dbCounts.appointments}
@@ -875,8 +999,12 @@ export default function StudioDashboardHome() {
 
               <div className="p-3 rounded-xl bg-background/50 border border-border flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-foreground">public.reviews</div>
-                  <div className="text-[10px] text-muted-foreground">Ratings & Feedback</div>
+                  <div className="text-xs font-bold text-foreground">
+                    public.reviews
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Ratings & Feedback
+                  </div>
                 </div>
                 <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-300 font-bold text-xs">
                   {dbCounts.reviews}
@@ -889,7 +1017,10 @@ export default function StudioDashboardHome() {
           <div className="pt-2 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>Database Sync Protocol:</span>
-              <Select value={autoSyncMode} onValueChange={(val) => val && setAutoSyncMode(val)}>
+              <Select
+                value={autoSyncMode}
+                onValueChange={(val) => val && setAutoSyncMode(val)}
+              >
                 <SelectTrigger className="h-8 w-44 bg-background border-border text-xs rounded-xl">
                   <SelectValue placeholder="Protocol" />
                 </SelectTrigger>
@@ -925,14 +1056,18 @@ export default function StudioDashboardHome() {
                 setActiveTab("works");
                 setCurrentPage(1);
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "works"
-                ? "bg-accent text-foreground border border-border shadow-md"
-                : "text-muted-foreground hover:text-accent-foreground"
-                }`}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
+                activeTab === "works"
+                  ? "bg-accent text-foreground border border-border shadow-md"
+                  : "text-muted-foreground hover:text-accent-foreground"
+              }`}
             >
               <span>Works</span>
               <span className="px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold">
-                {periodFilteredRecords.filter((r) => r.category === "works").length}
+                {
+                  periodFilteredRecords.filter((r) => r.category === "works")
+                    .length
+                }
               </span>
             </button>
 
@@ -941,14 +1076,18 @@ export default function StudioDashboardHome() {
                 setActiveTab("blogs");
                 setCurrentPage(1);
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "blogs"
-                ? "bg-accent text-foreground border border-border shadow-md"
-                : "text-muted-foreground hover:text-accent-foreground"
-                }`}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
+                activeTab === "blogs"
+                  ? "bg-accent text-foreground border border-border shadow-md"
+                  : "text-muted-foreground hover:text-accent-foreground"
+              }`}
             >
               <span>Blogs</span>
               <span className="px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold">
-                {periodFilteredRecords.filter((r) => r.category === "blogs").length}
+                {
+                  periodFilteredRecords.filter((r) => r.category === "blogs")
+                    .length
+                }
               </span>
             </button>
 
@@ -957,14 +1096,18 @@ export default function StudioDashboardHome() {
                 setActiveTab("clients");
                 setCurrentPage(1);
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "clients"
-                ? "bg-accent text-foreground border border-border shadow-md"
-                : "text-muted-foreground hover:text-accent-foreground"
-                }`}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
+                activeTab === "clients"
+                  ? "bg-accent text-foreground border border-border shadow-md"
+                  : "text-muted-foreground hover:text-accent-foreground"
+              }`}
             >
               <span>Clients</span>
               <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
-                {periodFilteredRecords.filter((r) => r.category === "clients").length}
+                {
+                  periodFilteredRecords.filter((r) => r.category === "clients")
+                    .length
+                }
               </span>
             </button>
 
@@ -973,14 +1116,19 @@ export default function StudioDashboardHome() {
                 setActiveTab("appointments");
                 setCurrentPage(1);
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "appointments"
-                ? "bg-accent text-foreground border border-border shadow-md"
-                : "text-muted-foreground hover:text-accent-foreground"
-                }`}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
+                activeTab === "appointments"
+                  ? "bg-accent text-foreground border border-border shadow-md"
+                  : "text-muted-foreground hover:text-accent-foreground"
+              }`}
             >
               <span>Consultations</span>
               <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">
-                {periodFilteredRecords.filter((r) => r.category === "appointments").length}
+                {
+                  periodFilteredRecords.filter(
+                    (r) => r.category === "appointments",
+                  ).length
+                }
               </span>
             </button>
           </div>
@@ -1007,30 +1155,41 @@ export default function StudioDashboardHome() {
                   <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-muted border-border text-foreground text-xs rounded-xl w-44">
+              <DropdownMenuContent
+                align="end"
+                className="bg-muted border-border text-foreground text-xs rounded-xl w-44"
+              >
                 <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-accent" />
                 <DropdownMenuCheckboxItem
                   checked={visibleColumns.header}
-                  onCheckedChange={(v) => setVisibleColumns((p) => ({ ...p, header: !!v }))}
+                  onCheckedChange={(v) =>
+                    setVisibleColumns((p) => ({ ...p, header: !!v }))
+                  }
                 >
                   Header / Title
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
                   checked={visibleColumns.sectionType}
-                  onCheckedChange={(v) => setVisibleColumns((p) => ({ ...p, sectionType: !!v }))}
+                  onCheckedChange={(v) =>
+                    setVisibleColumns((p) => ({ ...p, sectionType: !!v }))
+                  }
                 >
                   Category / Company
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
                   checked={visibleColumns.status}
-                  onCheckedChange={(v) => setVisibleColumns((p) => ({ ...p, status: !!v }))}
+                  onCheckedChange={(v) =>
+                    setVisibleColumns((p) => ({ ...p, status: !!v }))
+                  }
                 >
                   Status
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
                   checked={visibleColumns.reviewer}
-                  onCheckedChange={(v) => setVisibleColumns((p) => ({ ...p, reviewer: !!v }))}
+                  onCheckedChange={(v) =>
+                    setVisibleColumns((p) => ({ ...p, reviewer: !!v }))
+                  }
                 >
                   Client / Lead
                 </DropdownMenuCheckboxItem>
@@ -1053,16 +1212,24 @@ export default function StudioDashboardHome() {
                 </TableHead>
 
                 {visibleColumns.header && (
-                  <TableHead className="text-foreground font-extrabold text-xs">Record Header</TableHead>
+                  <TableHead className="text-foreground font-extrabold text-xs">
+                    Record Header
+                  </TableHead>
                 )}
                 {visibleColumns.sectionType && (
-                  <TableHead className="text-foreground font-extrabold text-xs">Category / Company</TableHead>
+                  <TableHead className="text-foreground font-extrabold text-xs">
+                    Category / Company
+                  </TableHead>
                 )}
                 {visibleColumns.status && (
-                  <TableHead className="text-foreground font-extrabold text-xs">Status</TableHead>
+                  <TableHead className="text-foreground font-extrabold text-xs">
+                    Status
+                  </TableHead>
                 )}
                 {visibleColumns.reviewer && (
-                  <TableHead className="text-foreground font-extrabold text-xs">Lead / Reviewer</TableHead>
+                  <TableHead className="text-foreground font-extrabold text-xs">
+                    Lead / Reviewer
+                  </TableHead>
                 )}
                 <TableHead className="w-12 text-right text-muted-foreground"></TableHead>
               </TableRow>
@@ -1070,15 +1237,22 @@ export default function StudioDashboardHome() {
             <TableBody className="divide-y divide-border">
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-xs text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="h-32 text-center text-xs text-muted-foreground"
+                  >
                     <IconLoader2 className="w-5 h-5 animate-spin mx-auto text-[#22C55E] mb-2" />
                     Loading Supabase records...
                   </TableCell>
                 </TableRow>
               ) : paginatedRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-xs text-muted-foreground">
-                    No records found matching current period ({dateFilterMode}) and search criteria.
+                  <TableCell
+                    colSpan={6}
+                    className="h-32 text-center text-xs text-muted-foreground"
+                  >
+                    No records found matching current period ({dateFilterMode})
+                    and search criteria.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -1087,8 +1261,9 @@ export default function StudioDashboardHome() {
                   return (
                     <TableRow
                       key={rec.id}
-                      className={`border-border transition-colors hover:bg-muted/60 ${isSelected ? "bg-muted/70" : ""
-                        }`}
+                      className={`border-border transition-colors hover:bg-muted/60 ${
+                        isSelected ? "bg-muted/70" : ""
+                      }`}
                     >
                       <TableCell className="w-10 p-3">
                         <Checkbox
@@ -1157,13 +1332,17 @@ export default function StudioDashboardHome() {
         {/* Footer Pagination */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-muted-foreground pt-2">
           <div>
-            {selectedRows.length} of {filteredTableRecords.length} row(s) selected.
+            {selectedRows.length} of {filteredTableRecords.length} row(s)
+            selected.
           </div>
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span>Rows per page</span>
-              <Select value={rowsPerPage} onValueChange={(val) => val && setRowsPerPage(val)}>
+              <Select
+                value={rowsPerPage}
+                onValueChange={(val) => val && setRowsPerPage(val)}
+              >
                 <SelectTrigger className="h-8 w-16 bg-background border-border text-xs rounded-xl">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
@@ -1189,7 +1368,9 @@ export default function StudioDashboardHome() {
               </button>
               <button
                 disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
                 className="p-1.5 rounded-lg border border-border bg-background hover:bg-accent disabled:opacity-40 transition-colors"
               >
                 <IconChevronRight className="w-3.5 h-3.5" />

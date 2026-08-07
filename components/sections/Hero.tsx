@@ -1,10 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import Heading from "@/components/ui/Heading";
-import Reveal from "@/components/ui/Reveal";
 
 export default function Hero() {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -68,10 +66,19 @@ export default function Hero() {
         >
           <span>SCROLL TO EXPLORE</span>
 
-
-          <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 18 18" width={16}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            version="1.1"
+            viewBox="0 0 18 18"
+            width={16}
             height={16}
-            className="hero__scroll-arrow"><path fill="currentColor" d="M18,10.8h-3.6v-3.6h3.6v3.6ZM7.2,14.4v3.6h3.6v-3.6h3.6v-3.6h-3.6V0h-3.6v10.8h-3.6v3.6s3.6,0,3.6,0ZM3.6,10.8v-3.6H0v3.6h3.6Z"></path></svg>
+            className="hero__scroll-arrow"
+          >
+            <path
+              fill="currentColor"
+              d="M18,10.8h-3.6v-3.6h3.6v3.6ZM7.2,14.4v3.6h3.6v-3.6h3.6v-3.6h-3.6V0h-3.6v10.8h-3.6v3.6s3.6,0,3.6,0ZM3.6,10.8v-3.6H0v3.6h3.6Z"
+            ></path>
+          </svg>
         </motion.div>
       </div>
     </section>

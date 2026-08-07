@@ -11,19 +11,22 @@ const projects = [
     id: 1,
     title: "Aura Skincare",
     category: "E-Commerce / Branding",
-    image: "https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=2000",
+    image:
+      "https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=2000",
   },
   {
     id: 2,
     title: "Nova Fintech",
     category: "Web App / UI/UX",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2000",
+    image:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2000",
   },
   {
     id: 3,
     title: "Lumina Architecture",
     category: "Portfolio / Motion",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000",
+    image:
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000",
   },
 ];
 
@@ -67,10 +70,10 @@ export default function Works() {
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </motion.div>
-                  
+
                   {/* Hover Overlay */}
                   <div className="works__item-overlay" />
-                  
+
                   {/* View Project Button */}
                   <div className="works__item-btn-wrapper">
                     <span className="works__item-btn">View Project</span>
@@ -79,7 +82,9 @@ export default function Works() {
 
                 <div className="works__item-meta">
                   <h3 className="works__item-title">{project.title}</h3>
-                  <span className="works__item-category">{project.category}</span>
+                  <span className="works__item-category">
+                    {project.category}
+                  </span>
                 </div>
               </Reveal>
             </div>
@@ -90,7 +95,9 @@ export default function Works() {
           <Reveal>
             <a href="/works" className="btn btn--outline">
               View All Projects
-              <span className="btn__arrow" aria-hidden="true">→</span>
+              <span className="btn__arrow" aria-hidden="true">
+                →
+              </span>
             </a>
           </Reveal>
         </div>

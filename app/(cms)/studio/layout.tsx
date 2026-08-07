@@ -1,5 +1,4 @@
 "use client";
-import "./globals.css";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -42,7 +41,6 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-
 import {
   CommandDialog,
   CommandInput,
@@ -76,7 +74,7 @@ import dynamic from "next/dynamic";
 import { Providers } from "@/components/providers/provider";
 const SettingsModal = dynamic(
   () => import("@/components/settings-modal").then((mod) => mod.SettingsModal),
-  { ssr: false }
+  { ssr: false },
 );
 
 export default function StudioLayout({
@@ -396,8 +394,7 @@ export default function StudioLayout({
     router.refresh();
   };
   return (
-
-    <Providers >
+    <Providers>
       <div className="min-h-screen bg-background text-foreground font-sans selection:bg-[#22C55E] selection:text-foreground flex flex-col antialiased">
         {/* Top Header Bar */}
         <header className="h-20 bg-background backdrop-blur-md px-8 flex items-center justify-between gap-4 sticky top-0 z-30 border-b border-border">
@@ -524,8 +521,9 @@ export default function StudioLayout({
                       <div
                         key={n.id}
                         onClick={() => handleMarkAsRead(n.id, n.link)}
-                        className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-accent/60 ${!n.read ? "bg-accent/40" : "bg-transparent opacity-80"
-                          }`}
+                        className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-accent/60 ${
+                          !n.read ? "bg-accent/40" : "bg-transparent opacity-80"
+                        }`}
                       >
                         <div className="p-2 rounded-xl bg-background border border-border shrink-0 mt-0.5">
                           {n.category === "appointments" ? (
@@ -595,9 +593,9 @@ export default function StudioLayout({
                       {" "}
                       {currentUser.fullName
                         ? currentUser.fullName
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
                         : "ZS"}
                     </AvatarFallback>
                   </Avatar>
@@ -622,9 +620,9 @@ export default function StudioLayout({
                         {" "}
                         {currentUser.fullName
                           ? currentUser.fullName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
                           : "ZS"}
                       </AvatarFallback>
                     </Avatar>
@@ -648,9 +646,7 @@ export default function StudioLayout({
                 <CreditCardIcon  aria-hidden="true" />
                 Billing
               </DropdownMenuItem> */}
-                    <DropdownMenuItem
-                      onClick={() => router.push("#settings")}
-                    >
+                    <DropdownMenuItem onClick={() => router.push("#settings")}>
                       <IconSettings aria-hidden="true" />
                       Settings
                     </DropdownMenuItem>
@@ -708,10 +704,11 @@ export default function StudioLayout({
                         <TooltipTrigger>
                           <Link
                             href={link.href}
-                            className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${isActive
-                              ? "bg-primary text-primary-foreground font-bold shadow-lg scale-105"
-                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                              }`}
+                            className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+                              isActive
+                                ? "bg-primary text-primary-foreground font-bold shadow-lg scale-105"
+                                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            }`}
                           >
                             <Icon className="w-5 h-5" />
                           </Link>
@@ -740,10 +737,11 @@ export default function StudioLayout({
                   <TooltipTrigger>
                     <Link
                       href="/studio/#settings"
-                      className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${pathname === "/studio/#settings"
-                        ? "bg-primary text-primary-foreground font-bold shadow-lg scale-105"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                        }`}
+                      className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+                        pathname === "/studio/#settings"
+                          ? "bg-primary text-primary-foreground font-bold shadow-lg scale-105"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      }`}
                     >
                       <IconSettings className="w-5 h-5" />
                     </Link>
@@ -853,8 +851,6 @@ export default function StudioLayout({
 
         <SettingsModal />
       </div>
-
     </Providers>
-
   );
 }

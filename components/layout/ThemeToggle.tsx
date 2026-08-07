@@ -24,9 +24,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       disabled={!mounted}
       aria-label={
-        mounted
-          ? `Switch to ${isDark ? "light" : "dark"} mode`
-          : "Toggle theme"
+        mounted ? `Switch to ${isDark ? "light" : "dark"} mode` : "Toggle theme"
       }
     >
       <span>{mounted ? (isDark ? "LIGHT" : "NIGHT") : "NIGHT"}</span>

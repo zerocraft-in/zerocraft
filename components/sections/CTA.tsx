@@ -15,7 +15,7 @@ export default function CTA() {
               Let's build it together.
             </h2>
           </Reveal>
-          
+
           <Reveal delay={0.1}>
             <p className="cta__description">
               We're always looking for new challenges and exciting projects.
@@ -26,7 +26,9 @@ export default function CTA() {
           <Reveal delay={0.2}>
             <a href="/contact" className="btn btn--filled cta__btn">
               Get in Touch
-              <span className="btn__arrow" aria-hidden="true">→</span>
+              <span className="btn__arrow" aria-hidden="true">
+                →
+              </span>
             </a>
           </Reveal>
         </div>

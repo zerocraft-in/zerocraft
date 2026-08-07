@@ -118,7 +118,9 @@ export default function Menu({ isOpen, onClose }: MenuProps) {
                   aria-current={pathname === link.href ? "page" : undefined}
                 >
                   <span>{link.label}</span>
-                  <span className="menu-overlay__link-number">{link.number}</span>
+                  <span className="menu-overlay__link-number">
+                    {link.number}
+                  </span>
                 </Link>
               </motion.div>
             ))}

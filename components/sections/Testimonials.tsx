@@ -37,7 +37,9 @@ export default function Testimonials() {
   };
 
   const prev = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    setCurrentIndex(
+      (prev) => (prev - 1 + testimonials.length) % testimonials.length,
+    );
   };
 
   return (
@@ -77,7 +79,11 @@ export default function Testimonials() {
           </div>
 
           <Reveal delay={0.2} className="testimonials__controls">
-            <button onClick={prev} className="testimonials__btn" aria-label="Previous testimonial">
+            <button
+              onClick={prev}
+              className="testimonials__btn"
+              aria-label="Previous testimonial"
+            >
               <span aria-hidden="true">←</span>
             </button>
             <div className="testimonials__dots">
@@ -90,7 +96,11 @@ export default function Testimonials() {
                 />
               ))}
             </div>
-            <button onClick={next} className="testimonials__btn" aria-label="Next testimonial">
+            <button
+              onClick={next}
+              className="testimonials__btn"
+              aria-label="Next testimonial"
+            >
               <span aria-hidden="true">→</span>
             </button>
           </Reveal>
