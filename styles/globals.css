@@ -122,8 +122,31 @@
     font-family: var(--font-primary, 'Manrope'), system-ui, -apple-system, sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
-    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Synchronized Theme Switching Transition for All Sections & Elements */
+  html,
+  body,
+  .site-main,
+  .section,
+  .hero,
+  .about,
+  .services,
+  .showcase,
+  .works,
+  .process,
+  .clients,
+  .testimonials,
+  .cta,
+  .footer,
+  .navbar,
+  .section-divider,
+  h1, h2, h3, h4, h5, h6, p, span, a, button, svg, path {
+    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                fill 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                stroke 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Selection */
@@ -264,4 +287,26 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Lenis Smooth Scroll Integration Rules */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }

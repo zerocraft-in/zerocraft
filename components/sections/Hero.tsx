@@ -39,7 +39,7 @@ export default function Hero() {
       <div className="hero__bottom" ref={bottomRef}>
         {/* Left: Social */}
         <motion.div
-          className="hero__bottom-item"
+          className="hero__bottom-item hero__bottom-left"
           initial={{ opacity: 0, y: 10 }}
           animate={isBottomInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 1.0, ease: [0.16, 1, 0.3, 1] }}
@@ -64,14 +64,15 @@ export default function Hero() {
           animate={isBottomInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 1.3, ease: [0.16, 1, 0.3, 1] }}
         >
-          <span>SCROLL TO EXPLORE</span>
+          <span className="hero__scroll-text-full">SCROLL TO EXPLORE</span>
+          <span className="hero__scroll-text-short">SCROLL</span>
 
           <svg
             xmlns="http://www.w3.org/2000/svg"
             version="1.1"
             viewBox="0 0 18 18"
-            width={16}
-            height={16}
+            width={14}
+            height={14}
             className="hero__scroll-arrow"
           >
             <path

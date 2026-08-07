@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import Reveal from "@/components/ui/Reveal";
 import Container from "@/components/ui/Container";
+import BadgeButton from "@/components/ui/BadgeButton";
 
 const stats = [
   { number: "150+", label: "Projects Delivered" },
@@ -56,12 +57,9 @@ export default function About() {
               </p>
             </Reveal>
             <Reveal delay={0.4}>
-              <a href="/about" className="btn btn--outline">
-                Learn More About Us
-                <span className="btn__arrow" aria-hidden="true">
-                  →
-                </span>
-              </a>
+              <div className="about__btn-wrapper">
+                <BadgeButton href="/about" text="LEARN MORE ABOUT US" />
+              </div>
             </Reveal>
           </div>
         </div>

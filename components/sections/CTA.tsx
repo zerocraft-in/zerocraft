@@ -2,6 +2,7 @@
 
 import Reveal from "@/components/ui/Reveal";
 import Container from "@/components/ui/Container";
+import BadgeButton from "@/components/ui/BadgeButton";
 
 export default function CTA() {
   return (
@@ -24,12 +25,9 @@ export default function CTA() {
           </Reveal>
 
           <Reveal delay={0.2}>
-            <a href="/contact" className="btn btn--filled cta__btn">
-              Get in Touch
-              <span className="btn__arrow" aria-hidden="true">
-                →
-              </span>
-            </a>
+            <div className="cta__btn-wrapper">
+              <BadgeButton href="/contact" text="GET IN TOUCH" />
+            </div>
           </Reveal>
         </div>
       </Container>

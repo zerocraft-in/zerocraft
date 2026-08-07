@@ -12,16 +12,13 @@ export default function Home() {
   return (
     <main className="site-main">
       <Hero />
-      <div className="section-divider" />
       <About />
       <Services />
-      <div className="section-divider" />
       <Showcase />
       <Works />
       <Process />
       <Clients />
       <Testimonials />
-      <div className="section-divider" />
       <CTA />
     </main>
   );
