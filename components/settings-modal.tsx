@@ -58,7 +58,6 @@ const TABS = [
 ];
 
 export function SettingsModal() {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
 
