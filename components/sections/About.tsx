@@ -29,7 +29,7 @@ export default function About() {
         <div className="about__grid" ref={ref}>
           {/* Left: Large statement */}
           <Reveal delay={0.1} className="about__statement">
-            <h2 className="about__heading">
+            <h2 className="section-heading">
               We are a creative development agency that transforms ideas into
               <span className="about__heading--muted">
                 {" "}
@@ -41,7 +41,7 @@ export default function About() {
           {/* Right: Description */}
           <div className="about__content">
             <Reveal delay={0.2}>
-              <p className="about__description">
+              <p className="section-desc">
                 At Zerocraft Studio, we blend strategy, design, and technology
                 to build brands that stand out. Our multidisciplinary team
                 brings together creative thinking with technical precision to
@@ -49,7 +49,7 @@ export default function About() {
               </p>
             </Reveal>
             <Reveal delay={0.3}>
-              <p className="about__description">
+              <p className="section-desc">
                 From brand identity systems to complex web applications, we
                 approach every project with the same dedication to craft and
                 quality. We believe in the power of thoughtful design to create

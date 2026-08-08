@@ -47,7 +47,7 @@ export default function Testimonials() {
       <Container>
         <div className="testimonials__wrapper">
           <Reveal delay={0}>
-            <span className="testimonials__label text-label">Testimonials</span>
+            <span className="text-label">Testimonials</span>
           </Reveal>
 
           <div className="testimonials__slider">

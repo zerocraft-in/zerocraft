@@ -297,8 +297,9 @@ export default function Showcase() {
           ))}
         </div>
 
-        {/* ── STAGE 3: Center Headline ("Innovative design") with Cursor Tracking "KNOW MORE" Circle ── */}
+        {/* ── STAGE 3: Center Headline with Cursor Tracking "KNOW MORE" Circle ── */}
         <div ref={titleRef} className="azuris-showcase-title">
+          <span className="text-label" style={{ marginBottom: '1rem', display: 'block', textAlign: 'center' }}>Featured Project</span>
           <Link
             href={activeItem.link}
             className="azuris-showcase-title-link"
@@ -306,10 +307,10 @@ export default function Showcase() {
             onMouseLeave={() => setIsHoveredTitle(false)}
             onMouseMove={handleTitleMouseMove}
           >
-            <h2 className="azuris-showcase-heading">
+            <h2 className="section-heading text-center" style={{ margin: 0 }}>
               {activeItem.title}
               <br />
-              <span className="azuris-showcase-heading--accent">
+              <span className="azuris-showcase-heading--accent" style={{ fontStyle: "italic", opacity: 0.8 }}>
                 {activeItem.titleAccent}
               </span>
             </h2>

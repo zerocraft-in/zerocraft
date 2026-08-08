@@ -41,7 +41,7 @@ export default function Process() {
               <span className="process__label text-label">Our Process</span>
             </Reveal>
             <Reveal delay={0.1}>
-              <h2 className="process__heading">How we bring ideas to life.</h2>
+              <h2 className="section-heading">How we bring ideas to life.</h2>
             </Reveal>
           </div>
 

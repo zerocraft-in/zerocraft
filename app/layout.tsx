@@ -103,10 +103,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(manrope.variable, jetbrainsMono.variable)}
       suppressHydrationWarning
     >
-      <body id="zerocraft-app" className="font-primary antialiased">
+      <body id="zerocraft-app">
         {children}
       </body>
     </html>

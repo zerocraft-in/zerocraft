@@ -282,7 +282,10 @@ export default function Services() {
       vRot: (Math.random() - 0.5) * 0.008,
     }));
 
+    let isVisible = false;
+
     const render = () => {
+      if (!isVisible) return; // Pause rendering if not in viewport
       ctx.clearRect(0, 0, width, height);
       const isDark = document.documentElement.classList.contains("dark");
       ctx.fillStyle = isDark ? "#FFFFFF" : "#111111";
@@ -311,10 +314,28 @@ export default function Services() {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    render();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (!isVisible) {
+            isVisible = true;
+            render();
+          }
+        } else {
+          isVisible = false;
+          cancelAnimationFrame(animationFrameId);
+        }
+      },
+      { threshold: 0 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      observer.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -412,6 +433,7 @@ export default function Services() {
           x: () => -(track.scrollWidth - window.innerWidth),
           ease: "none",
           duration: 0.85,
+          force3D: true
         },
         0.12
       );
@@ -459,12 +481,12 @@ export default function Services() {
 
       {/* Central Initial Hero Text Block (Inside Dial Ring) */}
       <div ref={heroTextRef} className="services__hero-center">
-        <span className="services__hero-label">Capabilities & Craft</span>
-        <h2 className="services__hero-heading">
+        <span className="services__hero-label text-label">Capabilities & Craft</span>
+        <h2 className="section-heading mb-4">
           Services designed to <br />
           elevate your brand.
         </h2>
-        <p className="services__hero-sub">
+        <p className="section-desc max-w-[600px] mx-auto text-center">
           We craft distinctive brand identities, high-performance web applications, intuitive
           interfaces, and data-driven digital strategies that drive growth.
         </p>

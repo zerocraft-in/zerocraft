@@ -88,7 +88,7 @@ export default function Clients() {
   return (
     <section className="section clients" id="clients" aria-label="Our clients">
       <Reveal className="clients__header" delay={0}>
-        <span className="clients__label text-label">Trusted By Industry Leaders</span>
+        <span className="text-label text-center w-full mb-8">Trusted By Industry Leaders</span>
       </Reveal>
 
       <div className="clients__marquee-container">

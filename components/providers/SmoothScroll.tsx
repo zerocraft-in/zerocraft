@@ -37,7 +37,19 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     gsap.ticker.add(updateTicker);
     gsap.ticker.lagSmoothing(0);
 
+    // Watch for layout changes to refresh ScrollTrigger (fixes stuck pinning issues with next/image)
+    const resizeObserver = new ResizeObserver(() => {
+      ScrollTrigger.refresh();
+    });
+    
+    if (typeof document !== "undefined") {
+      resizeObserver.observe(document.body);
+    }
+
     return () => {
+      if (typeof document !== "undefined") {
+        resizeObserver.disconnect();
+      }
       gsap.ticker.remove(updateTicker);
       lenis.destroy();
       lenisRef.current = null;

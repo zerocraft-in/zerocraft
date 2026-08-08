@@ -521,7 +521,7 @@
 
 /* â”€â”€ Phase 2 Sections â”€â”€ */
 
-/* Typography Labels */
+/* Typography Labels & Headings */
 .text-label {
   font-family: var(--font-mono), monospace;
   font-size: 1rem;
@@ -531,6 +531,23 @@
   color: var(--zc-text-muted);
   display: inline-block;
   margin-bottom: 2rem;
+}
+
+.section-heading {
+  font-family: var(--font-primary), sans-serif;
+  font-size: clamp(2.5rem, 5vw + 1rem, 5rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+}
+
+.section-desc {
+  font-family: var(--font-primary), sans-serif;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  line-height: 1.6;
+  color: var(--foreground);
+  opacity: 0.8;
 }
 
 /* â”€â”€ About Section â”€â”€ */
