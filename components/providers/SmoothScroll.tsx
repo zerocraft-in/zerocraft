@@ -4,6 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { usePathname } from "next/navigation";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,6 +14,7 @@ interface SmoothScrollProps {
 
 export default function SmoothScroll({ children }: SmoothScrollProps) {
   const lenisRef = useRef<Lenis | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -20,6 +22,7 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       touchMultiplier: 2,
       infinite: false,
+      anchors: { offset: -88 },
     });
 
     lenisRef.current = lenis;
@@ -37,19 +40,29 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     gsap.ticker.add(updateTicker);
     gsap.ticker.lagSmoothing(0);
 
-    // Watch for layout changes to refresh ScrollTrigger (fixes stuck pinning issues with next/image)
-    const resizeObserver = new ResizeObserver(() => {
+    // GSAP ScrollTrigger config to prevent mobile viewport jump recalculations
+    ScrollTrigger.config({ ignoreMobileResize: true });
+
+    let cancelled = false;
+    const refreshLayout = () => {
+      if (cancelled) return;
+      lenis.resize();
       ScrollTrigger.refresh();
+    };
+    // Lenis observes dimensions itself. Refreshing ScrollTrigger from a body
+    // ResizeObserver can create a feedback loop as pinned layouts resize.
+    document.fonts.ready.then(() => {
+      if (cancelled) return;
+      refreshLayout();
+      const hash = window.location.hash.slice(1);
+      const target = hash ? document.getElementById(decodeURIComponent(hash)) : null;
+      if (target) lenis.scrollTo(target, { offset: -88, immediate: true });
     });
-    
-    if (typeof document !== "undefined") {
-      resizeObserver.observe(document.body);
-    }
+    window.addEventListener("load", refreshLayout, { once: true });
 
     return () => {
-      if (typeof document !== "undefined") {
-        resizeObserver.disconnect();
-      }
+      cancelled = true;
+      window.removeEventListener("load", refreshLayout);
       gsap.ticker.remove(updateTicker);
       lenis.destroy();
       lenisRef.current = null;
@@ -57,7 +70,7 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
         (window as unknown as { lenis?: Lenis }).lenis = undefined;
       }
     };
-  }, []);
+  }, [pathname]);
 
   return <>{children}</>;
 }

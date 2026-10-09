@@ -22,7 +22,7 @@ const showcaseItems = [
     bgTextBottom: "MENT / BRANDING / COMMERCE / MARKETING /",
     leftTags: ["UI/UX", "WEB DESIGN", "APPLICATIONS", "PRINT DESIGN"],
     rightTags: ["PACKAGING", "LOGO DESIGN", "MOTION", "3D MODELS"],
-    link: "/services",
+    link: "/#services",
   },
   {
     id: "creative-development",
@@ -35,7 +35,7 @@ const showcaseItems = [
     bgTextBottom: "MOBILE APPS / MAINTENANCE / UPDATES / SUPPORT /",
     leftTags: ["FRONTEND", "INTERACTIONS", "BACKEND", "E-COMMERCE"],
     rightTags: ["MOBILE APPS", "MAINTENANCE", "UPDATES", "SUPPORT"],
-    link: "/services",
+    link: "/#services",
   },
   {
     id: "brand-identity",
@@ -48,7 +48,7 @@ const showcaseItems = [
     bgTextBottom: "VISUAL IDENTITY / REBRANDING / SUPPORT /",
     leftTags: ["BRAND STRATEGY", "LOGO DESIGN", "GUIDELINES"],
     rightTags: ["VISUAL IDENTITY", "REBRANDING", "SUPPORT"],
-    link: "/services",
+    link: "/#services",
   },
   {
     id: "marketing-solutions",
@@ -61,7 +61,7 @@ const showcaseItems = [
     bgTextBottom: "OPTIMIZATION / EMAIL / CONTENT / ANALYTICS /",
     leftTags: ["STRATEGY", "SOCIAL MEDIA", "SEO"],
     rightTags: ["OPTIMIZATION", "EMAIL", "CAMPAIGNS"],
-    link: "/services",
+    link: "/#services",
   },
 ];
 
@@ -175,6 +175,7 @@ export default function Showcase() {
           height: "340px",
           borderRadius: "16px",
           boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
+          force3D: true,
         },
         {
           width: "100vw",
@@ -183,6 +184,7 @@ export default function Showcase() {
           boxShadow: "0 0 0 rgba(0,0,0,0)",
           ease: "power2.inOut",
           duration: 0.25,
+          force3D: true,
         },
         0
       );

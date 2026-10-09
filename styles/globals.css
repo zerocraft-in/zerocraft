@@ -34,67 +34,77 @@
 }
 
 @layer base {
-  /* ── Light Mode (Default — Warm Cream Editorial) ── */
+  /* ── Light Mode (Editorial Architectural & Crisp Tech) ── */
   :root {
-    --background: #F5F3EF;
-    --foreground: #111111;
+    --background: #F5F4EF;
+    --foreground: #10110F;
     --card: #FFFFFF;
-    --card-foreground: #111111;
+    --card-foreground: #10110F;
     --popover: #FFFFFF;
-    --popover-foreground: #111111;
-    --primary: #111111;
-    --primary-foreground: #F5F3EF;
-    --secondary: #F0EDE8;
-    --secondary-foreground: #111111;
-    --muted: #F0EDE8;
-    --muted-foreground: #8A817A;
-    --accent: #000000;
-    --accent-foreground: #FFFFFF;
+    --popover-foreground: #10110F;
+    --primary: #10110F;
+    --primary-foreground: #F5F4EF;
+    --secondary: #F1EFEA;
+    --secondary-foreground: #10110F;
+    --muted: #F1EFEA;
+    --muted-foreground: #686A61;
+    --accent: #D3FF00;
+    --accent-foreground: #10110F;
     --destructive: #DC2626;
-    --border: #D9D3CB;
-    --input: #D9D3CB;
-    --ring: #8A817A;
+    --border: #E4E4E7;
+    --input: #E4E4E7;
+    --ring: #10110F;
     --radius: 8px;
 
-    /* Zerocraft custom tokens */
-    --zc-bg: #F5F3EF;
-    --zc-text: #111111;
-    --zc-text-muted: #8A817A;
-    --zc-border: #D9D3CB;
-    --zc-accent: #000000;
+    /* Zerocraft Signature Brand Tokens */
+    --zc-bg: #F5F4EF;
+    --zc-text: #10110F;
+    --zc-text-muted: #686A61;
+    --zc-border: #E4E4E7;
+    --zc-border-highlight: #9BC200;
+    --zc-accent: #D3FF00;
+    --zc-accent-hover: #C5EC00;
+    --zc-accent-fg: #10110F;
+    --zc-accent-subtle: rgba(212, 255, 0, 0.22);
     --zc-surface: #FFFFFF;
-    --zc-surface-hover: #EDE9E3;
+    --zc-surface-hover: #F1EFEA;
+    --zc-glow: 0 0 20px rgba(212, 255, 0, 0.25);
   }
 
-  /* ── Dark Mode ── */
+  /* ── Dark Mode (Signature Obsidian & Electric Lime Cyber-Studio) ── */
   .dark {
-    --background: #0E0E0E;
-    --foreground: #FFFFFF;
-    --card: #1A1A1A;
-    --card-foreground: #FFFFFF;
-    --popover: #1A1A1A;
-    --popover-foreground: #FFFFFF;
-    --primary: #FFFFFF;
-    --primary-foreground: #0E0E0E;
-    --secondary: #1A1A1A;
-    --secondary-foreground: #FFFFFF;
-    --muted: #1A1A1A;
-    --muted-foreground: #8A817A;
-    --accent: #FFFFFF;
-    --accent-foreground: #0E0E0E;
+    --background: #10110F;
+    --foreground: #F5F4EF;
+    --card: #171815;
+    --card-foreground: #F5F4EF;
+    --popover: #171815;
+    --popover-foreground: #F5F4EF;
+    --primary: #D3FF00;
+    --primary-foreground: #10110F;
+    --secondary: #1D1E1A;
+    --secondary-foreground: #F5F4EF;
+    --muted: #1D1E1A;
+    --muted-foreground: #A5A79C;
+    --accent: #D3FF00;
+    --accent-foreground: #10110F;
     --destructive: #EF4444;
-    --border: rgba(255, 255, 255, 0.12);
+    --border: rgba(255, 255, 255, 0.1);
     --input: rgba(255, 255, 255, 0.12);
-    --ring: rgba(255, 255, 255, 0.25);
+    --ring: #D3FF00;
 
-    /* Zerocraft custom tokens */
-    --zc-bg: #0E0E0E;
-    --zc-text: #FFFFFF;
-    --zc-text-muted: #8A817A;
-    --zc-border: rgba(255, 255, 255, 0.12);
-    --zc-accent: #FFFFFF;
-    --zc-surface: #1A1A1A;
-    --zc-surface-hover: #252525;
+    /* Zerocraft Signature Brand Tokens */
+    --zc-bg: #10110F;
+    --zc-text: #F5F4EF;
+    --zc-text-muted: #A5A79C;
+    --zc-border: rgba(255, 255, 255, 0.1);
+    --zc-border-highlight: rgba(212, 255, 0, 0.35);
+    --zc-accent: #D3FF00;
+    --zc-accent-hover: #E2FF38;
+    --zc-accent-fg: #10110F;
+    --zc-accent-subtle: rgba(212, 255, 0, 0.12);
+    --zc-surface: #171815;
+    --zc-surface-hover: #242620;
+    --zc-glow: 0 0 28px rgba(212, 255, 0, 0.35);
   }
 
   /* ── Global Reset & Base ── */
@@ -124,40 +134,34 @@
     overflow-x: hidden;
   }
 
-  /* Synchronized Theme Switching Transition for All Sections & Elements */
+  /* Theme Switching Transition (Scoped so it does NOT conflict with GSAP transforms) */
   html,
   body,
   .site-main,
-  .section,
+  .section:not(.azuris-showcase-section),
   .hero,
   .about,
-  .services,
-  .showcase,
-  .works,
   .process,
   .clients,
   .testimonials,
   .cta,
   .footer,
   .navbar,
-  .section-divider,
-  h1, h2, h3, h4, h5, h6, p, span, a, button, svg, path {
+  .section-divider {
     transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
                 color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                fill 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                stroke 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+                border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Selection */
   ::selection {
-    background-color: var(--foreground);
-    color: var(--background);
+    background-color: var(--zc-accent);
+    color: var(--zc-accent-fg);
   }
 
   /* Focus visible */
   :focus-visible {
-    outline: 2px solid var(--foreground);
+    outline: 2px solid var(--zc-accent);
     outline-offset: 2px;
   }
 

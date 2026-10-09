@@ -12,9 +12,9 @@ interface MenuProps {
 
 const menuLinks = [
   { label: "Home", href: "/", number: "01" },
-  { label: "About", href: "/about", number: "02" },
+  { label: "Work", href: "/works", number: "02" },
   { label: "Services", href: "/services", number: "03" },
-  { label: "Works", href: "/works", number: "04" },
+  { label: "About", href: "/about", number: "04" },
   { label: "Contact", href: "/contact", number: "05" },
 ];
 

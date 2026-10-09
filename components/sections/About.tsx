@@ -7,10 +7,10 @@ import Container from "@/components/ui/Container";
 import BadgeButton from "@/components/ui/BadgeButton";
 
 const stats = [
-  { number: "150+", label: "Projects Delivered" },
-  { number: "8+", label: "Years Experience" },
-  { number: "50+", label: "Happy Clients" },
-  { number: "12", label: "Team Members" },
+  { number: "Design", label: "Identity & digital experiences" },
+  { number: "Code", label: "Websites & applications" },
+  { number: "Story", label: "Photography, video & motion" },
+  { number: "Tenkasi", label: "Our home. Your next chapter." },
 ];
 
 export default function About() {
@@ -50,15 +50,15 @@ export default function About() {
             </Reveal>
             <Reveal delay={0.3}>
               <p className="section-desc">
-                From brand identity systems to complex web applications, we
-                approach every project with the same dedication to craft and
-                quality. We believe in the power of thoughtful design to create
-                meaningful connections between brands and their audiences.
+                We believe in crafting authentic, innovative, and scalable digital
+                products that connect, inspire, and evolve with your brand. From
+                Tenkasi to clients across the globe, every touchpoint is engineered
+                with meticulous craft and technical precision.
               </p>
             </Reveal>
             <Reveal delay={0.4}>
               <div className="about__btn-wrapper">
-                <BadgeButton href="/about" text="LEARN MORE ABOUT US" />
+                <BadgeButton href="/about" text="MEET THE STUDIO" />
               </div>
             </Reveal>
           </div>

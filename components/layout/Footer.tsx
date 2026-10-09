@@ -35,10 +35,13 @@ export default function Footer() {
             </Reveal>
             <Reveal delay={0.1}>
               <p className="footer__brand-text">
-                Building digital experiences that
+                Crafting ideas with design, code &amp; story.
                 <br />
-                define the future of brands.
+                Let's create magic.
               </p>
+              <div className="mt-3 flex items-center gap-2 text-xs font-mono text-[var(--zc-text-muted)]">
+                <span>📍 Tenkasi, Tamil Nadu, India</span>
+              </div>
             </Reveal>
           </div>
 
@@ -65,23 +68,23 @@ export default function Footer() {
               <span className="footer__links-title">Socials</span>
               <ul className="footer__links-list">
                 <li>
-                  <a href="#" target="_blank" rel="noopener noreferrer">
-                    Instagram
+                  <a href="https://instagram.com/studio.zerocraft" target="_blank" rel="noopener noreferrer">
+                    Instagram (@studio.zerocraft)
                   </a>
                 </li>
                 <li>
-                  <a href="#" target="_blank" rel="noopener noreferrer">
+                  <a href="https://x.com/zerocraftstudio" target="_blank" rel="noopener noreferrer">
                     Twitter / X
                   </a>
                 </li>
                 <li>
-                  <a href="#" target="_blank" rel="noopener noreferrer">
-                    LinkedIn
+                  <a href="https://github.com/zerocraft-in" target="_blank" rel="noopener noreferrer">
+                    GitHub
                   </a>
                 </li>
                 <li>
-                  <a href="#" target="_blank" rel="noopener noreferrer">
-                    Behance
+                  <a href="https://linkedin.com/company/zerocraft" target="_blank" rel="noopener noreferrer">
+                    LinkedIn
                   </a>
                 </li>
               </ul>
@@ -108,12 +111,6 @@ export default function Footer() {
             </span>
           </Reveal>
 
-          <Reveal delay={0.6}>
-            <div className="footer__legal">
-              <Link href="/privacy">Privacy Policy</Link>
-              <Link href="/terms">Terms of Service</Link>
-            </div>
-          </Reveal>
         </div>
       </Container>
     </footer>

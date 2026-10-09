@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import Magnetic from "@/components/ui/Magnetic";
 import Menu from "@/components/layout/Menu";
+import PixelHand from "@/components/ui/PixelHand";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -74,18 +75,7 @@ export default function Navbar() {
             <Magnetic strength={0.15}>
               <Link href="/contact" className="navbar__link">
                 Say Hello
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  version="1.1"
-                  viewBox="0 0 18 18"
-                  width={14}
-                  height={14}
-                >
-                  <path
-                    fill="currentColor"
-                    d="M3.1,15.6h2.4v2.4h-2.4v-2.4ZM10.2,18h2.4v-2.4h-2.4v2.4ZM14.9,4.7H5.5V0H.8v2.4h2.4v11.8h9.4v-2.4h-7.1v-4.7h9.4v2.4h2.4v-4.7h-2.4ZM12.5,11.8h2.4v-2.4h-2.4v2.4Z"
-                  ></path>
-                </svg>
+                <PixelHand />
               </Link>
             </Magnetic>
 
