@@ -4,6 +4,7 @@ import { useRef } from "react";
 import {
   motion,
   useInView,
+  useReducedMotion,
   type Variant,
   type Transition,
 } from "framer-motion";
@@ -56,12 +57,13 @@ export default function Reveal({
   once = true,
   amount = 0.2,
 }: RevealProps) {
+  const reducedMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once, amount });
 
   const transition: Transition = {
-    duration,
-    delay,
+    duration: reducedMotion ? 0 : duration,
+    delay: reducedMotion ? 0 : delay,
     ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
   };
 
@@ -69,8 +71,8 @@ export default function Reveal({
     <motion.div
       ref={ref}
       className={className}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
+      initial={reducedMotion ? false : "hidden"}
+      animate={reducedMotion || isInView ? "visible" : "hidden"}
       variants={variants[variant]}
       transition={transition}
     >

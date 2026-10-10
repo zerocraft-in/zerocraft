@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import { studioMetadata } from "@/lib/studio-metadata";
 import PageIntro from "@/components/layout/PageIntro";
 import Services from "@/components/sections/Services";
 import FAQ from "@/components/sections/FAQ";
 import CTA from "@/components/sections/CTA";
-export const metadata: Metadata = { title: "Services", description: "Brand identity, digital design, content creation, and development by Zerocraft Studio.", alternates: { canonical: "/services" } };
+export const metadata = studioMetadata("Services — Zerocraft Studio", "Branding, digital design, photography, film, motion, and web and app development by Zerocraft Studio.", "/services");
 export default function ServicesPage() { return <main className="site-main"><PageIntro label="Services" title="From first thought" accent="to final detail." description="One connected approach to strategy, design, content, and technology. Explore a service to see how we can help shape your next idea." /><Services /><section className="section container-site"><span className="studio-eyebrow">/ Made for your next chapter</span><div className="studio-principles"><article><h2>Starting something new</h2><p>Define your identity, create your visual language, and build the first digital home for your business.</p></article><article><h2>Making it better</h2><p>Rethink an existing website, refresh a brand, or improve the way customers experience your product.</p></article><article><h2>Telling your story</h2><p>Bring a launch or campaign to life through considered photography, video, motion, and design.</p></article></div></section><FAQ /><CTA /></main>; }

@@ -1,8 +1,24 @@
 const questions = [
-  ["What can we create together?", "Brand identities, websites, digital interfaces, photography, video, and motion. Tell us what you want to achieve and we can discuss the right combination for your project."],
-  ["How do I start a project?", "Send a short introduction with your goals, the kind of work you need, and any dates or budget you have in mind. The contact page helps you prepare an email brief."],
-  ["Can we collaborate remotely?", "The studio is based in Tenkasi, India. You can start the conversation by email from wherever you are, then agree on a collaboration and review process together."],
-  ["How are pricing and timelines decided?", "Both depend on the scope, deliverables, and review process. Share your requirements so these can be discussed before the work begins."],
+  [
+    "What services does Zerocraft Studio offer?",
+    "We work across branding, graphic design, UI/UX, website and app development, photography, video production, and motion design."
+  ],
+  [
+    "How do I start a project?",
+    "Reach out with a brief overview of your idea, goals, and requirements. We'll discuss your vision, define the scope, and plan the next steps."
+  ],
+  [
+    "Can we collaborate remotely?",
+    "Yes. We're based in Tenkasi, Tamil Nadu, and welcome remote collaborations with clients from different locations."
+  ],
+  [
+    "How are project costs and timelines determined?",
+    "Every project has unique requirements. Pricing and timelines are based on scope, complexity, deliverables, and the level of creative and technical work involved."
+  ],
+  [
+    "Do you take on smaller projects?",
+    "We consider projects of different sizes, from individual creative deliverables to complete brand and digital experiences."
+  ]
 ];
 export default function FAQ() {
   return <section className="section studio-faq" id="faq" aria-labelledby="faq-heading"><div className="container-site studio-faq__layout">

@@ -5,29 +5,25 @@ import Container from "@/components/ui/Container";
 
 const steps = [
   {
-    number: "01",
-    title: "Discovery & Strategy",
-    description:
-      "We begin by understanding your business, goals, and audience. This deep dive informs a strategic foundation that aligns our creative vision with your objectives.",
+    "number": "01",
+    "title": "Discover & Define",
+    "description": "We begin by understanding your goals, audience, and vision, building a clear foundation for the creative direction."
   },
   {
-    number: "02",
-    title: "Concept & Design",
-    description:
-      "Our design team translates strategy into visual concepts. Through iterative exploration, we craft intuitive and beautiful designs that elevate your brand.",
+    "number": "02",
+    "title": "Explore & Design",
+    "description": "We turn insights into creative concepts, thoughtful visual systems, and intuitive experiences."
   },
   {
-    number: "03",
-    title: "Development & Build",
-    description:
-      "Our engineers bring designs to life using modern technologies, ensuring optimal performance, accessibility, and seamless animations across all devices.",
+    "number": "03",
+    "title": "Craft & Develop",
+    "description": "We bring ideas to life through detailed design, visual storytelling, and modern development."
   },
   {
-    number: "04",
-    title: "Launch & Iterate",
-    description:
-      "After rigorous testing, we launch your product to the world. We continue to monitor, refine, and iterate to ensure sustained success and growth.",
-  },
+    "number": "04",
+    "title": "Refine & Deliver",
+    "description": "We review, refine, and prepare every detail to deliver a cohesive final experience."
+  }
 ];
 
 export default function Process() {
@@ -41,7 +37,7 @@ export default function Process() {
               <span className="process__label text-label">Our Process</span>
             </Reveal>
             <Reveal delay={0.1}>
-              <h2 className="section-heading">How we bring ideas to life.</h2>
+              <h2 className="section-heading">From first thought to final form.</h2>
             </Reveal>
           </div>
 

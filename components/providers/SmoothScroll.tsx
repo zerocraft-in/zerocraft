@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePathname } from "next/navigation";
+import { useReducedMotion } from "framer-motion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,8 +16,10 @@ interface SmoothScrollProps {
 export default function SmoothScroll({ children }: SmoothScrollProps) {
   const lenisRef = useRef<Lenis | null>(null);
   const pathname = usePathname();
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
+    if (reducedMotion) return;
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -55,7 +58,8 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
       if (cancelled) return;
       refreshLayout();
       const hash = window.location.hash.slice(1);
-      const target = hash ? document.getElementById(decodeURIComponent(hash)) : null;
+      let target: HTMLElement | null = null;
+      try { target = hash ? document.getElementById(decodeURIComponent(hash)) : null; } catch { /* Ignore malformed URL fragments. */ }
       if (target) lenis.scrollTo(target, { offset: -88, immediate: true });
     });
     window.addEventListener("load", refreshLayout, { once: true });
@@ -70,7 +74,7 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
         (window as unknown as { lenis?: Lenis }).lenis = undefined;
       }
     };
-  }, [pathname]);
+  }, [pathname, reducedMotion]);
 
   return <>{children}</>;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import Magnetic from "@/components/ui/Magnetic";
@@ -9,6 +9,7 @@ import PixelHand from "@/components/ui/PixelHand";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   // Lock body scroll and pause Lenis smooth scroll when menu is open
   useEffect(() => {
@@ -89,6 +90,7 @@ export default function Navbar() {
                 onClick={() => setMenuOpen(!menuOpen)}
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={menuOpen}
+                aria-controls="studio-menu"
               >
                 <span className="navbar__hamburger-line" />
                 <span className="navbar__hamburger-line" />
@@ -99,7 +101,7 @@ export default function Navbar() {
       </nav>
 
       {/* Fullscreen Menu */}
-      <Menu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <Menu isOpen={menuOpen} onClose={closeMenu} />
     </>
   );
 }

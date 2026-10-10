@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 interface MenuProps {
   isOpen: boolean;
@@ -82,6 +82,32 @@ const footerVariants = {
 
 export default function Menu({ isOpen, onClose }: MenuProps) {
   const pathname = usePathname();
+  const panel = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const background = [...document.querySelectorAll<HTMLElement>(".site-main, .footer, .navbar")];
+    const previousInert = background.map((element) => element.inert);
+    background.forEach((element) => { element.inert = true; });
+    const frame = requestAnimationFrame(() => panel.current?.querySelector<HTMLButtonElement>("button")?.focus());
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); onClose(); }
+      if (event.key !== "Tab") return;
+      const items = panel.current?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])");
+      if (!items?.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", onKeyDown);
+      background.forEach((element, index) => { element.inert = previousInert[index]; });
+      previousFocus?.focus({ preventScroll: true });
+    };
+  }, [isOpen, onClose]);
 
   const handleLinkClick = useCallback(() => {
     onClose();
@@ -91,24 +117,30 @@ export default function Menu({ isOpen, onClose }: MenuProps) {
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
+          ref={panel}
+          id="studio-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Studio navigation"
+          data-lenis-prevent
           className="menu-overlay"
-          variants={overlayVariants}
+          variants={reducedMotion ? undefined : overlayVariants}
           initial="hidden"
           animate="visible"
-          exit="hidden"
+          exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.15 } }}
           key="menu-overlay"
         >
+          <button type="button" className="menu-overlay__close" onClick={onClose} aria-label="Close menu">CLOSE <span aria-hidden="true">×</span></button>
           <motion.nav
             className="menu-overlay__nav"
-            variants={navVariants}
+            variants={reducedMotion ? undefined : navVariants}
             initial="hidden"
             animate="visible"
-            exit="hidden"
             role="navigation"
             aria-label="Full screen navigation"
           >
             {menuLinks.map((link) => (
-              <motion.div key={link.href} variants={linkVariants}>
+              <motion.div key={link.href} variants={reducedMotion ? undefined : linkVariants}>
                 <Link
                   href={link.href}
                   className={`menu-overlay__link ${
@@ -128,16 +160,15 @@ export default function Menu({ isOpen, onClose }: MenuProps) {
 
           <motion.div
             className="menu-overlay__footer"
-            variants={footerVariants}
+            variants={reducedMotion ? undefined : footerVariants}
             initial="hidden"
             animate="visible"
-            exit="hidden"
           >
             <span className="menu-overlay__footer-text">
               © {new Date().getFullYear()} Zerocraft Studio
             </span>
             <span className="menu-overlay__footer-text">
-              Creative Development Agency
+              Independent Creative &amp; Digital Studio
             </span>
           </motion.div>
         </motion.div>
