@@ -88,7 +88,7 @@ function ScrambleTextTag({ text }: { text: string }) {
             if (index < iteration) return text[index];
             return chars[Math.floor(Math.random() * chars.length)];
           })
-          .join("")
+          .join(""),
       );
 
       if (iteration >= text.length) {
@@ -99,10 +99,7 @@ function ScrambleTextTag({ text }: { text: string }) {
   };
 
   return (
-    <span
-      className="azuris-showcase-tag"
-      onMouseEnter={scramble}
-    >
+    <span className="azuris-showcase-tag" onMouseEnter={scramble}>
       {displayText}
     </span>
   );
@@ -151,7 +148,7 @@ export default function Showcase() {
               const adjustedProgress = (self.progress - 0.22) / 0.78;
               const idx = Math.min(
                 showcaseItems.length - 1,
-                Math.floor(adjustedProgress * showcaseItems.length)
+                Math.floor(adjustedProgress * showcaseItems.length),
               );
               setActiveIdx(idx);
             } else {
@@ -186,7 +183,7 @@ export default function Showcase() {
           duration: 0.25,
           force3D: true,
         },
-        0
+        0,
       );
 
       // Fade out background repeating text as frame scales to fullscreen
@@ -201,7 +198,7 @@ export default function Showcase() {
           overlayRef.current,
           { opacity: 0 },
           { opacity: 1, ease: "power2.out", duration: 0.1 },
-          0.22
+          0.22,
         );
       }
 
@@ -211,7 +208,7 @@ export default function Showcase() {
           titleRef.current,
           { opacity: 0, y: 35 },
           { opacity: 1, y: 0, ease: "power3.out", duration: 0.12 },
-          0.24
+          0.24,
         );
       }
 
@@ -221,7 +218,7 @@ export default function Showcase() {
           leftListRef.current,
           { opacity: 0, x: -30 },
           { opacity: 1, x: 0, ease: "power3.out", duration: 0.12 },
-          0.24
+          0.24,
         );
       }
 
@@ -231,7 +228,7 @@ export default function Showcase() {
           rightListRef.current,
           { opacity: 0, x: 30 },
           { opacity: 1, x: 0, ease: "power3.out", duration: 0.12 },
-          0.24
+          0.24,
         );
       }
     }, sectionRef);
@@ -246,15 +243,25 @@ export default function Showcase() {
       <div className="azuris-showcase-viewport">
         {/* ── STAGE 1: Oversized Repeating Background Typography Track ── */}
         <div ref={bgWrapperRef} className="azuris-showcase-bg-typography">
-          <div ref={bgTextTopRef} className="azuris-showcase-bg-track azuris-showcase-bg-track--top">
-            <span className="azuris-showcase-bg-text">{activeItem.bgTextTop}</span>
+          <div
+            ref={bgTextTopRef}
+            className="azuris-showcase-bg-track azuris-showcase-bg-track--top"
+          >
+            <span className="azuris-showcase-bg-text">
+              {activeItem.bgTextTop}
+            </span>
             <span className="azuris-showcase-bg-text" aria-hidden="true">
               {activeItem.bgTextTop}
             </span>
           </div>
 
-          <div ref={bgTextBottomRef} className="azuris-showcase-bg-track azuris-showcase-bg-track--bottom">
-            <span className="azuris-showcase-bg-text">{activeItem.bgTextBottom}</span>
+          <div
+            ref={bgTextBottomRef}
+            className="azuris-showcase-bg-track azuris-showcase-bg-track--bottom"
+          >
+            <span className="azuris-showcase-bg-text">
+              {activeItem.bgTextBottom}
+            </span>
             <span className="azuris-showcase-bg-text" aria-hidden="true">
               {activeItem.bgTextBottom}
             </span>
@@ -286,14 +293,20 @@ export default function Showcase() {
         </div>
 
         {/* ── STAGE 3: Left Side ScrambleText Tags (On Hover) ── */}
-        <div ref={leftListRef} className="azuris-showcase-side azuris-showcase-side--left">
+        <div
+          ref={leftListRef}
+          className="azuris-showcase-side azuris-showcase-side--left"
+        >
           {activeItem.leftTags.map((tag) => (
             <ScrambleTextTag key={tag} text={tag} />
           ))}
         </div>
 
         {/* ── STAGE 3: Right Side ScrambleText Tags (On Hover) ── */}
-        <div ref={rightListRef} className="azuris-showcase-side azuris-showcase-side--right">
+        <div
+          ref={rightListRef}
+          className="azuris-showcase-side azuris-showcase-side--right"
+        >
           {activeItem.rightTags.map((tag) => (
             <ScrambleTextTag key={tag} text={tag} />
           ))}
@@ -301,7 +314,16 @@ export default function Showcase() {
 
         {/* ── STAGE 3: Center Headline with Cursor Tracking "KNOW MORE" Circle ── */}
         <div ref={titleRef} className="azuris-showcase-title">
-          <span className="text-label" style={{ marginBottom: '1rem', display: 'block', textAlign: 'center' }}>Featured Project</span>
+          <span
+            className="text-label"
+            style={{
+              marginBottom: "1rem",
+              display: "block",
+              textAlign: "center",
+            }}
+          >
+            Featured Project
+          </span>
           <Link
             href={activeItem.link}
             className="azuris-showcase-title-link"
@@ -312,7 +334,10 @@ export default function Showcase() {
             <h2 className="section-heading text-center" style={{ margin: 0 }}>
               {activeItem.title}
               <br />
-              <span className="azuris-showcase-heading--accent" style={{ fontStyle: "italic", opacity: 0.8 }}>
+              <span
+                className="azuris-showcase-heading--accent"
+                style={{ fontStyle: "italic", opacity: 0.8 }}
+              >
                 {activeItem.titleAccent}
               </span>
             </h2>

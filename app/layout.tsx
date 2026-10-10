@@ -19,12 +19,19 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(studio.url),
-  title: { default: "Zerocraft Studio — Independent Creative & Digital Studio", template: "%s | Zerocraft Studio" },
+  title: {
+    default: "Zerocraft Studio — Creative & Digital Studio",
+    template: "%s | Zerocraft Studio",
+  },
   description: studio.description,
   authors: [{ name: "Zerocraft Studio", url: studio.url }],
   creator: "Zerocraft Studio",
   robots: { index: true, follow: true },
-  icons: { icon: "/favicon.ico", shortcut: "/favicon-32x32.png", apple: "/apple-touch-icon.png" },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-32x32.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 const jsonLd = {
@@ -37,7 +44,12 @@ const jsonLd = {
   image: `${studio.url}/og-image.jpg`,
   description: studio.description,
   email: studio.email,
-  address: { "@type": "PostalAddress", addressLocality: "Tenkasi", addressRegion: "Tamil Nadu", addressCountry: "IN" },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Tenkasi",
+    addressRegion: "Tamil Nadu",
+    addressCountry: "IN",
+  },
   sameAs: studioSocials.map((link) => link.url),
 };
 
@@ -55,7 +67,9 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
         />
       </head>
       <body id="zerocraft-app" className="font-primary antialiased">

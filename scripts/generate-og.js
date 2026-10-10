@@ -22,7 +22,7 @@ const svg = `
 
   <!-- Typography -->
   <text x="100" y="275" font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="800" fill="#F4F4F5" letter-spacing="-1.5">ZEROCRAFT STUDIO</text>
-  <text x="100" y="335" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="600" fill="#D4FF00" letter-spacing="-0.5">Independent Creative &amp; Digital Studio</text>
+  <text x="100" y="335" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="600" fill="#D4FF00" letter-spacing="-0.5">Creative &amp; Digital Studio</text>
   
   <text x="100" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="400" fill="#A1A1AA">Branding · Digital Experiences · Photography · Film &amp; Motion</text>
 

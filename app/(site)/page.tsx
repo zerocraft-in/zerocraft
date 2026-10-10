@@ -10,7 +10,7 @@ import CTA from "@/components/sections/CTA";
 
 export const metadata = studioMetadata(
   "Zerocraft Studio — Branding, Design & Digital Experiences", studio.description, "/",
-  "Zerocraft Studio — Independent Creative & Digital Studio",
+  "Zerocraft Studio — Creative & Digital Studio",
   "Distinctive brands. Meaningful digital experiences. Compelling visual stories. Crafted with purpose at Zerocraft Studio.",
 );
 
