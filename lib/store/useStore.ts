@@ -208,19 +208,19 @@ export const useStore = create<StoreState>()(
 
       // User Profile & Orders
       userProfile: {
-        name: "Julian Vance",
-        email: "julian.vance@zerocraft.in",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop",
-        phone: "+1 (555) 392-0192",
+        name: "",
+        email: "",
+        avatar: "",
+        phone: "",
         address: {
-          street: "742 Design Avenue, Suite 400",
-          city: "San Francisco",
-          state: "CA",
-          postalCode: "94107",
-          country: "United States",
+          street: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          country: "",
         },
       },
-      orders: DUMMY_ORDERS,
+      orders: [],
       updateProfile: (profile) =>
         set((state) => ({
           userProfile: { ...state.userProfile, ...profile },
@@ -232,6 +232,18 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: "zerocraft-store-storage",
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as Partial<StoreState>;
+        return {
+          ...state,
+          orders: (state.orders || []).filter((order) => !DUMMY_ORDERS.some((sample) => sample.id === order.id)),
+          userProfile: state.userProfile?.email === "julian.vance@zerocraft.in" ? {
+            name: "", email: "", avatar: "", phone: "",
+            address: { street: "", city: "", state: "", postalCode: "", country: "" },
+          } : state.userProfile,
+        } as StoreState;
+      },
       partialize: (state) => ({
         cart: state.cart,
         wishlist: state.wishlist,

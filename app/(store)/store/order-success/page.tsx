@@ -3,15 +3,15 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { IconCheck, IconPackage, IconArrowRight, IconPrinter } from "@tabler/icons-react";
+import { IconCheck, IconPackage, IconArrowRight } from "@tabler/icons-react";
 import { useStore } from "@/lib/store/useStore";
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get("orderId") || "ZC-88492";
+  const orderId = searchParams.get("orderId");
 
   const { orders } = useStore();
-  const matchedOrder = orders.find((o) => o.orderNumber === orderId) || orders[0];
+  const matchedOrder = orders.find((o) => o.orderNumber === orderId);
 
   return (
     <div className="py-16 md:py-24 min-h-screen flex items-center justify-center">
@@ -28,14 +28,14 @@ export default function OrderSuccessPage() {
           </div>
 
           <div>
-            <span className="text-label text-amber-600 dark:text-amber-400 mb-2 block">
-              Payment Confirmed
+            <span className="text-label text-lime-600 dark:text-lime-400 mb-2 block">
+              Order request saved
             </span>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white mb-2">
-              Thank You for Your Order!
+              Thanks for your request.
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 font-light max-w-md mx-auto">
-              Your order <strong className="font-mono text-neutral-900 dark:text-white">{orderId}</strong> has been received and is being hand-crafted in our studio.
+              {matchedOrder ? <>Your request <strong className="font-mono text-neutral-900 dark:text-white">{orderId}</strong> is recorded. The studio will confirm availability and fulfillment. No payment has been collected.</> : "We could not find this order in this browser. If you just submitted a request, contact the studio with your order number."}
             </p>
           </div>
 
@@ -51,12 +51,12 @@ export default function OrderSuccessPage() {
                 <span className="text-neutral-900 dark:text-white">{matchedOrder.date}</span>
               </div>
               <div className="flex justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
-                <span className="text-neutral-400">Estimated Delivery</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">3-5 Business Days</span>
+                <span className="text-neutral-400">Status</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Pending studio confirmation</span>
               </div>
               <div className="flex justify-between font-bold text-sm text-neutral-900 dark:text-white pt-1">
-                <span>Total Paid</span>
-                <span className="text-amber-600 dark:text-amber-400">${matchedOrder.total.toFixed(2)}</span>
+                <span>Estimated total · due on delivery</span>
+                <span className="text-lime-600 dark:text-lime-400">${matchedOrder.total.toFixed(2)}</span>
               </div>
             </div>
           )}
@@ -64,15 +64,15 @@ export default function OrderSuccessPage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link
-              href={`/account/orders`}
+              href="/store/account/orders"
               className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-mono font-semibold uppercase tracking-wider hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
             >
               <IconPackage size={16} /> View Order Status
             </Link>
 
             <Link
-              href="/shop"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-amber-500 text-black font-semibold text-xs uppercase tracking-wider hover:bg-amber-400 transition-colors flex items-center justify-center gap-2 shadow-md"
+              href="/store/shop"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-lime-500 text-black font-semibold text-xs uppercase tracking-wider hover:bg-lime-400 transition-colors flex items-center justify-center gap-2 shadow-md"
             >
               Continue Shopping <IconArrowRight size={16} />
             </Link>

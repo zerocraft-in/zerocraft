@@ -15,16 +15,18 @@ export default function OrderDetailPage({
   const { id } = use(params);
   const { orders } = useStore();
 
-  const order = orders.find((o) => o.orderNumber === id || o.id === id) || orders[0];
+  const order = orders.find((o) => o.orderNumber === id || o.id === id);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+  if (!order) return <div className="container-site min-h-screen py-24"><h1 className="text-3xl font-semibold">Request not found in this browser.</h1><p className="mt-4 text-neutral-500">For help with an earlier order, contact the studio with your request number.</p><Link href="/store/contact" className="mt-6 inline-block underline">Contact the studio</Link></div>;
 
   return (
     <div className="py-8 min-h-screen">
       <div className="container-site">
         <Breadcrumbs
           items={[
-            { label: "My Account", href: "/account" },
-            { label: "Orders", href: "/account/orders" },
+            { label: "My Account", href: "/store/account" },
+            { label: "Orders", href: "/store/account/orders" },
             { label: order.orderNumber },
           ]}
         />
@@ -32,27 +34,27 @@ export default function OrderDetailPage({
         {/* Top Header */}
         <div className="my-8 pb-6 border-b border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
           <div>
-            <Link href="/account/orders" className="text-xs font-mono text-neutral-400 hover:text-neutral-900 dark:hover:text-white flex items-center gap-1 mb-2">
+            <Link href="/store/account/orders" className="text-xs font-mono text-neutral-400 hover:text-neutral-900 dark:hover:text-white flex items-center gap-1 mb-2">
               <IconArrowLeft size={14} /> Back to My Orders
             </Link>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">
               Order {order.orderNumber}
             </h1>
-            <p className="text-xs text-neutral-500 font-mono mt-1">Placed on {order.date} • Paid via {order.paymentMethod}</p>
+            <p className="text-xs text-neutral-500 font-mono mt-1">Requested on {order.date} · No online payment collected</p>
           </div>
 
           <button
             onClick={() => setShowInvoiceModal(true)}
             className="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-mono font-semibold uppercase tracking-wider hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
           >
-            <IconPrinter size={16} /> View & Print Invoice
+            <IconPrinter size={16} /> View & Print Request
           </button>
         </div>
 
         {/* Order Step Timeline */}
         <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs my-8 space-y-6">
           <h2 className="text-xs font-mono uppercase tracking-wider text-neutral-400 font-bold">
-            Order Status & Timeline
+            Request timeline saved in this browser · Contact the studio for current status
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 relative">
@@ -78,7 +80,7 @@ export default function OrderDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 my-8">
           <div className="lg:col-span-8 p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs space-y-6">
             <h2 className="text-base font-bold text-neutral-900 dark:text-white font-mono uppercase tracking-wider pb-4 border-b border-neutral-200 dark:border-neutral-800">
-              Purchased Items ({order.items.length})
+              Requested Items ({order.items.length})
             </h2>
 
             <div className="space-y-4">
@@ -112,7 +114,7 @@ export default function OrderDetailPage({
               <div>{order.shippingAddress.street}</div>
               <div>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}</div>
               <div>{order.shippingAddress.country}</div>
-              <div className="pt-2 text-amber-600 dark:text-amber-400">Phone: {order.shippingAddress.phone}</div>
+              <div className="pt-2 text-lime-600 dark:text-lime-400">Phone: {order.shippingAddress.phone}</div>
             </div>
 
             <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800 space-y-2 font-mono text-xs text-neutral-600 dark:text-neutral-300">
@@ -121,8 +123,8 @@ export default function OrderDetailPage({
               <div className="flex justify-between"><span>Shipping</span><span>${order.shippingFee.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>Tax</span><span>${order.tax.toFixed(2)}</span></div>
               <div className="flex justify-between pt-3 border-t border-neutral-200 dark:border-neutral-800 font-bold text-base text-neutral-900 dark:text-white">
-                <span>Total Paid</span>
-                <span className="text-amber-600 dark:text-amber-400">${order.total.toFixed(2)}</span>
+                <span>Estimated total · due on delivery</span>
+                <span className="text-lime-600 dark:text-lime-400">${order.total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -142,10 +144,10 @@ export default function OrderDetailPage({
               <div className="flex justify-between border-b pb-4">
                 <div>
                   <h2 className="text-xl font-bold uppercase tracking-wider">ZeroCraft Store</h2>
-                  <p className="text-[10px] text-neutral-500">store.zerocraft.in • Official Tax Invoice</p>
+                  <p className="text-[10px] text-neutral-500">Order request summary · Not a tax invoice</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-sm">INVOICE #{order.orderNumber}</span>
+                  <span className="font-bold text-sm">REQUEST #{order.orderNumber}</span>
                   <p className="text-[10px] text-neutral-500">{order.date}</p>
                 </div>
               </div>
@@ -186,7 +188,7 @@ export default function OrderDetailPage({
               <div className="flex justify-end pt-2 text-right">
                 <div className="space-y-1 w-48">
                   <div className="flex justify-between"><span>Subtotal:</span><span>${order.subtotal.toFixed(2)}</span></div>
-                  <div className="flex justify-between font-bold text-sm pt-2 border-t"><span>Total Paid:</span><span>${order.total.toFixed(2)}</span></div>
+                  <div className="flex justify-between font-bold text-sm pt-2 border-t"><span>Estimated total · unpaid:</span><span>${order.total.toFixed(2)}</span></div>
                 </div>
               </div>
 
@@ -196,7 +198,7 @@ export default function OrderDetailPage({
                   onClick={() => window.print()}
                   className="px-4 py-2 rounded-lg bg-black text-white font-bold uppercase"
                 >
-                  Print Invoice PDF
+                  Print Request Summary
                 </button>
               </div>
             </div>

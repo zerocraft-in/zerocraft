@@ -40,12 +40,12 @@ export default function StoreHeader() {
   }, []);
 
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Shop", href: "/shop" },
-    { label: "Categories", href: "/shop#categories" },
-    { label: "Custom Products", href: "/shop?category=customized-gifts" },
-    { label: "About", href: "/about" },
-    { label: "Contact", href: "/contact" },
+    { label: "Home", href: "/store" },
+    { label: "Shop", href: "/store/shop" },
+    { label: "Categories", href: "/store/shop#categories" },
+    { label: "Custom Products", href: "/store/shop?category=customized-gifts" },
+    { label: "About", href: "/store/about" },
+    { label: "Contact", href: "/store/contact" },
   ];
 
   return (
@@ -60,7 +60,7 @@ export default function StoreHeader() {
         <div className="container-site flex items-center justify-between">
           {/* Logo */}
           <Link
-            href="/"
+            href="/store"
             className="flex items-center gap-2.5 group"
             aria-label="ZeroCraft Store Home"
           >
@@ -102,7 +102,7 @@ export default function StoreHeader() {
                   {isActive && (
                     <motion.span
                       layoutId="activeNavIndicator"
-                      className="absolute bottom-0 inset-x-0 h-0.5 bg-amber-500 rounded-full"
+                      className="absolute bottom-0 inset-x-0 h-0.5 bg-lime-500 rounded-full"
                     />
                   )}
                 </Link>
@@ -124,7 +124,7 @@ export default function StoreHeader() {
 
             {/* Wishlist Button */}
             <Link
-              href="/wishlist"
+              href="/store/wishlist"
               aria-label="Wishlist"
               className="relative p-2.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
             >
@@ -145,7 +145,7 @@ export default function StoreHeader() {
               <IconShoppingBag size={17} />
               <span className="hidden sm:inline font-mono">Cart</span>
               {totalCartCount > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-mono font-bold text-black ml-1">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-lime-500 text-[10px] font-mono font-bold text-black ml-1">
                   {totalCartCount}
                 </span>
               )}
@@ -153,7 +153,7 @@ export default function StoreHeader() {
 
             {/* Account Profile Link */}
             <Link
-              href="/account"
+              href="/store/account"
               aria-label="Account Profile"
               className="hidden sm:flex p-2.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
             >
@@ -167,7 +167,7 @@ export default function StoreHeader() {
                 aria-label="Toggle dark/light mode"
                 className="p-2.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
               >
-                {theme === "dark" ? <IconSun size={19} className="text-amber-400" /> : <IconMoon size={19} />}
+                {theme === "dark" ? <IconSun size={19} className="text-lime-400" /> : <IconMoon size={19} />}
               </button>
             )}
 
@@ -198,22 +198,22 @@ export default function StoreHeader() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-xl font-bold text-neutral-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
+                  className="text-xl font-bold text-neutral-900 dark:text-white hover:text-lime-600 dark:hover:text-lime-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
                 >
                   {link.label}
                 </Link>
               ))}
               <Link
-                href="/account"
+                href="/store/account"
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-xl font-bold text-neutral-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
+                className="text-xl font-bold text-neutral-900 dark:text-white hover:text-lime-600 dark:hover:text-lime-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
               >
                 My Account Profile
               </Link>
               <Link
-                href="/wishlist"
+                href="/store/wishlist"
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-xl font-bold text-neutral-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
+                className="text-xl font-bold text-neutral-900 dark:text-white hover:text-lime-600 dark:hover:text-lime-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
               >
                 Wishlist ({wishlistCount})
               </Link>
@@ -221,7 +221,7 @@ export default function StoreHeader() {
 
             <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800 text-center">
               <p className="text-xs font-mono text-neutral-400 mb-2">
-                store.zerocraft.in • Crafted with Passion
+                Zerocraft Studio · Tenkasi, India
               </p>
               <button
                 onClick={() => setMobileMenuOpen(false)}

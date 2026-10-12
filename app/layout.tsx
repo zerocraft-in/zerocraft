@@ -28,9 +28,7 @@ export const metadata: Metadata = {
   creator: "Zerocraft Studio",
   robots: { index: true, follow: true },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-32x32.png",
-    apple: "/apple-touch-icon.png",
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
   },
 };
 
@@ -40,7 +38,7 @@ const jsonLd = {
   "@id": `${studio.url}/#organization`,
   name: "Zerocraft Studio",
   url: studio.url,
-  logo: `${studio.url}/favicon.ico`,
+  logo: `${studio.url}/icon.svg`,
   image: `${studio.url}/og-image.jpg`,
   description: studio.description,
   email: studio.email,

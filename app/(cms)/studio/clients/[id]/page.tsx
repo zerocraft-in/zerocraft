@@ -229,7 +229,7 @@ export default function ClientDetailPage({
                   {client.company}
                 </span>
                 <span>•</span>
-                <span>Client Since {new Date(client.created_at || Date.now()).getFullYear()}</span>
+                <span>Client Since {client.created_at ? new Date(client.created_at).getFullYear() : "—"}</span>
               </div>
             </div>
           </div>

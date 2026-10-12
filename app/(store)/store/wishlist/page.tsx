@@ -26,7 +26,7 @@ export default function WishlistPage() {
         {/* Page Title */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 my-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
           <div>
-            <span className="text-label text-amber-600 dark:text-amber-400 mb-2 block">
+            <span className="text-label text-lime-600 dark:text-lime-400 mb-2 block">
               Saved Pieces
             </span>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -63,8 +63,8 @@ export default function WishlistPage() {
               Save your favorite posters, frames, and customized gifts to review them later or move them directly into your shopping cart.
             </p>
             <Link
-              href="/shop"
-              className="inline-flex px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold text-xs uppercase tracking-wider hover:bg-amber-400 transition-colors"
+              href="/store/shop"
+              className="inline-flex px-6 py-3 rounded-xl bg-lime-500 text-black font-semibold text-xs uppercase tracking-wider hover:bg-lime-400 transition-colors"
             >
               Explore Shop Catalog
             </Link>

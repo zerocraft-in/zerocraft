@@ -12,7 +12,7 @@ export default function CollectionsMarquee() {
       <div className="container-site mb-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <span className="text-label text-amber-400 mb-2 block">
+            <span className="text-label text-lime-400 mb-2 block">
               Curated Edit
             </span>
             <h2 className="text-3xl md:text-5xl font-semibold tracking-tight text-white">
@@ -46,7 +46,7 @@ export default function CollectionsMarquee() {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
             <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
-              <span className="inline-self-start font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-300 border border-white/10">
+              <span className="inline-self-start font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-lime-300 border border-white/10">
                 {col.tagline}
               </span>
 
@@ -56,8 +56,8 @@ export default function CollectionsMarquee() {
                   {col.description}
                 </p>
                 <Link
-                  href={`/shop?collection=${col.slug}`}
-                  className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-amber-400 font-semibold group-hover:translate-x-1 transition-transform"
+                  href={`/store/shop?collection=${col.slug}`}
+                  className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-lime-400 font-semibold group-hover:translate-x-1 transition-transform"
                 >
                   Explore Collection <IconArrowRight size={14} />
                 </Link>

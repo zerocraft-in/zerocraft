@@ -48,7 +48,7 @@ export default function CartPage() {
 
         <div className="my-8 pb-6 border-b border-neutral-200 dark:border-neutral-800 flex items-end justify-between">
           <div>
-            <span className="text-label text-amber-600 dark:text-amber-400 mb-2 block">
+            <span className="text-label text-lime-600 dark:text-lime-400 mb-2 block">
               Shopping Bag
             </span>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -76,8 +76,8 @@ export default function CartPage() {
               Looks like you haven&apos;t added any handcrafted posters, frames, or custom gifts to your bag yet.
             </p>
             <Link
-              href="/shop"
-              className="inline-flex px-8 py-4 rounded-2xl bg-amber-500 text-black font-semibold text-xs uppercase tracking-wider hover:bg-amber-400 transition-colors"
+              href="/store/shop"
+              className="inline-flex px-8 py-4 rounded-2xl bg-lime-500 text-black font-semibold text-xs uppercase tracking-wider hover:bg-lime-400 transition-colors"
             >
               Explore Shop Catalog
             </Link>
@@ -105,8 +105,8 @@ export default function CartPage() {
 
                       <div className="min-w-0 flex-1">
                         <Link
-                          href={`/product/${item.product.id}`}
-                          className="text-base font-bold text-neutral-900 dark:text-white line-clamp-1 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                          href={`/store/product/${item.product.id}`}
+                          className="text-base font-bold text-neutral-900 dark:text-white line-clamp-1 hover:text-lime-600 dark:hover:text-lime-400 transition-colors"
                         >
                           {item.product.title}
                         </Link>
@@ -165,7 +165,7 @@ export default function CartPage() {
               {/* Gift Note Box */}
               <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs">
                 <div className="flex items-center gap-2 mb-3">
-                  <IconGift size={18} className="text-amber-500" />
+                  <IconGift size={18} className="text-lime-500" />
                   <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                     Add Complimentary Gift Note
                   </h3>
@@ -175,7 +175,7 @@ export default function CartPage() {
                   value={giftNote}
                   onChange={(e) => setGiftNote(e.target.value)}
                   placeholder="Enter custom gift message to be hand-written on silk card insert..."
-                  className="w-full p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:border-amber-400 resize-none font-light"
+                  className="w-full p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:border-lime-400 resize-none font-light"
                 />
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function CartPage() {
                         value={inputCoupon}
                         onChange={(e) => setInputCoupon(e.target.value)}
                         placeholder="CRAFT10"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 uppercase font-mono text-xs focus:outline-none focus:border-amber-400"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 uppercase font-mono text-xs focus:outline-none focus:border-lime-400"
                       />
                     </div>
                     <button
@@ -234,14 +234,14 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between pt-4 border-t border-neutral-200 dark:border-neutral-800 text-base font-bold text-neutral-900 dark:text-white">
                     <span>Order Total</span>
-                    <span className="text-xl text-amber-600 dark:text-amber-400">${grandTotal.toFixed(2)}</span>
+                    <span className="text-xl text-lime-600 dark:text-lime-400">${grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
                 {/* Checkout CTA */}
                 <Link
-                  href="/checkout"
-                  className="w-full py-4 px-6 rounded-2xl bg-amber-500 text-black font-bold text-xs uppercase tracking-wider text-center hover:bg-amber-400 transition-colors flex items-center justify-center gap-2 shadow-lg"
+                  href="/store/checkout"
+                  className="w-full py-4 px-6 rounded-2xl bg-lime-500 text-black font-bold text-xs uppercase tracking-wider text-center hover:bg-lime-400 transition-colors flex items-center justify-center gap-2 shadow-lg"
                 >
                   Proceed to Checkout <IconArrowRight size={18} />
                 </Link>

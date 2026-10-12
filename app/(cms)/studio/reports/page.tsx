@@ -1,109 +1,74 @@
 "use client";
 
-import React from "react";
-import { IconChartBar, IconDownload, IconTrendingUp, IconCurrencyDollar, IconUsers, IconCalendar, IconArrowUpRight } from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase-client";
+
+type Order = { id: string; order_number: string; status: string; payment_status: string; total: number; currency: string; created_at: string };
+type Summary = { orders: Order[]; clients: number; appointments: number; works: number; blogs: number; truncated: boolean };
+
+const empty: Summary = { orders: [], clients: 0, appointments: 0, works: 0, blogs: 0, truncated: false };
 
 export default function StudioReportsPage() {
-  const handleExportCSV = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8,Month,Revenue,Appointments,New Clients,Conversion Rate\nMay 2026,$58000,32,12,21.5%\nJune 2026,$64200,38,15,23.0%\nJuly 2026,$73500,42,18,24.8%";
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "zerocraft_studio_report_2026.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const [summary, setSummary] = useState<Summary>(empty);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const [orders, clients, appointments, works, blogs] = await Promise.all([
+      supabase.from("store_orders").select("id,order_number,status,payment_status,total,currency,created_at").order("created_at", { ascending: false }).limit(501),
+      supabase.from("clients").select("id", { count: "exact", head: true }),
+      supabase.from("appointments").select("id", { count: "exact", head: true }),
+      supabase.from("works").select("id", { count: "exact", head: true }),
+      supabase.from("blogs").select("id", { count: "exact", head: true }),
+    ]);
+    const failure = [orders, clients, appointments, works, blogs].find((result) => result.error);
+    if (failure?.error) {
+      setError("Studio data could not be loaded. Check the Supabase connection and apply the admin MVP migration.");
+    } else {
+      setError(null);
+      setSummary({ orders: ((orders.data || []).slice(0, 500)) as Order[], clients: clients.count || 0, appointments: appointments.count || 0, works: works.count || 0, blogs: blogs.count || 0, truncated: (orders.data?.length || 0) > 500 });
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { let active = true; void Promise.resolve().then(() => { if (active) void load(); }); return () => { active = false; }; }, [load]);
+
+  const byStatus = summary.orders.reduce<Record<string, number>>((totals, order) => {
+    totals[order.status] = (totals[order.status] || 0) + 1;
+    return totals;
+  }, {});
+  const paidByCurrency = summary.orders.filter((order) => order.payment_status === "paid" && order.status !== "cancelled").reduce<Record<string, number>>((totals, order) => { totals[order.currency] = (totals[order.currency] || 0) + Number(order.total || 0); return totals; }, {});
+
+  function exportCsv() {
+    const cell = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
+    const rows = [["Order", "Status", "Total", "Currency", "Created"], ...summary.orders.map((order) => [order.order_number, order.status, order.total, order.currency, order.created_at])];
+    const csv = "\uFEFF" + rows.map((row) => row.map(cell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "zerocraft-store-orders.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-medium tracking-tight text-foreground flex items-center gap-2.5">
-            <IconChartBar className="w-6 h-6 text-[#22C55E]" /> Reports
-          </h1>
-          <p className="text-xs text-muted-foreground font-normal mt-0.5">
-            Comprehensive studio performance, revenue trajectory, and client conversion analytics.
-          </p>
-        </div>
-
-        <button
-          onClick={handleExportCSV}
-          className="px-4 py-2.5 rounded-xl bg-muted border border-border hover:bg-accent text-foreground font-semibold text-xs transition-all shadow-md flex items-center gap-2 self-start sm:self-auto"
-        >
-          <IconDownload className="w-4 h-4 text-purple-400" /> Export CSV Report
-        </button>
+    <main className="mx-auto max-w-6xl space-y-8 pb-12">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div><p className="text-xs font-mono uppercase tracking-widest text-muted-foreground">Studio / Analytics</p><h1 className="mt-2 text-4xl font-semibold tracking-[-.06em]">Reports<span className="text-[#a5ce00]">.</span></h1><p className="mt-2 text-sm text-muted-foreground">Live record counts and order activity. Monetary totals include only orders marked paid.</p></div>
+        <div className="flex gap-2"><button type="button" onClick={() => { setLoading(true); void load(); }} className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-muted">Refresh</button><button type="button" disabled={!summary.orders.length} onClick={exportCsv} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">Export orders CSV</button></div>
       </div>
-
-      {/* Financial Summary Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-2xl bg-muted/70 border border-border space-y-3">
-          <div className="text-xs text-muted-foreground font-medium">Q3 YTD Gross Revenue</div>
-          <div className="text-3xl font-extrabold text-foreground">$195,700.00</div>
-          <div className="text-xs text-emerald-400 font-medium flex items-center gap-1">
-            <IconTrendingUp className="w-3.5 h-3.5" /> +18.4% compared to Q2
-          </div>
+      {loading && <p role="status" className="text-sm text-muted-foreground">Loading studio records…</p>}
+      {error && <p role="alert" className="rounded-lg border border-destructive/40 p-4 text-sm text-destructive">{error}</p>}
+      {!loading && !error && <>
+        {summary.truncated && <p role="status" className="rounded-lg border border-amber-500/30 p-3 text-sm">Order status, value, and CSV below cover only the latest 500 records. Use a paginated export for complete history.</p>}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {[["Store orders", summary.orders.length], ["Clients", summary.clients], ["Appointments", summary.appointments], ["Works", summary.works], ["Blogs", summary.blogs]].map(([label, value]) => <div key={label} className="rounded-xl border border-border bg-card p-5"><p className="text-xs text-muted-foreground">{label}</p><strong className="mt-3 block text-3xl font-semibold">{value}</strong></div>)}
         </div>
-
-        <div className="p-6 rounded-2xl bg-muted/70 border border-border space-y-3">
-          <div className="text-xs text-muted-foreground font-medium">Average Deal Size</div>
-          <div className="text-3xl font-extrabold text-foreground">$24,462.00</div>
-          <div className="text-xs text-purple-400 font-medium">
-            Based on enterprise retainers
-          </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <section className="rounded-xl border border-border bg-card p-6"><h2 className="text-lg font-semibold">Order status</h2><p className="mt-1 text-sm text-muted-foreground">Current state of persisted store orders.</p>{summary.orders.length ? <dl className="mt-5 space-y-3">{Object.entries(byStatus).map(([status, count]) => <div key={status} className="flex justify-between border-b border-border pb-2 text-sm"><dt className="capitalize">{status}</dt><dd>{count}</dd></div>)}</dl> : <p className="mt-5 text-sm text-muted-foreground">No store orders yet.</p>}</section>
+          <section className="rounded-xl border border-border bg-card p-6"><h2 className="text-lg font-semibold">Paid order value</h2><p className="mt-1 text-sm text-muted-foreground">Orders explicitly marked paid, excluding cancelled. This is not a processor settlement report.</p>{Object.entries(paidByCurrency).length ? Object.entries(paidByCurrency).map(([currency, amount]) => <strong key={currency} className="mt-5 block text-3xl font-semibold">{new Intl.NumberFormat("en", { style: "currency", currency }).format(amount)}</strong>) : <p className="mt-8 text-sm text-muted-foreground">No paid orders recorded.</p>}</section>
         </div>
-
-        <div className="p-6 rounded-2xl bg-muted/70 border border-border space-y-3">
-          <div className="text-xs text-muted-foreground font-medium">Client Retention Rate</div>
-          <div className="text-3xl font-extrabold text-foreground">94.2%</div>
-          <div className="text-xs text-blue-400 font-medium">
-            Top tier studio benchmark
-          </div>
-        </div>
-      </div>
-
-      {/* Monthly Trajectory Table */}
-      <div className="p-6 rounded-2xl bg-muted/70 border border-border space-y-4">
-        <h2 className="text-base font-bold text-foreground">Monthly Performance Breakdown (2026)</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-foreground">
-            <thead className="bg-background/80 uppercase text-[10px] text-muted-foreground border-b border-border">
-              <tr>
-                <th className="p-3">Month</th>
-                <th className="p-3">Gross Revenue</th>
-                <th className="p-3">Completed Projects</th>
-                <th className="p-3">Appointments</th>
-                <th className="p-3">Conversion Rate</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60">
-              <tr className="hover:bg-accent transition-colors">
-                <td className="p-3 font-semibold text-foreground">July 2026</td>
-                <td className="p-3 text-emerald-400 font-bold">$73,500.00</td>
-                <td className="p-3">4 Projects</td>
-                <td className="p-3">42 Sessions</td>
-                <td className="p-3 text-purple-400 font-medium">24.8%</td>
-              </tr>
-              <tr className="hover:bg-accent transition-colors">
-                <td className="p-3 font-semibold text-foreground">June 2026</td>
-                <td className="p-3 text-emerald-400 font-bold">$64,200.00</td>
-                <td className="p-3">3 Projects</td>
-                <td className="p-3">38 Sessions</td>
-                <td className="p-3 text-purple-400 font-medium">23.0%</td>
-              </tr>
-              <tr className="hover:bg-accent transition-colors">
-                <td className="p-3 font-semibold text-foreground">May 2026</td>
-                <td className="p-3 text-emerald-400 font-bold">$58,000.00</td>
-                <td className="p-3">3 Projects</td>
-                <td className="p-3">32 Sessions</td>
-                <td className="p-3 text-purple-400 font-medium">21.5%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+      </>}
+    </main>
   );
 }

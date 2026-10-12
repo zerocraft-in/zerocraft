@@ -84,15 +84,13 @@ export default function StudioClientsCRUD() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    let active = true;
     fetchClientsFromSupabase().then((data) => {
-      if (data) {
-        setClients(data as any);
-      } else {
-        setClients([]);
-      }
+      if (!active) return;
+      setClients(data ? data as any : []);
       setLoading(false);
     });
+    return () => { active = false; };
   }, []);
 
   const [formData, setFormData] = useState({

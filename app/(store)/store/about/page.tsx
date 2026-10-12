@@ -1,90 +1,25 @@
-import Image from "next/image";
 import Link from "next/link";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
-import { IconSparkles, IconShieldCheck, IconHeart, IconArrowRight } from "@tabler/icons-react";
+import { IconArrowUpRight } from "@tabler/icons-react";
 
-export default function AboutPage() {
+export default function StoreAboutPage() {
   return (
-    <div className="py-8 min-h-screen">
-      <div className="container-site">
-        <Breadcrumbs items={[{ label: "About Store" }]} />
-
-        {/* Hero Banner */}
-        <div className="my-12 max-w-3xl">
-          <span className="text-label text-amber-600 dark:text-amber-400 mb-3 block">
-            Our Brand Story
-          </span>
-          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-neutral-900 dark:text-white leading-tight mb-6">
-            Crafted with Passion. <br /> Delivered with Care.
-          </h1>
-          <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-300 font-light leading-relaxed">
-            ZeroCraft Store was founded on a simple philosophy: to bridge the gap between architectural minimalism, fine art printing, and functional desk objects. Every single poster, photo frame, notebook, and customized keepsake is produced with uncompromising quality.
-          </p>
+    <div className="container-site min-h-screen py-8">
+      <Breadcrumbs items={[{ label: "About the Store" }]} />
+      <section className="my-12 max-w-4xl border-t border-neutral-200 pt-12 dark:border-neutral-800">
+        <span className="font-mono text-xs uppercase tracking-widest text-lime-600">Zerocraft / Store Concept</span>
+        <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-6xl">Objects and ideas for considered spaces.</h1>
+        <p className="mt-8 max-w-2xl text-lg leading-relaxed text-neutral-600 dark:text-neutral-400">
+          This is a preview catalog from Zerocraft Studio, a creative and digital studio based in Tenkasi, Tamil Nadu, India. It explores prints, frames, desk objects, and personalized products through the studio&apos;s design perspective.
+        </p>
+        <p className="mt-5 max-w-2xl text-neutral-600 dark:text-neutral-400">
+          Product descriptions, materials, pricing, and availability are draft content. The studio will confirm the details of any order request before fulfillment. No online payment is collected here.
+        </p>
+        <div className="mt-10 flex flex-wrap gap-4">
+          <Link href="/store/shop" className="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-6 py-4 font-mono text-xs font-semibold uppercase tracking-wider text-white hover:bg-lime-400 hover:text-black dark:bg-white dark:text-black">Explore the catalog <IconArrowUpRight size={18} /></Link>
+          <Link href="/store/contact" className="inline-flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-4 font-mono text-xs font-semibold uppercase tracking-wider dark:border-neutral-700">Ask the studio <IconArrowUpRight size={18} /></Link>
         </div>
-
-        {/* Visual Showcase Banner */}
-        <div className="relative aspect-21/9 w-full rounded-3xl overflow-hidden my-12 bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80">
-          <Image
-            src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1600&auto=format&fit=crop"
-            alt="ZeroCraft Studio Workspace"
-            fill
-            sizes="100vw"
-            className="object-cover opacity-75"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-          <div className="absolute bottom-8 left-8 right-8 text-white max-w-xl">
-            <span className="text-xs font-mono uppercase text-amber-400">Tokyo & San Francisco Studios</span>
-            <h3 className="text-2xl font-bold">Where Japanese precision meets modern minimalism.</h3>
-          </div>
-        </div>
-
-        {/* Brand Pillars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-20">
-          <div className="p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <IconShieldCheck size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-white">Archival Grade Materials</h3>
-            <p className="text-xs text-neutral-500 font-light leading-relaxed">
-              We exclusively source 300gsm Japanese cotton paper, FSC-certified North American white oak, and Horween full-grain leather for longevity.
-            </p>
-          </div>
-
-          <div className="p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <IconSparkles size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-white">Bespoke Personalization</h3>
-            <p className="text-xs text-neutral-500 font-light leading-relaxed">
-              Custom laser monograms, initial engravings, and silk-lined gift hampers tailored specifically for your special occasions.
-            </p>
-          </div>
-
-          <div className="p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <IconHeart size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-white">Sustainable Crafting</h3>
-            <p className="text-xs text-neutral-500 font-light leading-relaxed">
-              Zero plastic packaging. Every poster tube and box is crafted from 100% recycled paperboard and printed with soy-based inks.
-            </p>
-          </div>
-        </div>
-
-        {/* CTA Box */}
-        <div className="p-12 rounded-3xl bg-neutral-900 text-white text-center my-16 max-w-4xl mx-auto space-y-6">
-          <h2 className="text-3xl font-bold tracking-tight">Experience ZeroCraft Craftsmanship</h2>
-          <p className="text-sm text-neutral-400 max-w-xl mx-auto font-light">
-            Explore our curated catalog of 24 handcrafted products designed to elevate your living room, studio, or office workspace.
-          </p>
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-amber-400 text-black font-semibold text-xs uppercase tracking-wider hover:bg-amber-300 transition-colors"
-          >
-            Shop Entire Collection <IconArrowRight size={16} />
-          </Link>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

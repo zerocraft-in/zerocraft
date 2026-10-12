@@ -24,7 +24,7 @@ export default function SearchPage() {
         <Breadcrumbs items={[{ label: "Search" }]} />
 
         <div className="max-w-2xl my-8">
-          <span className="text-label text-amber-600 dark:text-amber-400 mb-2 block">
+          <span className="text-label text-lime-600 dark:text-lime-400 mb-2 block">
             Instant Search
           </span>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white mb-6">
@@ -39,7 +39,7 @@ export default function SearchPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by title, material, category, tag..."
-              className="w-full pl-12 pr-10 py-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-base text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:border-amber-400 shadow-sm"
+              className="w-full pl-12 pr-10 py-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-base text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:border-lime-400 shadow-sm"
             />
             {query && (
               <button onClick={() => setQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">

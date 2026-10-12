@@ -10,7 +10,6 @@ import { PRODUCTS } from "@/lib/data/storeData";
 import { useStore } from "@/lib/store/useStore";
 import { toast } from "sonner";
 import {
-  IconStarFilled,
   IconShoppingBag,
   IconHeart,
   IconHeartFilled,
@@ -18,7 +17,6 @@ import {
   IconTruck,
   IconShieldCheck,
   IconRefresh,
-  IconCheck,
   IconChevronDown,
   IconChevronUp,
 } from "@tabler/icons-react";
@@ -42,9 +40,6 @@ export default function ProductDetailPage({
   const [isZoomed, setIsZoomed] = useState(false);
 
   const isWishlisted = isInWishlist(product.id);
-  const discountPercent = Math.round(
-    ((product.originalPrice - product.price) / product.originalPrice) * 100
-  );
 
   const handleAddToCart = () => {
     addToCart(product, quantity, selectedColor, selectedSize);
@@ -53,7 +48,7 @@ export default function ProductDetailPage({
 
   const handleBuyNow = () => {
     addToCart(product, quantity, selectedColor, selectedSize);
-    router.push("/checkout");
+    router.push("/store/checkout");
   };
 
   const handleShare = () => {
@@ -72,8 +67,8 @@ export default function ProductDetailPage({
       <div className="container-site">
         <Breadcrumbs
           items={[
-            { label: "Shop", href: "/shop" },
-            { label: product.category, href: `/category/${product.categorySlug}` },
+            { label: "Shop", href: "/store/shop" },
+            { label: product.category, href: `/store/category/${product.categorySlug}` },
             { label: product.title },
           ]}
         />
@@ -111,7 +106,7 @@ export default function ProductDetailPage({
                     onClick={() => setActiveImageIndex(idx)}
                     className={`relative h-20 w-20 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
                       activeImageIndex === idx
-                        ? "border-amber-500 scale-105 shadow-md"
+                        ? "border-lime-500 scale-105 shadow-md"
                         : "border-transparent opacity-60 hover:opacity-100"
                     }`}
                   >
@@ -128,9 +123,7 @@ export default function ProductDetailPage({
               {/* Category, Brand & Stock */}
               <div className="flex items-center justify-between text-xs font-mono text-neutral-400 mb-2">
                 <span>{product.brand} • {product.category}</span>
-                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                  <IconCheck size={14} /> In Stock ({product.stock} left)
-                </span>
+                <span className="text-lime-600 dark:text-lime-400">Catalog preview</span>
               </div>
 
               {/* Title */}
@@ -138,33 +131,17 @@ export default function ProductDetailPage({
                 {product.title}
               </h1>
 
-              {/* Rating & Reviews */}
+              {/* Product reference */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center gap-1 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                  <IconStarFilled size={16} className="text-amber-400" />
-                  <span>{product.rating}</span>
-                </div>
-                <span className="text-xs text-neutral-400 font-mono">
-                  ({product.reviewCount} customer reviews)
-                </span>
                 <span className="text-xs font-mono text-neutral-400">SKU: {product.sku}</span>
+                <span className="text-xs font-mono text-neutral-400">Availability confirmed after request</span>
               </div>
 
-              {/* Price & Discounts */}
+              {/* Draft price */}
               <div className="flex items-baseline gap-4 mb-6 p-4 rounded-2xl bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200/80 dark:border-neutral-800/80">
                 <span className="text-3xl font-bold font-mono text-neutral-900 dark:text-white">
-                  ${product.price.toFixed(2)}
+                  ${product.price.toFixed(2)} est.
                 </span>
-                {product.originalPrice > product.price && (
-                  <>
-                    <span className="text-base text-neutral-400 line-through font-mono">
-                      ${product.originalPrice.toFixed(2)}
-                    </span>
-                    <span className="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-500 text-white">
-                      Save {discountPercent}%
-                    </span>
-                  </>
-                )}
               </div>
 
               {/* Short Description */}
@@ -185,7 +162,7 @@ export default function ProductDetailPage({
                         onClick={() => setSelectedColor(color.name)}
                         className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono border transition-all ${
                           selectedColor === color.name
-                            ? "border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold"
+                            ? "border-lime-500 bg-lime-500/10 text-lime-700 dark:text-lime-300 font-semibold"
                             : "border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400"
                         }`}
                       >
@@ -272,7 +249,7 @@ export default function ProductDetailPage({
               {/* Direct Buy Now */}
               <button
                 onClick={handleBuyNow}
-                className="w-full py-4 px-6 rounded-2xl bg-amber-500 text-black font-bold text-xs uppercase tracking-wider hover:bg-amber-400 transition-colors shadow-md"
+                className="w-full py-4 px-6 rounded-2xl bg-lime-500 text-black font-bold text-xs uppercase tracking-wider hover:bg-lime-400 transition-colors shadow-md"
               >
                 Buy Now — Instant Checkout
               </button>
@@ -280,11 +257,11 @@ export default function ProductDetailPage({
               {/* Guarantees */}
               <div className="grid grid-cols-2 gap-3 pt-4 text-xs font-mono text-neutral-500">
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-neutral-100/60 dark:bg-neutral-900/60">
-                  <IconTruck size={18} className="text-amber-500 shrink-0" />
+                  <IconTruck size={18} className="text-lime-500 shrink-0" />
                   <span>Ships in 24-48 Hours</span>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-neutral-100/60 dark:bg-neutral-900/60">
-                  <IconShieldCheck size={18} className="text-amber-500 shrink-0" />
+                  <IconShieldCheck size={18} className="text-lime-500 shrink-0" />
                   <span>30-Day Return Guarantee</span>
                 </div>
               </div>
@@ -299,7 +276,7 @@ export default function ProductDetailPage({
               onClick={() => setActiveTab("specs")}
               className={`pb-4 transition-colors font-semibold ${
                 activeTab === "specs"
-                  ? "text-neutral-900 dark:text-white border-b-2 border-amber-500"
+                  ? "text-neutral-900 dark:text-white border-b-2 border-lime-500"
                   : "text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
@@ -309,7 +286,7 @@ export default function ProductDetailPage({
               onClick={() => setActiveTab("shipping")}
               className={`pb-4 transition-colors font-semibold ${
                 activeTab === "shipping"
-                  ? "text-neutral-900 dark:text-white border-b-2 border-amber-500"
+                  ? "text-neutral-900 dark:text-white border-b-2 border-lime-500"
                   : "text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
@@ -343,7 +320,7 @@ export default function ProductDetailPage({
               <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">
                 You May Also Like
               </h2>
-              <Link href={`/category/${product.categorySlug}`} className="text-xs font-mono text-amber-600 dark:text-amber-400 hover:underline">
+              <Link href={`/store/category/${product.categorySlug}`} className="text-xs font-mono text-lime-600 dark:text-lime-400 hover:underline">
                 View all in {product.category} →
               </Link>
             </div>

@@ -35,7 +35,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect the studio routes
+  // Protect the studio routes. Authentication alone does not grant staff access.
   if (
     !user &&
     request.nextUrl.pathname.startsWith("/studio") &&
@@ -45,6 +45,16 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
+  }
+
+  if (user && request.nextUrl.pathname.startsWith("/studio") && !request.nextUrl.pathname.startsWith("/studio/auth/callback")) {
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+    const isOwner = user.email === "ivd.maran@gmail.com";
+    if (!isOwner && !["admin", "manager", "staff"].includes(profile?.role || "")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
   }
 
   // Redirect to studio if already logged in and visiting login page

@@ -12,6 +12,7 @@ export default function robots(): MetadataRoute.Robots {
         "/store/account",
         "/store/cart",
         "/store/checkout",
+        "/store/",
       ],
     },
     sitemap: `${studio.url}/sitemap.xml`,

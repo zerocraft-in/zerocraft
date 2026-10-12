@@ -1,17 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
-
-// Live Supabase Environment Credentials
-const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jamyqssytdzbiiahtmsq.supabase.co";
-const supabaseAnonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  "sb_publishable_-9gtyTERobgc00bkJ_nlrw_cJtldYRW";
+import { createClient } from "@/utils/supabase/client";
 
 export const isSupabaseConfigured = true;
 
 // Supabase client instance connected to live backend
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient();
 
 // Role Based Access Control Types
 export type UserRole = "admin" | "manager" | "staff" | "client";
@@ -51,7 +43,10 @@ export async function createBlogInSupabase(blog: Record<string, any>) {
   return data;
 }
 
-export async function updateBlogInSupabase(id: string, updates: Record<string, any>) {
+export async function updateBlogInSupabase(
+  id: string,
+  updates: Record<string, any>,
+) {
   const { data, error } = await supabase
     .from("blogs")
     .update(updates)
@@ -93,7 +88,10 @@ export async function createWorkInSupabase(work: Record<string, any>) {
   return data;
 }
 
-export async function updateWorkInSupabase(id: string, updates: Record<string, any>) {
+export async function updateWorkInSupabase(
+  id: string,
+  updates: Record<string, any>,
+) {
   const { data, error } = await supabase
     .from("works")
     .update(updates)
@@ -135,7 +133,10 @@ export async function createReviewInSupabase(review: Record<string, any>) {
   return data;
 }
 
-export async function updateReviewInSupabase(id: string, updates: Record<string, any>) {
+export async function updateReviewInSupabase(
+  id: string,
+  updates: Record<string, any>,
+) {
   const { data, error } = await supabase
     .from("reviews")
     .update(updates)
@@ -192,7 +193,10 @@ export async function createClientInSupabase(client: Record<string, any>) {
   return data;
 }
 
-export async function updateClientInSupabase(id: string, updates: Record<string, any>) {
+export async function updateClientInSupabase(
+  id: string,
+  updates: Record<string, any>,
+) {
   const { data, error } = await supabase
     .from("clients")
     .update(updates)
@@ -224,7 +228,9 @@ export async function fetchAppointmentsFromSupabase() {
   }
 }
 
-export async function createAppointmentInSupabase(appointment: Record<string, any>) {
+export async function createAppointmentInSupabase(
+  appointment: Record<string, any>,
+) {
   const { data, error } = await supabase
     .from("appointments")
     .insert([appointment])
@@ -234,7 +240,10 @@ export async function createAppointmentInSupabase(appointment: Record<string, an
   return data;
 }
 
-export async function updateAppointmentInSupabase(id: string, updates: Record<string, any>) {
+export async function updateAppointmentInSupabase(
+  id: string,
+  updates: Record<string, any>,
+) {
   const { data, error } = await supabase
     .from("appointments")
     .update(updates)
@@ -288,11 +297,15 @@ export async function updateProfileRoleInSupabase(id: string, role: UserRole) {
   return data;
 }
 
-export async function ensureUserProfile(user: { id: string; email?: string; user_metadata?: any }) {
+export async function ensureUserProfile(user: {
+  id: string;
+  email?: string;
+  user_metadata?: any;
+}) {
   if (!user || !user.id || !user.email) return null;
 
   const isOwner = user.email === "ivd.maran@gmail.com";
-  const defaultRole: UserRole = isOwner ? "admin" : "staff";
+  const defaultRole: UserRole = isOwner ? "admin" : "client";
   const defaultName = isOwner
     ? "Maran (Owner)"
     : user.user_metadata?.full_name || user.email.split("@")[0];
@@ -302,21 +315,25 @@ export async function ensureUserProfile(user: { id: string; email?: string; user
     email: user.email,
     full_name: defaultName,
     role: defaultRole,
-    avatar_url:
-      user.user_metadata?.avatar_url ||
-      `https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&fit=crop`,
+    avatar_url: user.user_metadata?.avatar_url || null,
   };
 
   try {
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (existing) return existing;
     const { data } = await supabase
       .from("profiles")
-      .upsert(payload, { onConflict: "id" })
+      .insert(payload)
       .select()
       .single();
 
-    return data || payload;
+    return data || null;
   } catch {
-    return payload;
+    return null;
   }
 }
 
@@ -332,7 +349,9 @@ export interface StudioNotification {
   created_at: string;
 }
 
-export async function fetchNotificationsFromSupabase(): Promise<StudioNotification[]> {
+export async function fetchNotificationsFromSupabase(): Promise<
+  StudioNotification[]
+> {
   try {
     const { data, error } = await supabase
       .from("notifications")
@@ -375,7 +394,9 @@ export async function markAllNotificationsAsReadInSupabase() {
   }
 }
 
-export async function createNotificationInSupabase(notification: Omit<StudioNotification, "id" | "created_at">) {
+export async function createNotificationInSupabase(
+  notification: Omit<StudioNotification, "id" | "created_at">,
+) {
   try {
     const { data, error } = await supabase
       .from("notifications")

@@ -1,10 +1,10 @@
-"use client";
 import "./globals.css";
 import React from "react";
-import { JetBrains_Mono, Inter } from "next/font/google";
+import type { Metadata } from "next";
+import { JetBrains_Mono, Manrope } from "next/font/google";
 import { Providers } from "@/components/providers/provider";
 import { cn } from "@/lib/utils";
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
@@ -17,13 +17,14 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
 });
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default function StudioLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return <Providers>
-    <div id="zerocraft-cms" className={cn(inter.variable, jetbrainsMono.variable, "font-sans")}>
+    <div id="zerocraft-cms" className={cn(manrope.variable, jetbrainsMono.variable, "font-sans")}>
       {children}
     </div>
   </Providers>;

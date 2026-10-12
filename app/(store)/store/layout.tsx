@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
 const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-primary",
@@ -22,9 +23,10 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
 });
-export const metadata = {
-  title: "ZeroCraft Store | Crafted with Passion. Delivered with Care.",
-  description: "Discover handcrafted posters, premium photo frames, personalized gifts, journals, and minimal desk accessories for every occasion at ZeroCraft Store.",
+export const metadata: Metadata = {
+  title: "Zerocraft Store",
+  description: "Browse the Zerocraft Store catalog.",
+  robots: { index: false, follow: false },
 };
 
 export default function StoreLayout({

@@ -56,11 +56,11 @@ export default function AccountPage() {
         {/* User Greeting Card */}
         <div className="my-8 p-6 sm:p-8 rounded-3xl bg-neutral-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-amber-400 shrink-0">
+            <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-lime-400 shrink-0">
               <Image src={userProfile.avatar} alt={userProfile.name} fill sizes="64px" className="object-cover" />
             </div>
             <div>
-              <span className="text-label text-amber-400 block mb-1">Collector Account</span>
+              <span className="text-label text-lime-400 block mb-1">Collector Account</span>
               <h1 className="text-2xl font-bold">{userProfile.name}</h1>
               <p className="text-xs text-neutral-400 font-mono">{userProfile.email}</p>
             </div>
@@ -86,7 +86,7 @@ export default function AccountPage() {
               onClick={() => setActiveTab("profile")}
               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors font-semibold ${
                 activeTab === "profile"
-                  ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  ? "bg-lime-500/10 text-lime-600 dark:text-lime-400"
                   : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
@@ -97,7 +97,7 @@ export default function AccountPage() {
               onClick={() => setActiveTab("orders")}
               className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors font-semibold ${
                 activeTab === "orders"
-                  ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  ? "bg-lime-500/10 text-lime-600 dark:text-lime-400"
                   : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
@@ -109,7 +109,7 @@ export default function AccountPage() {
               onClick={() => setActiveTab("addresses")}
               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors font-semibold ${
                 activeTab === "addresses"
-                  ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  ? "bg-lime-500/10 text-lime-600 dark:text-lime-400"
                   : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
@@ -117,7 +117,7 @@ export default function AccountPage() {
             </button>
 
             <Link
-              href="/wishlist"
+              href="/store/wishlist"
               className="w-full flex items-center justify-between p-3 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors font-semibold"
             >
               <span className="flex items-center gap-3"><IconHeart size={18} /> Wishlist</span>
@@ -140,7 +140,7 @@ export default function AccountPage() {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                     />
                   </div>
 
@@ -150,7 +150,7 @@ export default function AccountPage() {
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                     />
                   </div>
 
@@ -160,7 +160,7 @@ export default function AccountPage() {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                     />
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export default function AccountPage() {
                   <div className="text-neutral-500">{userProfile.address.street}</div>
                   <div className="text-neutral-500">{userProfile.address.city}, {userProfile.address.state} {userProfile.address.postalCode}</div>
                   <div className="text-neutral-500">{userProfile.address.country}</div>
-                  <div className="text-amber-600 dark:text-amber-400 font-semibold pt-2">Phone: {userProfile.phone}</div>
+                  <div className="text-lime-600 dark:text-lime-400 font-semibold pt-2">Phone: {userProfile.phone}</div>
                 </div>
               </div>
             )}
@@ -198,7 +198,7 @@ export default function AccountPage() {
                   <h2 className="text-base font-bold text-neutral-900 dark:text-white font-mono uppercase tracking-wider">
                     Recent Orders ({orders.length})
                   </h2>
-                  <Link href="/account/orders" className="text-xs font-mono text-amber-600 dark:text-amber-400 hover:underline">
+                  <Link href="/store/account/orders" className="text-xs font-mono text-lime-600 dark:text-lime-400 hover:underline">
                     View Order Details →
                   </Link>
                 </div>
@@ -212,7 +212,7 @@ export default function AccountPage() {
                       </div>
                       <div className="text-neutral-400">{ord.date}</div>
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold ${
-                        ord.status === "Delivered" ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
+                        ord.status === "Delivered" ? "bg-emerald-500/10 text-emerald-600" : "bg-lime-500/10 text-lime-600"
                       }`}>
                         {ord.status}
                       </span>
@@ -225,8 +225,8 @@ export default function AccountPage() {
 
                     <div className="pt-2 flex justify-end">
                       <Link
-                        href={`/account/orders/${ord.orderNumber}`}
-                        className="text-xs font-mono text-amber-600 dark:text-amber-400 font-semibold hover:underline flex items-center gap-1"
+                        href={`/store/account/orders/${ord.orderNumber}`}
+                        className="text-xs font-mono text-lime-600 dark:text-lime-400 font-semibold hover:underline flex items-center gap-1"
                       >
                         View Order & Invoice <IconArrowRight size={14} />
                       </Link>

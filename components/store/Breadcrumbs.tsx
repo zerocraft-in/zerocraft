@@ -18,7 +18,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
       <ol className="flex items-center space-x-2 text-xs font-mono text-neutral-500 dark:text-neutral-400">
         <li>
           <Link
-            href="/"
+            href="/store"
             className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white transition-colors"
           >
             <IconHome size={14} />

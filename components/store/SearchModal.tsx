@@ -98,7 +98,7 @@ export default function SearchModal() {
                       className="group flex items-center justify-between p-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800/60 transition-colors"
                     >
                       <Link
-                        href={`/product/${product.id}`}
+                        href={`/store/product/${product.id}`}
                         onClick={() => toggleSearchModal(false)}
                         className="flex items-center gap-3.5 flex-1 min-w-0"
                       >
@@ -112,7 +112,7 @@ export default function SearchModal() {
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-sm font-medium text-neutral-900 dark:text-white line-clamp-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                          <h4 className="text-sm font-medium text-neutral-900 dark:text-white line-clamp-1 group-hover:text-lime-600 dark:group-hover:text-lime-400 transition-colors">
                             {product.title}
                           </h4>
                           <span className="text-xs text-neutral-400 font-mono">
@@ -140,9 +140,9 @@ export default function SearchModal() {
             <div className="p-4 bg-neutral-50 dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-500">
               <span>ZeroCraft Store live search</span>
               <Link
-                href="/shop"
+                href="/store/shop"
                 onClick={() => toggleSearchModal(false)}
-                className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold hover:underline"
+                className="flex items-center gap-1 text-lime-600 dark:text-lime-400 font-semibold hover:underline"
               >
                 View full shop catalog <IconArrowRight size={14} />
               </Link>

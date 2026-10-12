@@ -9,13 +9,8 @@ import { useStore } from "@/lib/store/useStore";
 import { toast } from "sonner";
 import {
   IconTruck,
-  IconCreditCard,
-  IconBrandApple,
   IconShieldCheck,
-  IconCheck,
-  IconLock,
   IconCash,
-  IconDeviceMobile,
 } from "@tabler/icons-react";
 
 export default function CheckoutPage() {
@@ -24,7 +19,6 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [deliveryMethod, setDeliveryMethod] = useState<"standard" | "express" | "overnight">("standard");
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "upi" | "applepay" | "cod">("card");
 
   const [formData, setFormData] = useState({
     fullName: userProfile.name,
@@ -35,10 +29,6 @@ export default function CheckoutPage() {
     state: userProfile.address.state,
     postalCode: userProfile.address.postalCode,
     country: userProfile.address.country,
-    cardNumber: "4532 8920 1982 4920",
-    cardExpiry: "08/29",
-    cardCvc: "892",
-    upiId: "julian@upi",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +46,7 @@ export default function CheckoutPage() {
   const tax = (subtotal - discountAmount) * 0.08;
   const grandTotal = Math.max(0, subtotal - discountAmount + deliveryFee + tax);
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) {
       toast.error("Your cart is empty!");
@@ -65,61 +55,41 @@ export default function CheckoutPage() {
 
     setLoading(true);
 
-    const generatedOrderNumber = `ZC-${Math.floor(10000 + Math.random() * 90000)}`;
-
-    setTimeout(() => {
-      const newOrder = {
-        id: `ord-${Date.now()}`,
-        orderNumber: generatedOrderNumber,
-        date: new Date().toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" }),
-        status: "Processing" as const,
-        timeline: [
-          { step: "Order Placed", timestamp: "Just now", completed: true },
-          { step: "Payment Confirmed", timestamp: "Just now", completed: true },
+    try {
+      const response = await fetch("/api/store/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.fullName, email: formData.email,
+          address: { fullName: formData.fullName, street: formData.street, city: formData.city, state: formData.state, postalCode: formData.postalCode, country: formData.country, phone: formData.phone },
+          items: cart.map((item) => ({ productId: item.product.id, quantity: item.quantity, color: item.selectedColor, size: item.selectedSize })),
+          delivery: deliveryMethod, coupon: couponCode,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.order) throw new Error(result.error || "The order could not be saved.");
+      const saved = result.order;
+      addOrder({
+        id: saved.id, orderNumber: saved.order_number,
+        date: new Date(saved.created_at).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" }),
+        status: "Processing", timeline: [
+          { step: "Order request received", timestamp: "Just now", completed: true },
+          { step: "Studio confirmation", timestamp: "Pending", completed: false },
           { step: "Crafting & Packaging", timestamp: "Pending", completed: false },
           { step: "Shipped", timestamp: "Pending", completed: false },
           { step: "Delivered", timestamp: "Pending", completed: false },
         ],
-        items: cart.map((item) => ({
-          id: `item-${Math.random()}`,
-          productId: item.product.id,
-          title: item.product.title,
-          image: item.product.images[0],
-          price: item.product.price,
-          quantity: item.quantity,
-          color: item.selectedColor,
-          size: item.selectedSize,
-        })),
-        subtotal,
-        discount: discountAmount,
-        shippingFee: deliveryFee,
-        tax,
-        total: grandTotal,
-        shippingAddress: {
-          fullName: formData.fullName,
-          street: formData.street,
-          city: formData.city,
-          state: formData.state,
-          postalCode: formData.postalCode,
-          country: formData.country,
-          phone: formData.phone,
-        },
-        paymentMethod:
-          paymentMethod === "card"
-            ? `Credit Card (•••• ${formData.cardNumber.slice(-4)})`
-            : paymentMethod === "upi"
-            ? `UPI (${formData.upiId})`
-            : paymentMethod === "applepay"
-            ? "Apple Pay"
-            : "Cash on Delivery",
-      };
-
-      addOrder(newOrder);
+        items: saved.items.map((item: { productId: string; title: string; image: string; price: number; quantity: number; color?: string; size?: string }, index: number) => ({ ...item, id: `${saved.id}-${index}` })),
+        subtotal: saved.subtotal, discount: saved.discount, shippingFee: saved.shipping_fee, tax: saved.tax, total: saved.total,
+        shippingAddress: { fullName: formData.fullName, street: formData.street, city: formData.city, state: formData.state, postalCode: formData.postalCode, country: formData.country, phone: formData.phone },
+        paymentMethod: "Cash on Delivery — unpaid",
+      });
       clearCart();
-      setLoading(false);
-      toast.success("Order placed successfully!");
-      router.push(`/order-success?orderId=${newOrder.orderNumber}`);
-    }, 1500);
+      toast.success("Order request saved. Payment is due on delivery.");
+      router.push(`/store/order-success?orderId=${encodeURIComponent(saved.order_number)}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The order could not be saved.");
+    } finally { setLoading(false); }
   };
 
   return (
@@ -127,17 +97,17 @@ export default function CheckoutPage() {
       <div className="container-site">
         <Breadcrumbs
           items={[
-            { label: "Cart", href: "/cart" },
+            { label: "Cart", href: "/store/cart" },
             { label: "Checkout" },
           ]}
         />
 
         <div className="my-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
-          <span className="text-label text-amber-600 dark:text-amber-400 mb-2 block">
-            Express Checkout
+          <span className="text-label text-lime-600 dark:text-lime-400 mb-2 block">
+            Order request
           </span>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            Complete Your Purchase
+            Review your order
           </h1>
         </div>
 
@@ -151,28 +121,6 @@ export default function CheckoutPage() {
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-bold">1</span>
                   Shipping Address
                 </h2>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData({
-                      fullName: "Julian Vance",
-                      email: "julian.vance@zerocraft.in",
-                      phone: "+1 (555) 392-0192",
-                      street: "742 Design Avenue, Suite 400",
-                      city: "San Francisco",
-                      state: "CA",
-                      postalCode: "94107",
-                      country: "United States",
-                      cardNumber: "4532 8920 1982 4920",
-                      cardExpiry: "08/29",
-                      cardCvc: "892",
-                      upiId: "julian@upi",
-                    })
-                  }
-                  className="text-xs font-mono text-amber-600 dark:text-amber-400 underline"
-                >
-                  Pre-fill Demo Address
-                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
@@ -184,7 +132,7 @@ export default function CheckoutPage() {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                   />
                 </div>
 
@@ -196,7 +144,7 @@ export default function CheckoutPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                   />
                 </div>
 
@@ -208,7 +156,7 @@ export default function CheckoutPage() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                   />
                 </div>
 
@@ -220,7 +168,7 @@ export default function CheckoutPage() {
                     name="street"
                     value={formData.street}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                   />
                 </div>
 
@@ -232,7 +180,7 @@ export default function CheckoutPage() {
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                   />
                 </div>
 
@@ -244,7 +192,7 @@ export default function CheckoutPage() {
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                   />
                 </div>
 
@@ -256,7 +204,7 @@ export default function CheckoutPage() {
                     name="postalCode"
                     value={formData.postalCode}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                   />
                 </div>
 
@@ -268,7 +216,7 @@ export default function CheckoutPage() {
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-400"
+                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
                   />
                 </div>
               </div>
@@ -286,12 +234,12 @@ export default function CheckoutPage() {
                   onClick={() => setDeliveryMethod("standard")}
                   className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
                     deliveryMethod === "standard"
-                      ? "border-amber-500 bg-amber-500/10 text-neutral-900 dark:text-white"
+                      ? "border-lime-500 bg-lime-500/10 text-neutral-900 dark:text-white"
                       : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <IconTruck size={20} className="text-amber-500" />
+                    <IconTruck size={20} className="text-lime-500" />
                     <div>
                       <h4 className="text-xs font-mono font-bold">Standard Delivery (3-5 Days)</h4>
                       <p className="text-[11px] text-neutral-500 font-light">Dispatched in reinforced tubes</p>
@@ -304,12 +252,12 @@ export default function CheckoutPage() {
                   onClick={() => setDeliveryMethod("express")}
                   className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
                     deliveryMethod === "express"
-                      ? "border-amber-500 bg-amber-500/10 text-neutral-900 dark:text-white"
+                      ? "border-lime-500 bg-lime-500/10 text-neutral-900 dark:text-white"
                       : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <IconTruck size={20} className="text-amber-500" />
+                    <IconTruck size={20} className="text-lime-500" />
                     <div>
                       <h4 className="text-xs font-mono font-bold">Express Courier (1-2 Days)</h4>
                       <p className="text-[11px] text-neutral-500 font-light">Priority dispatch & live tracking</p>
@@ -322,12 +270,12 @@ export default function CheckoutPage() {
                   onClick={() => setDeliveryMethod("overnight")}
                   className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
                     deliveryMethod === "overnight"
-                      ? "border-amber-500 bg-amber-500/10 text-neutral-900 dark:text-white"
+                      ? "border-lime-500 bg-lime-500/10 text-neutral-900 dark:text-white"
                       : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <IconTruck size={20} className="text-amber-500" />
+                    <IconTruck size={20} className="text-lime-500" />
                     <div>
                       <h4 className="text-xs font-mono font-bold">Next Day Priority Overnight</h4>
                       <p className="text-[11px] text-neutral-500 font-light">Guaranteed next morning arrival</p>
@@ -338,112 +286,15 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Step 3: Payment Method */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs space-y-6">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 space-y-4">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white font-mono uppercase tracking-wider flex items-center gap-2 pb-4 border-b border-neutral-200 dark:border-neutral-800">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-bold">3</span>
-                Payment Method
+                Payment on delivery
               </h2>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("card")}
-                  className={`p-3.5 rounded-2xl border flex flex-col items-center gap-2 text-xs font-mono transition-all ${
-                    paymentMethod === "card"
-                      ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
-                      : "border-neutral-200 dark:border-neutral-800 text-neutral-500"
-                  }`}
-                >
-                  <IconCreditCard size={20} /> Credit Card
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("upi")}
-                  className={`p-3.5 rounded-2xl border flex flex-col items-center gap-2 text-xs font-mono transition-all ${
-                    paymentMethod === "upi"
-                      ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
-                      : "border-neutral-200 dark:border-neutral-800 text-neutral-500"
-                  }`}
-                >
-                  <IconDeviceMobile size={20} /> UPI Pay
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("applepay")}
-                  className={`p-3.5 rounded-2xl border flex flex-col items-center gap-2 text-xs font-mono transition-all ${
-                    paymentMethod === "applepay"
-                      ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
-                      : "border-neutral-200 dark:border-neutral-800 text-neutral-500"
-                  }`}
-                >
-                  <IconBrandApple size={20} /> Apple Pay
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("cod")}
-                  className={`p-3.5 rounded-2xl border flex flex-col items-center gap-2 text-xs font-mono transition-all ${
-                    paymentMethod === "cod"
-                      ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
-                      : "border-neutral-200 dark:border-neutral-800 text-neutral-500"
-                  }`}
-                >
-                  <IconCash size={20} /> Cash on Delivery
-                </button>
-              </div>
-
-              {/* Card Inputs */}
-              {paymentMethod === "card" && (
-                <div className="grid grid-cols-2 gap-4 text-xs font-mono pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                  <div className="col-span-2 space-y-1">
-                    <label className="text-neutral-400 uppercase">Card Number</label>
-                    <input
-                      type="text"
-                      name="cardNumber"
-                      value={formData.cardNumber}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-neutral-400 uppercase">Expiry Date</label>
-                    <input
-                      type="text"
-                      name="cardExpiry"
-                      value={formData.cardExpiry}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-neutral-400 uppercase">CVC / CVV</label>
-                    <input
-                      type="text"
-                      name="cardCvc"
-                      value={formData.cardCvc}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === "upi" && (
-                <div className="space-y-1 text-xs font-mono pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                  <label className="text-neutral-400 uppercase">VPA / UPI ID</label>
-                  <input
-                    type="text"
-                    name="upiId"
-                    value={formData.upiId}
-                    onChange={handleInputChange}
-                    placeholder="username@upi"
-                    className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none"
-                  />
-                </div>
-              )}
+              <p className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300"><IconCash size={22} aria-hidden="true" /> Cash on Delivery</p>
+              <p className="text-xs leading-relaxed text-neutral-500">No payment is collected on this website. Your order request will be reviewed before fulfillment.</p>
             </div>
           </div>
-
           {/* Right Order Summary Column (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
             <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xl space-y-6 sticky top-28">
@@ -491,7 +342,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between pt-4 border-t border-neutral-200 dark:border-neutral-800 text-lg font-bold text-neutral-900 dark:text-white">
                   <span>Total Amount</span>
-                  <span className="text-xl text-amber-600 dark:text-amber-400">${grandTotal.toFixed(2)}</span>
+                  <span className="text-xl text-lime-600 dark:text-lime-400">${grandTotal.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -499,16 +350,16 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={loading || cart.length === 0}
-                className="w-full py-4 px-6 rounded-2xl bg-amber-500 text-black font-bold text-xs uppercase tracking-wider text-center hover:bg-amber-400 transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                className="w-full py-4 px-6 rounded-2xl bg-lime-500 text-black font-bold text-xs uppercase tracking-wider text-center hover:bg-lime-400 transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center gap-2 font-mono">
                     <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    Processing Payment...
+                    Saving order request...
                   </span>
                 ) : (
                   <>
-                    <IconLock size={16} /> Place Order & Pay ${grandTotal.toFixed(2)}
+                    <IconCash size={16} /> Request order · ${grandTotal.toFixed(2)} due on delivery
                   </>
                 )}
               </button>

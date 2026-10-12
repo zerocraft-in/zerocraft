@@ -425,7 +425,7 @@ export default function StudioReviewsCRUD() {
 
                       {visibleColumns.comment && (
                         <TableCell className="p-3 text-xs text-foreground max-w-sm truncate italic">
-                          "{rev.comment}"
+                          &ldquo;{rev.comment}&rdquo;
                         </TableCell>
                       )}
 

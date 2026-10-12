@@ -83,10 +83,12 @@ export default function StudioAppointmentsCRUD() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    let active = true;
+    void Promise.resolve().then(() => { if (active) setIsMounted(true); });
     fetchAppointmentsFromSupabase().then((data) => {
-      if (data) setAppointments(data as any);
+      if (active && data) setAppointments(data as any);
     });
+    return () => { active = false; };
   }, []);
 
   const [formData, setFormData] = useState({
@@ -94,7 +96,7 @@ export default function StudioAppointmentsCRUD() {
     client_email: "",
     client_phone: "",
     service: "1:1 Product Strategy Session",
-    scheduled_at: "2026-08-06T14:00",
+    scheduled_at: "",
     status: "confirmed",
     notes: "",
   });
@@ -170,15 +172,7 @@ export default function StudioAppointmentsCRUD() {
   const handleTriggerN8n = async (appt: Appointment) => {
     setN8nStatusMessage(`Triggering n8n WhatsApp workflow for ${appt.client_name}...`);
 
-    const res = await sendWhatsAppViaN8n({
-      recipientName: appt.client_name,
-      recipientPhone: appt.client_phone,
-      recipientEmail: appt.client_email,
-      serviceName: appt.service,
-      appointmentTime: appt.scheduled_at,
-      status: appt.status as any,
-      notes: appt.notes,
-    });
+    const res = await sendWhatsAppViaN8n(appt.id);
 
     if (res.success) {
       setAppointments((prev) =>

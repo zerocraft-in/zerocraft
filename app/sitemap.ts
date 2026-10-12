@@ -15,10 +15,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1.0,
     },
-    {
-      url: `${baseUrl}/store`,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
   ];
 }

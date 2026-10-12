@@ -31,7 +31,7 @@ export default async function CategoryPage({
       <div className="container-site">
         <Breadcrumbs
           items={[
-            { label: "Shop", href: "/shop" },
+            { label: "Shop", href: "/store/shop" },
             { label: category.name },
           ]}
         />
@@ -49,7 +49,7 @@ export default async function CategoryPage({
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
           <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono bg-amber-400 text-black font-semibold uppercase mb-3">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono bg-lime-400 text-black font-semibold uppercase mb-3">
               {categoryProducts.length} Items Available
             </span>
             <h1 className="text-3xl md:text-6xl font-bold tracking-tight text-white mb-3">
@@ -64,7 +64,7 @@ export default async function CategoryPage({
         {/* Back & Filters Row */}
         <div className="flex items-center justify-between my-8 pb-4 border-b border-neutral-200 dark:border-neutral-800">
           <Link
-            href="/shop"
+            href="/store/shop"
             className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
           >
             <IconArrowLeft size={16} /> Back to All Categories
@@ -80,8 +80,8 @@ export default async function CategoryPage({
           <div className="p-16 text-center rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
             <p className="text-base font-semibold mb-2">No products in this category yet.</p>
             <Link
-              href="/shop"
-              className="text-xs font-mono text-amber-600 dark:text-amber-400 underline"
+              href="/store/shop"
+              className="text-xs font-mono text-lime-600 dark:text-lime-400 underline"
             >
               Explore all products →
             </Link>

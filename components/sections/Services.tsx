@@ -6,6 +6,7 @@ import {
 } from "@tabler/icons-react";
 import RotatingWords from "@/components/ui/RotatingWords";
 import ArrowIcon from "@/components/ui/ArrowIcon";
+import StudioGlyph from "@/components/ui/StudioGlyph";
 
 const services = [
   {
@@ -13,32 +14,28 @@ const services = [
     icon: IconGridDots,
     description:
       "We shape memorable brands through thoughtful strategy, distinctive identities, and cohesive visual systems.",
-    capabilities:
-      "Brand Strategy, Logo Design, Visual Identity, Packaging, Brand Guidelines.",
+    capabilities: ["Brand Strategy", "Logo Design", "Visual Identity", "Packaging", "Brand Guidelines"],
   },
   {
     title: "Digital Design",
     icon: IconDevices,
     description:
       "We create intuitive, visually engaging interfaces that connect people with brands across every screen.",
-    capabilities:
-      "UI/UX Design, Web Design, App Design, Prototyping, Interactive Experiences.",
+    capabilities: ["UI/UX Design", "Web Design", "App Design", "Prototyping", "Interactive Experiences"],
   },
   {
     title: "Photography, Film & Motion",
     icon: IconCamera,
     description:
       "We bring stories to life through expressive photography, cinematic visuals, and motion-led storytelling.",
-    capabilities:
-      "Product Photography, Commercial Shoots, Video Production, Motion Graphics, Animation.",
+    capabilities: ["Product Photography", "Commercial Shoots", "Video Production", "Motion Graphics", "Animation"],
   },
   {
     title: "Web & App Development",
     icon: IconCode,
     description:
       "We turn thoughtful designs into responsive websites, interactive platforms, and scalable digital products.",
-    capabilities:
-      "Creative Development, Websites, Web Applications, Mobile Apps, Interactive Animation.",
+    capabilities: ["Creative Development", "Websites", "Web Applications", "Mobile Apps", "Interactive Animation"],
   },
 ];
 
@@ -64,15 +61,14 @@ export default function Services() {
             <details className={`service-card service-card--${index + 1}`} key={title}>
               <summary>
                 <span className="service-card__topline"><span>{String(index + 1).padStart(2, "0")} / 04</span><span>ZEROCRAFT / EXPERTISE</span></span>
-                <span className="service-card__visual" aria-hidden="true" data-number={String(index + 1).padStart(2, "0")}><span className="service-card__orbit" /><span className="service-card__object" /><Icon size={76} stroke={1} /></span>
+                <span className="service-card__visual" aria-hidden="true"><Icon size={42} stroke={1.25} /></span>
                 <h3>{title}</h3>
                 <p>{description}</p>
-                <span className="studio-circle" aria-hidden="true">
-                  <ArrowIcon direction="up-right" size={14} />
-                </span>
+                <span className="service-card__more" aria-hidden="true"><span>Explore capabilities</span><StudioGlyph variant="plus" size={15} /></span>
               </summary>
               <div className="service-card__details">
-                <p>{capabilities}</p>
+                <span className="service-card__details-label">What we do</span>
+                <ul>{capabilities.map((capability) => <li key={capability}>{capability}</li>)}</ul>
                 <a href="mailto:hello@zerocraft.in">
                   Let’s talk <ArrowIcon direction="up-right" size={13} />
                 </a>

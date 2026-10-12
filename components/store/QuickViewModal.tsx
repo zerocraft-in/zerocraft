@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconX, IconStarFilled, IconShoppingBag, IconHeart, IconHeartFilled, IconCheck } from "@tabler/icons-react";
+import { IconX, IconShoppingBag, IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import { useStore } from "@/lib/store/useStore";
 
 export default function QuickViewModal() {
@@ -75,7 +75,7 @@ export default function QuickViewModal() {
                       onClick={() => setSelectedImageIndex(idx)}
                       className={`relative h-16 w-16 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${
                         selectedImageIndex === idx
-                          ? "border-amber-500 scale-105"
+                          ? "border-lime-500 scale-105"
                           : "border-transparent opacity-60 hover:opacity-100"
                       }`}
                     >
@@ -100,28 +100,16 @@ export default function QuickViewModal() {
                   {product.title}
                 </h2>
 
-                {/* Rating & Stock */}
+                {/* Catalog status */}
                 <div className="flex items-center gap-4 mb-4 text-xs">
-                  <div className="flex items-center gap-1 font-semibold text-neutral-800 dark:text-neutral-200">
-                    <IconStarFilled size={14} className="text-amber-400" />
-                    <span>{product.rating}</span>
-                    <span className="text-neutral-400 font-normal">({product.reviewCount} reviews)</span>
-                  </div>
-                  <span className="inline-flex items-center gap-1 font-mono text-emerald-600 dark:text-emerald-400">
-                    <IconCheck size={14} /> In Stock ({product.stock} units)
-                  </span>
+                  <span className="font-mono text-neutral-500">Catalog preview · Availability to be confirmed</span>
                 </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-3 mb-6">
                   <span className="text-3xl font-bold text-neutral-900 dark:text-white font-mono">
-                    ${product.price.toFixed(2)}
+                    ${product.price.toFixed(2)} est.
                   </span>
-                  {product.originalPrice > product.price && (
-                    <span className="text-base text-neutral-400 line-through font-mono">
-                      ${product.originalPrice.toFixed(2)}
-                    </span>
-                  )}
                 </div>
 
                 {/* Short Description */}
@@ -141,7 +129,7 @@ export default function QuickViewModal() {
                           key={c.name}
                           onClick={() => setSelectedColor(c.name)}
                           className={`w-7 h-7 rounded-full border-2 transition-transform ${
-                            currentColor === c.name ? "border-amber-500 scale-110" : "border-neutral-300 dark:border-neutral-700"
+                            currentColor === c.name ? "border-lime-500 scale-110" : "border-neutral-300 dark:border-neutral-700"
                           }`}
                           style={{ backgroundColor: c.hex }}
                           title={c.name}
@@ -220,9 +208,9 @@ export default function QuickViewModal() {
               {/* View Full Product Page Link */}
               <div className="mt-4 text-center">
                 <Link
-                  href={`/product/${product.id}`}
+                  href={`/store/product/${product.id}`}
                   onClick={() => setQuickViewProduct(null)}
-                  className="text-xs font-mono text-amber-600 dark:text-amber-400 hover:underline"
+                  className="text-xs font-mono text-lime-600 dark:text-lime-400 hover:underline"
                 >
                   View full specifications & customer reviews →
                 </Link>
