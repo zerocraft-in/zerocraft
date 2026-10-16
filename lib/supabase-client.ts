@@ -19,16 +19,18 @@ export interface StudioUser {
 // LIVE SUPABASE FETCH & MUTATION HELPERS
 
 // --- BLOGS ---
-export async function fetchBlogsFromSupabase() {
+export async function fetchBlogsFromSupabase(strict = false) {
   try {
     const { data, error } = await supabase
       .from("blogs")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error || !data) return [];
+    if (error) { if (strict) throw error; return []; }
+    if (!data) return [];
     return data;
-  } catch {
+  } catch (cause) {
+    if (strict) throw cause;
     return [];
   }
 }
@@ -58,22 +60,24 @@ export async function updateBlogInSupabase(
 }
 
 export async function deleteBlogInSupabase(id: string) {
-  const { error } = await supabase.from("blogs").delete().eq("id", id);
+  const { error } = await supabase.from("blogs").delete().eq("id", id).select("id").single();
   if (error) throw error;
   return true;
 }
 
 // --- WORKS ---
-export async function fetchWorksFromSupabase() {
+export async function fetchWorksFromSupabase(strict = false) {
   try {
     const { data, error } = await supabase
       .from("works")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error || !data) return [];
+    if (error) { if (strict) throw error; return []; }
+    if (!data) return [];
     return data;
-  } catch {
+  } catch (cause) {
+    if (strict) throw cause;
     return [];
   }
 }
@@ -103,22 +107,24 @@ export async function updateWorkInSupabase(
 }
 
 export async function deleteWorkInSupabase(id: string) {
-  const { error } = await supabase.from("works").delete().eq("id", id);
+  const { error } = await supabase.from("works").delete().eq("id", id).select("id").single();
   if (error) throw error;
   return true;
 }
 
 // --- REVIEWS ---
-export async function fetchReviewsFromSupabase() {
+export async function fetchReviewsFromSupabase(strict = false) {
   try {
     const { data, error } = await supabase
       .from("reviews")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error || !data) return [];
+    if (error) { if (strict) throw error; return []; }
+    if (!data) return [];
     return data;
-  } catch {
+  } catch (cause) {
+    if (strict) throw cause;
     return [];
   }
 }
@@ -154,16 +160,18 @@ export async function deleteReviewInSupabase(id: string) {
 }
 
 // --- CLIENTS ---
-export async function fetchClientsFromSupabase() {
+export async function fetchClientsFromSupabase(strict = false) {
   try {
     const { data, error } = await supabase
       .from("clients")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error || !data) return [];
+    if (error) { if (strict) throw error; return []; }
+    if (!data) return [];
     return data;
-  } catch {
+  } catch (cause) {
+    if (strict) throw cause;
     return [];
   }
 }
@@ -208,22 +216,24 @@ export async function updateClientInSupabase(
 }
 
 export async function deleteClientInSupabase(id: string) {
-  const { error } = await supabase.from("clients").delete().eq("id", id);
+  const { error } = await supabase.from("clients").delete().eq("id", id).select("id").single();
   if (error) throw error;
   return true;
 }
 
 // --- APPOINTMENTS ---
-export async function fetchAppointmentsFromSupabase() {
+export async function fetchAppointmentsFromSupabase(strict = false) {
   try {
     const { data, error } = await supabase
       .from("appointments")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error || !data) return [];
+    if (error) { if (strict) throw error; return []; }
+    if (!data) return [];
     return data;
-  } catch {
+  } catch (cause) {
+    if (strict) throw cause;
     return [];
   }
 }
@@ -255,7 +265,7 @@ export async function updateAppointmentInSupabase(
 }
 
 export async function deleteAppointmentInSupabase(id: string) {
-  const { error } = await supabase.from("appointments").delete().eq("id", id);
+  const { error } = await supabase.from("appointments").delete().eq("id", id).select("id").single();
   if (error) throw error;
   return true;
 }

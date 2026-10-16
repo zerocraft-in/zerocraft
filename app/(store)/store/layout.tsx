@@ -1,5 +1,4 @@
 import "@/styles/index.css";
-import { Manrope, JetBrains_Mono } from "next/font/google";
 import StoreHeader from "@/components/store/StoreHeader";
 import StoreFooter from "@/components/store/StoreFooter";
 import CartDrawer from "@/components/store/CartDrawer";
@@ -8,21 +7,8 @@ import QuickViewModal from "@/components/store/QuickViewModal";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import { Toaster } from "sonner";
-import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-primary",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
 export const metadata: Metadata = {
   title: "Zerocraft Store",
   description: "Browse the Zerocraft Store catalog.",
@@ -37,7 +23,7 @@ export default function StoreLayout({
   return (
     <ThemeProvider>
       <SmoothScroll>
-        <div id="zerocraft-store" className={cn(manrope.variable, jetbrainsMono.variable, "min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white transition-colors duration-500 font-primary")}>
+        <div id="zerocraft-store" className="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white transition-colors duration-500 font-primary">
           <StoreHeader />
           <main className="flex-1 pt-20">
             {children}

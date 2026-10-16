@@ -1,22 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import ProductCard from "@/components/store/ProductCard";
-import { PRODUCTS } from "@/lib/data/storeData";
+import type { CatalogProduct } from "@/lib/commerce/catalog";
 import { IconSearch, IconX } from "@tabler/icons-react";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<CatalogProduct[]>([]);
+  const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const searchResults = query.trim() === ""
-    ? PRODUCTS
-    : PRODUCTS.filter((p) =>
-        p.title.toLowerCase().includes(query.toLowerCase()) ||
-        p.shortDescription.toLowerCase().includes(query.toLowerCase()) ||
-        p.category.toLowerCase().includes(query.toLowerCase()) ||
-        p.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()))
-      );
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({ page: "1", pageSize: "48", sort: "newest" });
+    if (query.trim()) params.set("query", query.trim());
+    const loadingTimer = window.setTimeout(() => {
+      setIsLoading(true);
+      setError(null);
+    }, 0);
+    fetch(`/api/store/catalog?${params.toString()}`, { signal: controller.signal })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Search unavailable");
+        setSearchResults(payload.products?.products ?? []);
+        setTotal(payload.products?.total ?? 0);
+      })
+      .catch((reason) => {
+        if (reason.name !== "AbortError") setError(reason.message || "Search unavailable");
+      })
+      .finally(() => setIsLoading(false));
+    return () => {
+      window.clearTimeout(loadingTimer);
+      controller.abort();
+    };
+  }, [query]);
 
   return (
     <div className="py-8 min-h-screen">
@@ -52,11 +72,15 @@ export default function SearchPage() {
         <div className="my-8">
           <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800 mb-8">
             <span className="text-xs font-mono text-neutral-400">
-              {query.trim() === "" ? "Showing all products" : `Found ${searchResults.length} results for "${query}"`}
+              {query.trim() === "" ? `Showing ${total} published products` : `Found ${total} results for "${query}"`}
             </span>
           </div>
 
-          {searchResults.length === 0 ? (
+          {isLoading ? (
+            <div className="p-16 text-center rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"><p className="text-sm text-neutral-500">Searching the catalog...</p></div>
+          ) : error ? (
+            <div className="p-16 text-center rounded-2xl bg-white dark:bg-neutral-900 border border-rose-200 dark:border-rose-900/50"><p className="text-sm text-rose-600 dark:text-rose-300">{error}</p></div>
+          ) : searchResults.length === 0 ? (
             <div className="p-16 text-center rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
               <p className="text-base font-semibold mb-2">No matching products found.</p>
               <p className="text-xs text-neutral-400 font-mono">Try searching for &ldquo;poster&rdquo;, &ldquo;frame&rdquo;, &ldquo;leather&rdquo;, or &ldquo;brass&rdquo;.</p>

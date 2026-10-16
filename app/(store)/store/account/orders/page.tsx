@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
 import { IconPackage, IconArrowRight, IconCheck, IconTruck, IconClock } from "@tabler/icons-react";
 
 export default function MyOrdersPage() {
@@ -84,7 +85,7 @@ export default function MyOrdersPage() {
                           </span>
                         </div>
                       </div>
-                      <span className="font-bold text-neutral-900 dark:text-white">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-bold text-neutral-900 dark:text-white">{formatCatalogPrice(item.price * item.quantity, item.currency)}</span>
                     </div>
                   ))}
                 </div>
@@ -92,7 +93,7 @@ export default function MyOrdersPage() {
                 {/* Footer Total & Link */}
                 <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
                   <div className="text-xs font-mono text-neutral-500">
-                    Total Amount: <strong className="text-base text-neutral-900 dark:text-white">${ord.total.toFixed(2)}</strong>
+                    Total Amount: <strong className="text-base text-neutral-900 dark:text-white">{formatCatalogPrice(ord.total, ord.currency)}</strong>
                   </div>
 
                   <Link

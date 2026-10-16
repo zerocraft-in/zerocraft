@@ -6,6 +6,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconX, IconTrash, IconShoppingBag, IconTag, IconArrowRight, IconCheck } from "@tabler/icons-react";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
+import { useCartValidation } from "@/lib/store/useCartValidation";
 
 export default function CartDrawer() {
   const {
@@ -18,6 +20,7 @@ export default function CartDrawer() {
     discountPercentage,
     applyCoupon,
   } = useStore();
+  const { validation, isValidating, error: validationError } = useCartValidation(cart);
 
   const [inputCoupon, setInputCoupon] = useState("");
   const [couponFeedback, setCouponFeedback] = useState<{ success: boolean; message: string } | null>(null);
@@ -92,9 +95,9 @@ export default function CartDrawer() {
                   </Link>
                 </div>
               ) : (
-                cart.map((item, idx) => (
+                cart.map((item) => (
                   <div
-                    key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}-${idx}`}
+                    key={item.lineId}
                     className="flex gap-4 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-800/60"
                   >
                     {/* Item Image */}
@@ -120,7 +123,7 @@ export default function CartDrawer() {
                             {item.product.title}
                           </Link>
                           <button
-                            onClick={() => removeFromCart(item.product.id, item.selectedColor, item.selectedSize)}
+                            onClick={() => removeFromCart(item.lineId)}
                             className="text-neutral-400 hover:text-rose-500 transition-colors p-1"
                           >
                             <IconTrash size={16} />
@@ -131,6 +134,11 @@ export default function CartDrawer() {
                         <div className="flex flex-wrap gap-2 text-[11px] font-mono text-neutral-500 mt-0.5">
                           {item.selectedColor && <span>Color: {item.selectedColor}</span>}
                           {item.selectedSize && <span>• Size: {item.selectedSize}</span>}
+                          {item.selectedVariantLabel && <span>• Variant: {item.selectedVariantLabel}</span>}
+                          {item.customizationReference && <span className="text-lime-700 dark:text-lime-400">• Custom artwork attached</span>}
+                          {validation?.lines.find((line) => line.lineId === item.lineId)?.errors.map((lineError) => (
+                            <span key={lineError.code} className="basis-full text-rose-600 dark:text-rose-400">{lineError.message}</span>
+                          ))}
                         </div>
                       </div>
 
@@ -138,14 +146,14 @@ export default function CartDrawer() {
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-700/40">
                         <div className="flex items-center border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 px-1">
                           <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedColor, item.selectedSize)}
+                            onClick={() => updateQuantity(item.lineId, item.quantity - 1)}
                             className="w-6 h-6 flex items-center justify-center text-xs font-bold"
                           >
                             -
                           </button>
                           <span className="w-6 text-center text-xs font-mono font-semibold">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedColor, item.selectedSize)}
+                            onClick={() => updateQuantity(item.lineId, item.quantity + 1)}
                             className="w-6 h-6 flex items-center justify-center text-xs font-bold"
                           >
                             +
@@ -153,7 +161,7 @@ export default function CartDrawer() {
                         </div>
 
                         <span className="text-sm font-semibold font-mono text-neutral-900 dark:text-white">
-                          ${(item.product.price * item.quantity).toFixed(2)}
+                          {formatCatalogPrice(item.product.price * item.quantity, item.product.currency)}
                         </span>
                       </div>
                     </div>
@@ -165,6 +173,11 @@ export default function CartDrawer() {
             {/* Footer Summary */}
             {cart.length > 0 && (
               <div className="p-5 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 space-y-4">
+                {(isValidating || validationError || (validation && !validation.valid)) && (
+                  <div className="rounded-xl border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/20 dark:text-amber-300">
+                    {isValidating ? "Checking live product availability…" : validationError || "Some cart lines need attention before checkout."}
+                  </div>
+                )}
                 {/* Coupon Input */}
                 <form onSubmit={handleApplyCoupon} className="flex gap-2">
                   <div className="relative flex-1">
@@ -196,25 +209,25 @@ export default function CartDrawer() {
                 <div className="space-y-1.5 text-xs font-mono text-neutral-600 dark:text-neutral-400">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="text-neutral-900 dark:text-white font-semibold">${subtotal.toFixed(2)}</span>
+                    <span className="text-neutral-900 dark:text-white font-semibold">{formatCatalogPrice(subtotal, cart[0]?.product.currency)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                       <span>Discount ({couponCode} -{discountPercentage}%)</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
+                      <span>-{formatCatalogPrice(discountAmount, cart[0]?.product.currency)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span>Est. Shipping</span>
-                    <span>{shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}</span>
+                    <span>{shipping === 0 ? "FREE" : formatCatalogPrice(shipping, cart[0]?.product.currency)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Est. Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{formatCatalogPrice(tax, cart[0]?.product.currency)}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-800 text-sm font-bold text-neutral-900 dark:text-white">
                     <span>Total</span>
-                    <span className="text-base text-lime-600 dark:text-lime-400">${total.toFixed(2)}</span>
+                    <span className="text-base text-lime-600 dark:text-lime-400">{formatCatalogPrice(total, cart[0]?.product.currency)}</span>
                   </div>
                 </div>
 

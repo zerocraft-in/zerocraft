@@ -16,15 +16,9 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
 
 function DropdownMenuTrigger({ asChild, children, ...props }: MenuPrimitive.Trigger.Props & { asChild?: boolean }) {
   if (asChild && React.isValidElement(children)) {
-    return (
-      <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} render={children as React.ReactElement} />
-    );
+    return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" render={children as React.ReactElement} {...props} />;
   }
-  return (
-    <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props}>
-      {children}
-    </MenuPrimitive.Trigger>
-  );
+  return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props}>{children}</MenuPrimitive.Trigger>;
 }
 
 function DropdownMenuContent({
@@ -69,11 +63,11 @@ function DropdownMenuLabel({
   className,
   inset,
   ...props
-}: React.ComponentProps<"div"> & {
+}: MenuPrimitive.GroupLabel.Props & {
   inset?: boolean;
 }) {
   return (
-    <div
+    <MenuPrimitive.GroupLabel
       data-slot="dropdown-menu-label"
       data-inset={inset}
       className={cn(
@@ -131,7 +125,7 @@ function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <IconChevronRight className="ml-auto" />
+      <IconChevronRight className="cn-rtl-flip ml-auto" />
     </MenuPrimitive.SubmenuTrigger>
   );
 }

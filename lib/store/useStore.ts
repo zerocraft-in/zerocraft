@@ -3,12 +3,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Product, Order, DUMMY_ORDERS } from "@/lib/data/storeData";
+import { getCartLineId, MAX_CART_QUANTITY } from "@/lib/commerce/cart";
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  lineId: string;
   selectedColor?: string;
   selectedSize?: string;
+  selectedVariantId?: string;
+  selectedVariantLabel?: string;
+  customizationReference?: string;
+  legacyUnvalidated?: boolean;
 }
 
 interface StoreState {
@@ -18,9 +24,9 @@ interface StoreState {
   couponCode: string;
   discountPercentage: number;
   giftNote: string;
-  addToCart: (product: Product, quantity?: number, color?: string, size?: string) => void;
-  removeFromCart: (productId: string, color?: string, size?: string) => void;
-  updateQuantity: (productId: string, quantity: number, color?: string, size?: string) => void;
+  addToCart: (product: Product, quantity?: number, color?: string, size?: string, variantId?: string, variantLabel?: string, customizationReference?: string) => void;
+  removeFromCart: (lineId: string) => void;
+  updateQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
   toggleCartDrawer: (open?: boolean) => void;
   applyCoupon: (code: string) => { success: boolean; message: string };
@@ -61,57 +67,23 @@ export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       // Cart
-      cart: [
-        {
-          product: {
-            id: "prod-1",
-            slug: "minimal-mountain-poster",
-            title: "Minimal Mountain Poster",
-            shortDescription: "Monochrome topographical peaks on Japanese cotton paper.",
-            description: "Modern minimalism alpine print.",
-            category: "Posters",
-            categorySlug: "posters",
-            brand: "ZeroCraft Studio",
-            price: 34.0,
-            originalPrice: 48.0,
-            rating: 4.9,
-            reviewCount: 128,
-            stock: 25,
-            tags: ["Minimalist"],
-            colors: [{ name: "Warm Cream", hex: "#f5f3ef" }],
-            sizes: ['18" x 24"'],
-            sku: "ZC-PST-001",
-            shippingBadge: "Free Standard Shipping",
-            isNew: true,
-            isSale: true,
-            images: ["https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=1200&auto=format&fit=crop"],
-            specifications: [],
-          },
-          quantity: 1,
-          selectedColor: "Warm Cream",
-          selectedSize: '18" x 24"',
-        },
-      ],
+      cart: [],
       cartDrawerOpen: false,
       couponCode: "",
       discountPercentage: 0,
       giftNote: "",
 
-      addToCart: (product, quantity = 1, color, size) => {
+      addToCart: (product, quantity = 1, color, size, variantId, variantLabel, customizationReference) => {
         const { cart } = get();
         const chosenColor = color || (product.colors?.[0]?.name ?? "");
         const chosenSize = size || (product.sizes?.[0] ?? "");
+        const lineId = getCartLineId({ productId: product.id, variantId, customizationReference });
 
-        const existingIndex = cart.findIndex(
-          (item) =>
-            item.product.id === product.id &&
-            item.selectedColor === chosenColor &&
-            item.selectedSize === chosenSize
-        );
+        const existingIndex = cart.findIndex((item) => item.lineId === lineId);
 
         if (existingIndex > -1) {
           const updated = [...cart];
-          updated[existingIndex].quantity += quantity;
+          updated[existingIndex].quantity = Math.min(MAX_CART_QUANTITY, updated[existingIndex].quantity + quantity);
           set({ cart: updated, cartDrawerOpen: true });
         } else {
           set({
@@ -119,9 +91,13 @@ export const useStore = create<StoreState>()(
               ...cart,
               {
                 product,
-                quantity,
+                quantity: Math.min(MAX_CART_QUANTITY, Math.max(1, quantity)),
+                lineId,
                 selectedColor: chosenColor,
                 selectedSize: chosenSize,
+                selectedVariantId: variantId,
+                selectedVariantLabel: variantLabel,
+                customizationReference,
               },
             ],
             cartDrawerOpen: true,
@@ -129,34 +105,18 @@ export const useStore = create<StoreState>()(
         }
       },
 
-      removeFromCart: (productId, color, size) => {
-        set({
-          cart: get().cart.filter(
-            (item) =>
-              !(
-                item.product.id === productId &&
-                (color === undefined || item.selectedColor === color) &&
-                (size === undefined || item.selectedSize === size)
-              )
-          ),
-        });
+      removeFromCart: (lineId) => {
+        set({ cart: get().cart.filter((item) => item.lineId !== lineId) });
       },
 
-      updateQuantity: (productId, quantity, color, size) => {
+      updateQuantity: (lineId, quantity) => {
         if (quantity <= 0) {
-          get().removeFromCart(productId, color, size);
+          get().removeFromCart(lineId);
           return;
         }
         set({
           cart: get().cart.map((item) => {
-            if (
-              item.product.id === productId &&
-              (color === undefined || item.selectedColor === color) &&
-              (size === undefined || item.selectedSize === size)
-            ) {
-              return { ...item, quantity };
-            }
-            return item;
+            return item.lineId === lineId ? { ...item, quantity: Math.min(MAX_CART_QUANTITY, quantity) } : item;
           }),
         });
       },
@@ -232,11 +192,20 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: "zerocraft-store-storage",
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const state = persisted as Partial<StoreState>;
+        const seen = new Set<string>();
+        const cart = (Array.isArray(state.cart) ? state.cart : []).map((item, index) => {
+          const legacyItem = item as CartItem;
+          const baseLineId = getCartLineId({ productId: legacyItem.product?.id ?? "", variantId: legacyItem.selectedVariantId, customizationReference: legacyItem.customizationReference });
+          const lineId = seen.has(baseLineId) ? `${baseLineId}::legacy-${index}` : baseLineId;
+          seen.add(lineId);
+          return { ...legacyItem, lineId, quantity: Math.min(MAX_CART_QUANTITY, Math.max(1, Number(legacyItem.quantity) || 1)), legacyUnvalidated: true };
+        });
         return {
           ...state,
+          cart,
           orders: (state.orders || []).filter((order) => !DUMMY_ORDERS.some((sample) => sample.id === order.id)),
           userProfile: state.userProfile?.email === "julian.vance@zerocraft.in" ? {
             name: "", email: "", avatar: "", phone: "",

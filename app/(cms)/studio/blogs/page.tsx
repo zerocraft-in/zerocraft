@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import React, { useState, useMemo, useEffect } from "react";
 import { IconPlus, IconSearch, IconEdit, IconTrash, IconEye, IconFileText, IconCircleCheck, IconClock, IconX, IconSparkles, IconChevronDown, IconColumns, IconDotsVertical, IconChevronsLeft, IconChevronLeft, IconChevronRight, IconChevronsRight, IconLoader2 } from "@tabler/icons-react";
 import {
@@ -10,43 +11,13 @@ import {
 } from "@/lib/supabase-client";
 
 
-// shadcn UI components
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Badge, Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle, DropdownMenu, DropdownMenuCheckboxItem,
+  DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+  DropdownMenuTrigger, Input, Select, SelectContent, SelectItem, SelectTrigger,
+  SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/studio-controls";
 
 interface Blog {
   id: string;
@@ -54,7 +25,7 @@ interface Blog {
   slug: string;
   excerpt: string;
   content: string;
-  status: "published" | "draft" | string;
+  status: "draft" | "draft" | string;
   author_name: string;
   category: string;
   views_count: number;
@@ -85,10 +56,10 @@ export default function StudioBlogsCRUD() {
 
   // Load blogs from Supabase
   useEffect(() => {
-    fetchBlogsFromSupabase().then((data) => {
+    fetchBlogsFromSupabase(true).then((data) => {
       if (data) setBlogs(data as any);
       setIsLoading(false);
-    });
+    }).catch(() => { toast.error("Records could not be loaded. Check your connection and reload."); setIsLoading(false); });
   }, []);
 
   // Form State
@@ -98,8 +69,8 @@ export default function StudioBlogsCRUD() {
     excerpt: "",
     content: "",
     category: "UI/UX Design",
-    status: "published",
-    author_name: "Alex Morgan",
+    status: "draft",
+    author_name: "",
   });
 
   const openCreateModal = () => {
@@ -110,8 +81,8 @@ export default function StudioBlogsCRUD() {
       excerpt: "",
       content: "",
       category: "UI/UX Design",
-      status: "published",
-      author_name: "Alex Morgan",
+      status: "draft",
+      author_name: "",
     });
     setIsModalOpen(true);
   };
@@ -130,44 +101,32 @@ export default function StudioBlogsCRUD() {
     setIsModalOpen(true);
   };
 
+  const [saving, setSaving] = useState(false);
   const handleSaveBlog = async (e: React.FormEvent) => {
     e.preventDefault();
-    const slug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    const payload = { ...formData, slug };
-
-    if (editingBlog) {
-      try {
+    if (saving) return;
+    setSaving(true);
+    const payload = { ...formData, slug: (formData.slug || formData.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") };
+    try {
+      if (editingBlog) {
         const updated = await updateBlogInSupabase(editingBlog.id, payload);
-        setBlogs((prev) =>
-          prev.map((b) => (b.id === editingBlog.id ? { ...b, ...updated } : b))
-        );
-      } catch (err) {
-        setBlogs((prev) =>
-          prev.map((b) => (b.id === editingBlog.id ? { ...b, ...payload } : b))
-        );
-      }
-    } else {
-      try {
+        setBlogs(previous => previous.map(item => item.id === editingBlog.id ? { ...item, ...updated } : item));
+      } else {
         const created = await createBlogInSupabase(payload);
-        setBlogs((prev) => [created as any, ...prev]);
-      } catch (err) {
-        const newBlog: Blog = {
-          id: `blog-${Date.now()}`,
-          ...payload,
-          views_count: 0,
-          created_at: new Date().toISOString(),
-        };
-        setBlogs((prev) => [newBlog, ...prev]);
+        setBlogs(previous => [created as Blog, ...previous]);
       }
-    }
-    setIsModalOpen(false);
+      toast.success("Blog saved");
+      setIsModalOpen(false);
+    } catch {
+      toast.error("Could not save. Your changes are still here. Check your connection and permissions, then try again.");
+    } finally { setSaving(false); }
   };
 
   const handleDeleteBlog = async (id: string) => {
     if (confirm("Are you sure you want to delete this blog post?")) {
       try {
         await deleteBlogInSupabase(id);
-      } catch (e) {}
+      } catch { toast.error("Could not save this change. Check your connection and permissions."); return; }
       setBlogs((prev) => prev.filter((b) => b.id !== id));
       setSelectedRows((prev) => prev.filter((rId) => rId !== id));
     }
@@ -179,7 +138,7 @@ export default function StudioBlogsCRUD() {
     const newStatus = target.status === "published" ? "draft" : "published";
     try {
       await updateBlogInSupabase(id, { status: newStatus });
-    } catch (e) {}
+    } catch { toast.error("Could not save this change. Check your connection and permissions."); return; }
     setBlogs((prev) =>
       prev.map((b) =>
         b.id === id
@@ -204,11 +163,15 @@ export default function StudioBlogsCRUD() {
     });
   }, [blogs, searchQuery, activeTab]);
 
+  const pageCount = Math.max(1, Math.ceil(filteredBlogs.length / Number(rowsPerPage)));
+  const page = Math.min(currentPage, pageCount);
+  const pageRows = filteredBlogs.slice((page - 1) * Number(rowsPerPage), page * Number(rowsPerPage));
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRows(filteredBlogs.map((b) => b.id));
+      setSelectedRows(previous => Array.from(new Set([...previous, ...pageRows.map(item => item.id)])));
     } else {
-      setSelectedRows([]);
+      setSelectedRows(previous => previous.filter(id => !pageRows.some(item => item.id === id)));
     }
   };
 
@@ -221,7 +184,7 @@ export default function StudioBlogsCRUD() {
   };
 
   const isAllSelected =
-    filteredBlogs.length > 0 && selectedRows.length === filteredBlogs.length;
+    pageRows.length > 0 && pageRows.every(item => selectedRows.includes(item.id));
 
   const tabCounts = useMemo(() => {
     const pub = blogs.filter((b) => b.status === "published").length;
@@ -304,23 +267,23 @@ export default function StudioBlogsCRUD() {
               <IconSearch className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => (setSearchQuery(e.target.value), setCurrentPage(1))}
                 placeholder="Filter articles..."
                 className="h-9 pl-9 pr-3 rounded-full bg-card border-border text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-[#22C55E]"
               />
             </div>
 
-            {/* Customize IconColumns Dropdown */}
+            {/* Customize columns Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="h-9 px-3.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground hover:text-accent-foreground hover:bg-accent flex items-center gap-2 transition-all">
                   <IconColumns className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Customize IconColumns</span>
+                  <span>Customize columns</span>
                   <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-muted border-border text-foreground text-xs rounded-xl w-44">
-                <DropdownMenuLabel>Toggle IconColumns</DropdownMenuLabel>
+                <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-accent" />
                 <DropdownMenuCheckboxItem
                   checked={visibleColumns.title}
@@ -366,7 +329,7 @@ export default function StudioBlogsCRUD() {
           </div>
         </div>
 
-        {/* Reference Image Styled shadcn UI Table */}
+        {/* Studio records table */}
         <div className="rounded-2xl border border-border overflow-hidden bg-background">
           <Table>
             <TableHeader className="bg-background border-b border-border">
@@ -405,7 +368,7 @@ export default function StudioBlogsCRUD() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredBlogs.map((blog) => {
+                pageRows.map((blog) => {
                   const isSelected = selectedRows.includes(blog.id);
                   return (
                     <TableRow
@@ -531,7 +494,7 @@ export default function StudioBlogsCRUD() {
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Rows per page</span>
-              <Select value={rowsPerPage} onValueChange={(val) => val && setRowsPerPage(val)}>
+              <Select value={rowsPerPage} onValueChange={(val) => val && (setRowsPerPage(val), setCurrentPage(1))}>
                 <SelectTrigger className="h-8 w-16 bg-muted border-border text-xs rounded-xl text-foreground">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
@@ -542,19 +505,19 @@ export default function StudioBlogsCRUD() {
               </Select>
             </div>
 
-            <span className="font-semibold text-foreground">Page 1 of 1</span>
+            <span className="font-semibold text-foreground">Page {page} of {pageCount}</span>
 
             <div className="flex items-center gap-1">
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="First page" disabled={page === 1} onClick={() => setCurrentPage(1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronsLeft className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Previous page" disabled={page === 1} onClick={() => setCurrentPage(page - 1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronLeft className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Next page" disabled={page === pageCount} onClick={() => setCurrentPage(page + 1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronRight className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Last page" disabled={page === pageCount} onClick={() => setCurrentPage(pageCount)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronsRight className="w-4 h-4" />
               </button>
             </div>
@@ -563,7 +526,7 @@ export default function StudioBlogsCRUD() {
       </div>
 
       {/* CREATE / EDIT ARTICLE MODAL */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={(open) => { if (!saving) setIsModalOpen(open); }}>
         <DialogContent className="bg-background border border-border text-foreground max-w-xl rounded-3xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -574,8 +537,8 @@ export default function StudioBlogsCRUD() {
 
           <form onSubmit={handleSaveBlog} className="space-y-4 text-xs pt-2">
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Article Title</label>
-              <Input
+              <label className="text-foreground font-semibold" htmlFor="blogs-title">Article Title</label>
+              <Input id="blogs-title"
                 required
                 value={formData.title}
                 onChange={(e) => {
@@ -590,8 +553,8 @@ export default function StudioBlogsCRUD() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">URL Slug</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="blogs-slug">URL Slug</label>
+                <Input id="blogs-slug"
                   required
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
@@ -619,8 +582,8 @@ export default function StudioBlogsCRUD() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Excerpt Summary</label>
-              <Input
+              <label className="text-foreground font-semibold" htmlFor="blogs-excerpt">Excerpt Summary</label>
+              <Input id="blogs-excerpt"
                 value={formData.excerpt}
                 onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
                 placeholder="Brief 1-2 sentence description"
@@ -629,8 +592,8 @@ export default function StudioBlogsCRUD() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Content Body</label>
-              <textarea
+              <label className="text-foreground font-semibold" htmlFor="blogs-content">Content Body</label>
+              <textarea id="blogs-content"
                 rows={4}
                 required
                 value={formData.content}
@@ -658,8 +621,8 @@ export default function StudioBlogsCRUD() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Author Name</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="blogs-author_name">Author Name</label>
+                <Input id="blogs-author_name"
                   value={formData.author_name}
                   onChange={(e) => setFormData({ ...formData, author_name: e.target.value })}
                   className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
@@ -677,10 +640,10 @@ export default function StudioBlogsCRUD() {
                 Cancel
               </Button>
               <Button
-                type="submit"
+                type="submit" disabled={saving}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-extrabold text-xs rounded-xl"
               >
-                {editingBlog ? "Update Article" : "Publish Article"}
+                {editingBlog ? "Update Article" : "Save article"}
               </Button>
             </div>
           </form>

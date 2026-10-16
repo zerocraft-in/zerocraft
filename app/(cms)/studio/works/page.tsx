@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import React, { useState, useEffect, useMemo } from "react";
 import { IconPlus, IconBriefcase, IconSearch, IconCircleCheck, IconX, IconSparkles, IconChevronDown, IconColumns, IconDotsVertical, IconChevronsLeft, IconChevronLeft, IconChevronRight, IconChevronsRight, IconLoader2, IconStar } from "@tabler/icons-react";
 import {
@@ -10,43 +11,13 @@ import {
   supabase,
 } from "@/lib/supabase-client";
 
-// shadcn UI components
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Badge, Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle, DropdownMenu, DropdownMenuCheckboxItem,
+  DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+  DropdownMenuTrigger, Input, Select, SelectContent, SelectItem, SelectTrigger,
+  SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/studio-controls";
 
 interface WorkItem {
   id: string;
@@ -64,6 +35,7 @@ export default function StudioWorksCRUD() {
   const [activeTab, setActiveTab] = useState<"all" | "featured" | "standard">("all");
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState("10");
 
   const [visibleColumns, setVisibleColumns] = useState({
@@ -78,11 +50,11 @@ export default function StudioWorksCRUD() {
   const [editingWork, setEditingWork] = useState<WorkItem | null>(null);
 
   useEffect(() => {
-    fetchWorksFromSupabase().then((data) => {
+    fetchWorksFromSupabase(true).then((data) => {
       if (data) {
         setWorks(data as any);
       }
-    });
+    }).catch(() => { toast.error("Records could not be loaded. Check your connection and reload."); });
   }, []);
 
   const [formData, setFormData] = useState({
@@ -120,40 +92,32 @@ export default function StudioWorksCRUD() {
     setIsModalOpen(true);
   };
 
+  const [saving, setSaving] = useState(false);
   const handleSaveWork = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingWork) {
-      try {
-        const updated = await updateWorkInSupabase(editingWork.id, formData);
-        setWorks((prev) =>
-          prev.map((w) => (w.id === editingWork.id ? { ...w, ...updated } : w))
-        );
-      } catch (err) {
-        setWorks((prev) =>
-          prev.map((w) => (w.id === editingWork.id ? { ...w, ...formData } : w))
-        );
+    if (saving) return;
+    setSaving(true);
+    const payload = formData;
+    try {
+      if (editingWork) {
+        const updated = await updateWorkInSupabase(editingWork.id, payload);
+        setWorks(previous => previous.map(item => item.id === editingWork.id ? { ...item, ...updated } : item));
+      } else {
+        const created = await createWorkInSupabase(payload);
+        setWorks(previous => [created as WorkItem, ...previous]);
       }
-    } else {
-      try {
-        const created = await createWorkInSupabase(formData);
-        setWorks((prev) => [created as any, ...prev]);
-      } catch (err) {
-        const newWork: WorkItem = {
-          id: `work-${Date.now()}`,
-          ...formData,
-          created_at: new Date().toISOString(),
-        };
-        setWorks((prev) => [newWork, ...prev]);
-      }
-    }
-    setIsModalOpen(false);
+      toast.success("Work saved");
+      setIsModalOpen(false);
+    } catch {
+      toast.error("Could not save. Your changes are still here. Check your connection and permissions, then try again.");
+    } finally { setSaving(false); }
   };
 
   const handleDeleteWork = async (id: string) => {
     if (confirm("Are you sure you want to delete this project?")) {
       try {
         await deleteWorkInSupabase(id);
-      } catch (e) {}
+      } catch { toast.error("Could not save this change. Check your connection and permissions."); return; }
       setWorks((prev) => prev.filter((w) => w.id !== id));
       setSelectedRows((prev) => prev.filter((rId) => rId !== id));
     }
@@ -164,13 +128,11 @@ export default function StudioWorksCRUD() {
     if (!current) return;
     const newFeatured = !current.featured;
 
-    setWorks((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, featured: newFeatured } : w))
-    );
-
     try {
       await updateWorkInSupabase(id, { featured: newFeatured });
-    } catch (e) {}
+      setWorks(previous => previous.map(work => work.id === id ? { ...work, featured: newFeatured } : work));
+    } catch { toast.error("Could not update featured status."); }
+
   };
 
   const filteredWorks = useMemo(() => {
@@ -189,11 +151,15 @@ export default function StudioWorksCRUD() {
     });
   }, [works, searchQuery, activeTab]);
 
+  const pageCount = Math.max(1, Math.ceil(filteredWorks.length / Number(rowsPerPage)));
+  const page = Math.min(currentPage, pageCount);
+  const pageRows = filteredWorks.slice((page - 1) * Number(rowsPerPage), page * Number(rowsPerPage));
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRows(filteredWorks.map((w) => w.id));
+      setSelectedRows(previous => Array.from(new Set([...previous, ...pageRows.map(item => item.id)])));
     } else {
-      setSelectedRows([]);
+      setSelectedRows(previous => previous.filter(id => !pageRows.some(item => item.id === id)));
     }
   };
 
@@ -206,7 +172,7 @@ export default function StudioWorksCRUD() {
   };
 
   const isAllSelected =
-    filteredWorks.length > 0 && selectedRows.length === filteredWorks.length;
+    pageRows.length > 0 && pageRows.every(item => selectedRows.includes(item.id));
 
   const tabCounts = useMemo(() => {
     const feat = works.filter((w) => w.featured).length;
@@ -286,7 +252,7 @@ export default function StudioWorksCRUD() {
               <IconSearch className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => (setSearchQuery(e.target.value), setCurrentPage(1))}
                 placeholder="Filter works..."
                 className="h-9 pl-9 pr-3 rounded-full bg-card border-border text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-[#22C55E]"
               />
@@ -296,12 +262,12 @@ export default function StudioWorksCRUD() {
               <DropdownMenuTrigger asChild>
                 <button className="h-9 px-3.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground hover:text-accent-foreground hover:bg-accent flex items-center gap-2 transition-all">
                   <IconColumns className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Customize IconColumns</span>
+                  <span>Customize columns</span>
                   <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-muted border-border text-foreground text-xs rounded-xl w-44">
-                <DropdownMenuLabel>Toggle IconColumns</DropdownMenuLabel>
+                <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-accent" />
                 <DropdownMenuCheckboxItem
                   checked={visibleColumns.title}
@@ -376,7 +342,7 @@ export default function StudioWorksCRUD() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredWorks.map((work) => {
+                pageRows.map((work) => {
                   const isSelected = selectedRows.includes(work.id);
                   return (
                     <TableRow
@@ -486,7 +452,7 @@ export default function StudioWorksCRUD() {
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Rows per page</span>
-              <Select value={rowsPerPage} onValueChange={(val) => val && setRowsPerPage(val)}>
+              <Select value={rowsPerPage} onValueChange={(val) => val && (setRowsPerPage(val), setCurrentPage(1))}>
                 <SelectTrigger className="h-8 w-16 bg-muted border-border text-xs rounded-xl text-foreground">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
@@ -497,19 +463,19 @@ export default function StudioWorksCRUD() {
               </Select>
             </div>
 
-            <span className="font-semibold text-foreground">Page 1 of 1</span>
+            <span className="font-semibold text-foreground">Page {page} of {pageCount}</span>
 
             <div className="flex items-center gap-1">
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="First page" disabled={page === 1} onClick={() => setCurrentPage(1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronsLeft className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Previous page" disabled={page === 1} onClick={() => setCurrentPage(page - 1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronLeft className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Next page" disabled={page === pageCount} onClick={() => setCurrentPage(page + 1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronRight className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Last page" disabled={page === pageCount} onClick={() => setCurrentPage(pageCount)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronsRight className="w-4 h-4" />
               </button>
             </div>
@@ -518,7 +484,7 @@ export default function StudioWorksCRUD() {
       </div>
 
       {/* CREATE / EDIT MODAL */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={(open) => { if (!saving) setIsModalOpen(open); }}>
         <DialogContent className="bg-background border border-border text-foreground max-w-lg rounded-3xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -529,8 +495,8 @@ export default function StudioWorksCRUD() {
 
           <form onSubmit={handleSaveWork} className="space-y-4 text-xs pt-2">
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Project Title</label>
-              <Input
+              <label className="text-foreground font-semibold" htmlFor="works-title">Project Title</label>
+              <Input id="works-title"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -559,8 +525,8 @@ export default function StudioWorksCRUD() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Client Name</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="works-client_name">Client Name</label>
+                <Input id="works-client_name"
                   required
                   value={formData.client_name}
                   onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
@@ -571,8 +537,8 @@ export default function StudioWorksCRUD() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Image URL</label>
-              <Input
+              <label className="text-foreground font-semibold" htmlFor="works-image_url">Image URL</label>
+              <Input id="works-image_url"
                 required
                 value={formData.image_url}
                 onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
@@ -581,8 +547,8 @@ export default function StudioWorksCRUD() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Description</label>
-              <textarea
+              <label className="text-foreground font-semibold" htmlFor="works-description">Description</label>
+              <textarea id="works-description"
                 rows={3}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -613,7 +579,7 @@ export default function StudioWorksCRUD() {
                 Cancel
               </Button>
               <Button
-                type="submit"
+                type="submit" disabled={saving}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-extrabold text-xs rounded-xl"
               >
                 {editingWork ? "Update Project" : "Add Project"}

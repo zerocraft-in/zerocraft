@@ -37,6 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Local-only Storage runtime test manifests and results
+/.storage-runtime-test/
+/.seed-preflight/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

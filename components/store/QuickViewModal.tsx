@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconX, IconShoppingBag, IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
 
 export default function QuickViewModal() {
   const { quickViewProduct, setQuickViewProduct, addToCart, toggleWishlist, isInWishlist } = useStore();
@@ -108,7 +109,7 @@ export default function QuickViewModal() {
                 {/* Price */}
                 <div className="flex items-baseline gap-3 mb-6">
                   <span className="text-3xl font-bold text-neutral-900 dark:text-white font-mono">
-                    ${product.price.toFixed(2)} est.
+                    {formatCatalogPrice(product.price, product.currency)} est.
                   </span>
                 </div>
 

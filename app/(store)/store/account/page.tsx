@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
 import { toast } from "sonner";
 import {
   IconUser,
@@ -220,7 +221,7 @@ export default function AccountPage() {
 
                     <div className="flex items-center justify-between font-mono text-xs">
                       <span>{ord.items.length} items purchased</span>
-                      <span className="font-bold text-base text-neutral-900 dark:text-white">${ord.total.toFixed(2)}</span>
+                      <span className="font-bold text-base text-neutral-900 dark:text-white">{formatCatalogPrice(ord.total, ord.currency)}</span>
                     </div>
 
                     <div className="pt-2 flex justify-end">

@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
+import { useCartValidation } from "@/lib/store/useCartValidation";
 import { IconTrash, IconShoppingBag, IconTag, IconGift, IconArrowRight, IconTruck, IconShieldCheck } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -20,6 +22,7 @@ export default function CartPage() {
     giftNote,
     setGiftNote,
   } = useStore();
+  const { validation, isValidating, error: validationError } = useCartValidation(cart);
 
   const [inputCoupon, setInputCoupon] = useState("");
 
@@ -87,9 +90,9 @@ export default function CartPage() {
             {/* Left Items Table Column (8 cols) */}
             <div className="lg:col-span-8 space-y-6">
               <div className="space-y-4">
-                {cart.map((item, idx) => (
+                {cart.map((item) => (
                   <div
-                    key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}-${idx}`}
+                    key={item.lineId}
                     className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs"
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -124,6 +127,21 @@ export default function CartPage() {
                               Size: {item.selectedSize}
                             </span>
                           )}
+                          {item.selectedVariantLabel && (
+                            <span className="bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md">
+                              Variant: {item.selectedVariantLabel}
+                            </span>
+                          )}
+                          {item.customizationReference && (
+                            <span className="bg-lime-100 dark:bg-lime-950/40 px-2.5 py-1 rounded-md">
+                              Custom artwork attached
+                            </span>
+                          )}
+                          {validation?.lines.find((line) => line.lineId === item.lineId)?.errors.map((lineError) => (
+                            <span key={lineError.code} className="basis-full text-rose-600 dark:text-rose-400">
+                              {lineError.message}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -132,14 +150,14 @@ export default function CartPage() {
                     <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-t-0 border-neutral-100 dark:border-neutral-800">
                       <div className="flex items-center border border-neutral-200 dark:border-neutral-800 rounded-xl px-2 py-1 bg-neutral-50 dark:bg-neutral-950">
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedColor, item.selectedSize)}
+                          onClick={() => updateQuantity(item.lineId, item.quantity - 1)}
                           className="w-7 h-7 flex items-center justify-center text-xs font-bold text-neutral-500 hover:text-black dark:hover:text-white"
                         >
                           -
                         </button>
                         <span className="w-8 text-center font-mono font-semibold text-xs">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedColor, item.selectedSize)}
+                          onClick={() => updateQuantity(item.lineId, item.quantity + 1)}
                           className="w-7 h-7 flex items-center justify-center text-xs font-bold text-neutral-500 hover:text-black dark:hover:text-white"
                         >
                           +
@@ -147,11 +165,11 @@ export default function CartPage() {
                       </div>
 
                       <span className="text-base font-bold font-mono text-neutral-900 dark:text-white w-24 text-right">
-                        ${(item.product.price * item.quantity).toFixed(2)}
+                        {formatCatalogPrice(item.product.price * item.quantity, item.product.currency)}
                       </span>
 
                       <button
-                        onClick={() => removeFromCart(item.product.id, item.selectedColor, item.selectedSize)}
+                        onClick={() => removeFromCart(item.lineId)}
                         className="text-neutral-400 hover:text-rose-500 transition-colors p-1"
                         aria-label="Remove item"
                       >
@@ -162,6 +180,11 @@ export default function CartPage() {
                 ))}
               </div>
 
+              {(isValidating || validationError || (validation && !validation.valid)) && (
+                <div className="p-4 rounded-2xl border border-amber-300/60 bg-amber-50 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/20 dark:text-amber-300">
+                  {isValidating ? "Checking live product availability…" : validationError || "Some cart lines need attention before checkout."}
+                </div>
+              )}
               {/* Gift Note Box */}
               <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs">
                 <div className="flex items-center gap-2 mb-3">
@@ -216,25 +239,25 @@ export default function CartPage() {
                 <div className="space-y-3 font-mono text-xs text-neutral-600 dark:text-neutral-300">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">${subtotal.toFixed(2)}</span>
+                    <span className="font-semibold text-neutral-900 dark:text-white">{formatCatalogPrice(subtotal, cart[0]?.product.currency)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                       <span>Discount ({couponCode} -{discountPercentage}%)</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
+                      <span>-{formatCatalogPrice(discountAmount, cart[0]?.product.currency)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span>{shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`}</span>
+                    <span>{shippingCost === 0 ? "FREE" : formatCatalogPrice(shippingCost, cart[0]?.product.currency)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Estimated Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{formatCatalogPrice(tax, cart[0]?.product.currency)}</span>
                   </div>
                   <div className="flex justify-between pt-4 border-t border-neutral-200 dark:border-neutral-800 text-base font-bold text-neutral-900 dark:text-white">
                     <span>Order Total</span>
-                    <span className="text-xl text-lime-600 dark:text-lime-400">${grandTotal.toFixed(2)}</span>
+                    <span className="text-xl text-lime-600 dark:text-lime-400">{formatCatalogPrice(grandTotal, cart[0]?.product.currency)}</span>
                   </div>
                 </div>
 

@@ -1,21 +1,13 @@
 import type { Metadata } from "next";
 import { studio, studioSocials } from "@/lib/studio-config";
-import { Manrope, JetBrains_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-primary",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
+import "@fontsource/inter/300.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/inter/800.css";
+import "./fonts.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(studio.url),
@@ -60,7 +52,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn(manrope.variable, jetbrainsMono.variable, "scroll-smooth")}
+      className={cn("scroll-smooth")}
     >
       <head>
         <script

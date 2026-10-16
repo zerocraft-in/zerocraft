@@ -6,11 +6,14 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconSearch, IconX, IconArrowRight, IconShoppingBag } from "@tabler/icons-react";
 import { useStore } from "@/lib/store/useStore";
-import { PRODUCTS } from "@/lib/data/storeData";
+import type { CatalogProduct } from "@/lib/commerce/catalog";
+import { formatCatalogPrice } from "@/lib/commerce/format";
 
 export default function SearchModal() {
   const { searchModalOpen, toggleSearchModal, addToCart } = useStore();
   const [query, setQuery] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState<CatalogProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Handle ESC key
   useEffect(() => {
@@ -27,13 +30,27 @@ export default function SearchModal() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [searchModalOpen, toggleSearchModal]);
 
-  const filteredProducts = query.trim() === ""
-    ? PRODUCTS.slice(0, 4)
-    : PRODUCTS.filter((p) =>
-        p.title.toLowerCase().includes(query.toLowerCase()) ||
-        p.category.toLowerCase().includes(query.toLowerCase()) ||
-        p.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()))
-      );
+  useEffect(() => {
+    if (!searchModalOpen) return;
+    const controller = new AbortController();
+    const params = new URLSearchParams({ page: "1", pageSize: query.trim() ? "12" : "4", sort: "newest" });
+    if (query.trim()) params.set("query", query.trim());
+    const loadingTimer = window.setTimeout(() => setIsLoading(true), 0);
+    fetch(`/api/store/catalog?${params.toString()}`, { signal: controller.signal })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Search unavailable");
+        setFilteredProducts(payload.products?.products ?? []);
+      })
+      .catch((reason) => {
+        if (reason.name !== "AbortError") setFilteredProducts([]);
+      })
+      .finally(() => setIsLoading(false));
+    return () => {
+      window.clearTimeout(loadingTimer);
+      controller.abort();
+    };
+  }, [query, searchModalOpen]);
 
   return (
     <AnimatePresence>
@@ -85,7 +102,9 @@ export default function SearchModal() {
                 </span>
               </div>
 
-              {filteredProducts.length === 0 ? (
+              {isLoading ? (
+                <div className="py-12 text-center text-neutral-500 dark:text-neutral-400">Searching the catalog...</div>
+              ) : filteredProducts.length === 0 ? (
                 <div className="py-12 text-center text-neutral-500 dark:text-neutral-400">
                   <p className="text-sm mb-2 font-medium">No matching products found for &ldquo;{query}&rdquo;</p>
                   <p className="text-xs font-light">Try searching for &ldquo;poster&rdquo;, &ldquo;frame&rdquo;, &ldquo;leather&rdquo;, or &ldquo;brass&rdquo;.</p>
@@ -116,7 +135,7 @@ export default function SearchModal() {
                             {product.title}
                           </h4>
                           <span className="text-xs text-neutral-400 font-mono">
-                            {product.category} • ${product.price.toFixed(2)}
+                            {product.category} · {formatCatalogPrice(product.price, product.currency)}
                           </span>
                         </div>
                       </Link>

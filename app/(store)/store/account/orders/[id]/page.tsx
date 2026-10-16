@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
 import { IconPrinter, IconCheck, IconTruck, IconClock, IconArrowLeft } from "@tabler/icons-react";
 
 export default function OrderDetailPage({
@@ -97,7 +98,7 @@ export default function OrderDetailPage({
                       </span>
                     </div>
                   </div>
-                  <span className="font-bold text-neutral-900 dark:text-white text-sm">${(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="font-bold text-neutral-900 dark:text-white text-sm">{formatCatalogPrice(item.price * item.quantity, item.currency)}</span>
                 </div>
               ))}
             </div>
@@ -118,13 +119,13 @@ export default function OrderDetailPage({
             </div>
 
             <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800 space-y-2 font-mono text-xs text-neutral-600 dark:text-neutral-300">
-              <div className="flex justify-between"><span>Subtotal</span><span>${order.subtotal.toFixed(2)}</span></div>
-              {order.discount > 0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-${order.discount.toFixed(2)}</span></div>}
-              <div className="flex justify-between"><span>Shipping</span><span>${order.shippingFee.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>Tax</span><span>${order.tax.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Subtotal</span><span>{formatCatalogPrice(order.subtotal, order.currency)}</span></div>
+              {order.discount > 0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-{formatCatalogPrice(order.discount, order.currency)}</span></div>}
+              <div className="flex justify-between"><span>Shipping</span><span>{formatCatalogPrice(order.shippingFee, order.currency)}</span></div>
+              <div className="flex justify-between"><span>Tax</span><span>{formatCatalogPrice(order.tax, order.currency)}</span></div>
               <div className="flex justify-between pt-3 border-t border-neutral-200 dark:border-neutral-800 font-bold text-base text-neutral-900 dark:text-white">
                 <span>Estimated total · due on delivery</span>
-                <span className="text-lime-600 dark:text-lime-400">${order.total.toFixed(2)}</span>
+                <span className="text-lime-600 dark:text-lime-400">{formatCatalogPrice(order.total, order.currency)}</span>
               </div>
             </div>
           </div>
@@ -179,7 +180,7 @@ export default function OrderDetailPage({
                     <tr key={idx} className="border-b">
                       <td className="py-2">{item.title} ({item.color || "Default"})</td>
                       <td className="py-2 text-center">{item.quantity}</td>
-                      <td className="py-2 text-right">${(item.price * item.quantity).toFixed(2)}</td>
+                      <td className="py-2 text-right">{formatCatalogPrice(item.price * item.quantity, item.currency)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -187,8 +188,8 @@ export default function OrderDetailPage({
 
               <div className="flex justify-end pt-2 text-right">
                 <div className="space-y-1 w-48">
-                  <div className="flex justify-between"><span>Subtotal:</span><span>${order.subtotal.toFixed(2)}</span></div>
-                  <div className="flex justify-between font-bold text-sm pt-2 border-t"><span>Estimated total · unpaid:</span><span>${order.total.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span>Subtotal:</span><span>{formatCatalogPrice(order.subtotal, order.currency)}</span></div>
+                  <div className="flex justify-between font-bold text-sm pt-2 border-t"><span>Estimated total · unpaid:</span><span>{formatCatalogPrice(order.total, order.currency)}</span></div>
                 </div>
               </div>
 

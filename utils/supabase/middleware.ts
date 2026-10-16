@@ -1,14 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabasePublicConfig } from "./config";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
 
+  const { url, key } = getSupabasePublicConfig();
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jamyqssytdzbiiahtmsq.supabase.co",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_-9gtyTERobgc00bkJ_nlrw_cJtldYRW",
+    url,
+    key,
     {
       cookies: {
         getAll() {
@@ -34,10 +36,12 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const isAuthCallback = request.nextUrl.pathname === "/studio/auth/callback";
 
   // Protect the studio routes. Authentication alone does not grant staff access.
   if (
     !user &&
+    !isAuthCallback &&
     request.nextUrl.pathname.startsWith("/studio") &&
     !request.nextUrl.pathname.startsWith("/login")
   ) {
@@ -47,7 +51,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && request.nextUrl.pathname.startsWith("/studio") && !request.nextUrl.pathname.startsWith("/studio/auth/callback")) {
+  if (user && request.nextUrl.pathname.startsWith("/studio") && !isAuthCallback) {
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
     const isOwner = user.email === "ivd.maran@gmail.com";
     if (!isOwner && !["admin", "manager", "staff"].includes(profile?.role || "")) {

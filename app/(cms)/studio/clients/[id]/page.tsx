@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,11 +31,11 @@ import {
 } from "@/lib/supabase-client";
 import { useCurrency } from "@/lib/currency-context";
 
-// shadcn UI components
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+// Studio components
+import { Button } from "@/components/ui/studio-controls";
+import { Badge } from "@/components/ui/studio-controls";
+import { Input } from "@/components/ui/studio-controls";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/studio-controls";
 
 interface TimelineItem {
   id: string;
@@ -59,36 +60,8 @@ export default function ClientDetailPage({
   const [relatedAppointments, setRelatedAppointments] = useState<any[]>([]);
 
   // Timeline State
-  const [timeline, setTimeline] = useState<TimelineItem[]>([
-    {
-      id: "tl-1",
-      title: "Contract Renewal & Retainer Finalized",
-      description: "Signed annual enterprise design & development retainer agreement for Q3-Q4.",
-      type: "milestone",
-      date: "August 4, 2026",
-    },
-    {
-      id: "tl-2",
-      title: "WhatsApp Project Update Sent",
-      description: "Sent preview link for initial SaaS dashboard wireframes & responsive UI components.",
-      type: "email",
-      date: "August 2, 2026",
-    },
-    {
-      id: "tl-3",
-      title: "1:1 Product Strategy Session",
-      description: "Held a 45-min Zoom call reviewing user onboarding funnel & conversion optimization goals.",
-      type: "meeting",
-      date: "July 28, 2026",
-    },
-    {
-      id: "tl-4",
-      title: "Invoice #ZC-2026-88 Paid",
-      description: "Milestone payment of $15,000.00 received cleanly via Stripe/Bank Transfer.",
-      type: "invoice",
-      date: "July 15, 2026",
-    },
-  ]);
+  const [savingNote, setSavingNote] = useState(false);
+  const [timeline, setTimeline] = useState<TimelineItem[]>([]);
 
   // Note form state
   const [noteTitle, setNoteTitle] = useState("");
@@ -100,39 +73,27 @@ export default function ClientDetailPage({
       setLoading(true);
       const data = await fetchClientByIdFromSupabase(id);
 
-      if (data) {
-        setClient(data);
-      } else {
-        // Fallback demo client if ID matches client format
-        setClient({
-          id: id,
-          name: "Acme Corporation",
-          email: "contact@acmecorp.com",
-          phone: "+1 (555) 234-5678",
-          company: "Acme Corp",
-          status: "active",
-          total_spent: 45000,
-          created_at: new Date().toISOString(),
-          notes: "Enterprise client with ongoing monthly retainer.",
-        });
-      }
+      setClient(data);
+      if (data?.notes) setTimeline([{ id: "saved-notes", title: "Saved client notes", description: data.notes, type: "note", date: "Client record" }]);
+      else setTimeline([]);
 
       const [works, appts] = await Promise.all([
         fetchWorksFromSupabase(),
         fetchAppointmentsFromSupabase(),
       ]);
 
-      setRelatedWorks(works ? works.slice(0, 3) : []);
-      setRelatedAppointments(appts ? appts.slice(0, 3) : []);
+      setRelatedWorks(works ? works.filter(work => work.client_name === data?.name || work.client_name === data?.company).slice(0, 3) : []);
+      setRelatedAppointments(appts ? appts.filter(appointment => appointment.client_email === data?.email).slice(0, 3) : []);
       setLoading(false);
     }
 
     loadData();
   }, [id]);
 
-  const handleAddTimelineNote = (e: React.FormEvent) => {
+  const handleAddTimelineNote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!noteTitle.trim()) return;
+    if (!noteTitle.trim() || savingNote) return;
+    setSavingNote(true);
 
     const newEntry: TimelineItem = {
       id: `tl-${Date.now()}`,
@@ -146,18 +107,27 @@ export default function ClientDetailPage({
       }),
     };
 
-    setTimeline([newEntry, ...timeline]);
-    setNoteTitle("");
-    setNoteDesc("");
+    const notes = `${newEntry.date} · ${newEntry.title}
+${newEntry.description}
+
+${client.notes || ""}`.trim();
+    try {
+      const saved = await updateClientInSupabase(client.id, { notes });
+      setClient(saved);
+      setTimeline(previous => [newEntry, ...previous]);
+      setNoteTitle(""); setNoteDesc("");
+      toast.success("Client note saved");
+    } catch { toast.error("Could not save the note. Your draft is still here."); }
+    finally { setSavingNote(false); }
   };
 
   const handleToggleStatus = async () => {
     if (!client) return;
     const newStatus = client.status === "active" ? "lead" : "active";
-    setClient({ ...client, status: newStatus });
     try {
       await updateClientInSupabase(client.id, { status: newStatus });
-    } catch (e) {}
+      setClient({ ...client, status: newStatus });
+    } catch { toast.error("Could not update client status."); }
   };
 
   if (loading) {
@@ -168,6 +138,8 @@ export default function ClientDetailPage({
       </div>
     );
   }
+
+  if (!client) return <div role="status" className="rounded-xl border border-border p-8"><h1 className="text-xl">Client unavailable</h1><p className="my-3 text-muted-foreground">This record could not be found or you do not have access.</p><Link href="/studio/clients">Return to clients</Link></div>;
 
   const cleanPhone = client.phone ? client.phone.replace(/[^0-9]/g, "") : "";
   const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(client.email)}&su=${encodeURIComponent(`Zerocraft Project Update - ${client.company}`)}`;
@@ -335,7 +307,7 @@ export default function ClientDetailPage({
                 className="w-full p-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#22C55E]"
               />
 
-              <Button type="submit" size="sm" className="h-8 text-xs font-bold bg-[#22C55E] text-black hover:bg-[#22C55E]/90">
+              <Button type="submit" disabled={savingNote} size="sm" className="h-8 text-xs font-bold bg-[#22C55E] text-black hover:bg-[#22C55E]/90">
                 <IconPlus className="w-3.5 h-3.5 mr-1" /> Log Touchpoint
               </Button>
             </form>

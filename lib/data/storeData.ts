@@ -9,6 +9,7 @@ export interface Product {
   collectionSlug?: string;
   brand: string;
   price: number;
+  currency?: string;
   originalPrice: number;
   rating: number;
   reviewCount: number;
@@ -60,6 +61,7 @@ export interface OrderItem {
   title: string;
   image: string;
   price: number;
+  currency?: string;
   quantity: number;
   color?: string;
   size?: string;
@@ -77,6 +79,7 @@ export interface Order {
   shippingFee: number;
   tax: number;
   total: number;
+  currency?: string;
   shippingAddress: {
     fullName: string;
     street: string;

@@ -250,7 +250,7 @@ export function OtpLoginForm() {
               />
 
               <FieldDescription>
-                We'll send a one-time verification code to this email.
+                We&apos;ll send a one-time verification code to this email.
               </FieldDescription>
 
               {error && (

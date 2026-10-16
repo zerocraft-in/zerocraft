@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,43 +13,13 @@ import {
 } from "@/lib/supabase-client";
 import { useCurrency } from "@/lib/currency-context";
 
-// shadcn UI components
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Badge, Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle, DropdownMenu, DropdownMenuCheckboxItem,
+  DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+  DropdownMenuTrigger, Input, Select, SelectContent, SelectItem, SelectTrigger,
+  SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/studio-controls";
 
 interface Client {
   id: string;
@@ -68,6 +39,7 @@ export default function StudioClientsCRUD() {
   const [activeTab, setActiveTab] = useState<"all" | "active" | "lead">("all");
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState("10");
 
   const [visibleColumns, setVisibleColumns] = useState({
@@ -85,11 +57,11 @@ export default function StudioClientsCRUD() {
 
   useEffect(() => {
     let active = true;
-    fetchClientsFromSupabase().then((data) => {
+    fetchClientsFromSupabase(true).then((data) => {
       if (!active) return;
       setClients(data ? data as any : []);
       setLoading(false);
-    });
+    }).catch(() => { toast.error("Records could not be loaded. Check your connection and reload."); setLoading(false); });
     return () => { active = false; };
   }, []);
 
@@ -128,40 +100,32 @@ export default function StudioClientsCRUD() {
     setIsModalOpen(true);
   };
 
+  const [saving, setSaving] = useState(false);
   const handleSaveClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingClient) {
-      try {
-        const updated = await updateClientInSupabase(editingClient.id, formData);
-        setClients((prev) =>
-          prev.map((c) => (c.id === editingClient.id ? { ...c, ...updated } : c))
-        );
-      } catch (err) {
-        setClients((prev) =>
-          prev.map((c) => (c.id === editingClient.id ? { ...c, ...formData } : c))
-        );
+    if (saving) return;
+    setSaving(true);
+    const payload = formData;
+    try {
+      if (editingClient) {
+        const updated = await updateClientInSupabase(editingClient.id, payload);
+        setClients(previous => previous.map(item => item.id === editingClient.id ? { ...item, ...updated } : item));
+      } else {
+        const created = await createClientInSupabase(payload);
+        setClients(previous => [created as Client, ...previous]);
       }
-    } else {
-      try {
-        const created = await createClientInSupabase(formData);
-        setClients((prev) => [created as any, ...prev]);
-      } catch (err) {
-        const newCli: Client = {
-          id: `cli-${Date.now()}`,
-          ...formData,
-          created_at: new Date().toISOString(),
-        };
-        setClients((prev) => [newCli, ...prev]);
-      }
-    }
-    setIsModalOpen(false);
+      toast.success("Client saved");
+      setIsModalOpen(false);
+    } catch {
+      toast.error("Could not save. Your changes are still here. Check your connection and permissions, then try again.");
+    } finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to remove this client account?")) {
       try {
         await deleteClientInSupabase(id);
-      } catch (e) {}
+      } catch { toast.error("Could not save this change. Check your connection and permissions."); return; }
       setClients((prev) => prev.filter((c) => c.id !== id));
       setSelectedRows((prev) => prev.filter((rId) => rId !== id));
     }
@@ -178,11 +142,15 @@ export default function StudioClientsCRUD() {
     });
   }, [clients, searchQuery, activeTab]);
 
+  const pageCount = Math.max(1, Math.ceil(filteredClients.length / Number(rowsPerPage)));
+  const page = Math.min(currentPage, pageCount);
+  const pageRows = filteredClients.slice((page - 1) * Number(rowsPerPage), page * Number(rowsPerPage));
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRows(filteredClients.map((c) => c.id));
+      setSelectedRows(previous => Array.from(new Set([...previous, ...pageRows.map(item => item.id)])));
     } else {
-      setSelectedRows([]);
+      setSelectedRows(previous => previous.filter(id => !pageRows.some(item => item.id === id)));
     }
   };
 
@@ -195,7 +163,7 @@ export default function StudioClientsCRUD() {
   };
 
   const isAllSelected =
-    filteredClients.length > 0 && selectedRows.length === filteredClients.length;
+    pageRows.length > 0 && pageRows.every(item => selectedRows.includes(item.id));
 
   const tabCounts = useMemo(() => {
     const act = clients.filter((c) => c.status === "active").length;
@@ -275,7 +243,7 @@ export default function StudioClientsCRUD() {
               <IconSearch className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => (setSearchQuery(e.target.value), setCurrentPage(1))}
                 placeholder="Filter clients..."
                 className="h-9 pl-9 pr-3 rounded-full bg-card border-border text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-[#22C55E]"
               />
@@ -285,12 +253,12 @@ export default function StudioClientsCRUD() {
               <DropdownMenuTrigger asChild>
                 <button className="h-9 px-3.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground hover:text-accent-foreground hover:bg-accent flex items-center gap-2 transition-all">
                   <IconColumns className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Customize IconColumns</span>
+                  <span>Customize columns</span>
                   <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-muted border-border text-foreground text-xs rounded-xl w-44">
-                <DropdownMenuLabel>Toggle IconColumns</DropdownMenuLabel>
+                <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-accent" />
                 <DropdownMenuCheckboxItem
                   checked={visibleColumns.name}
@@ -374,7 +342,7 @@ export default function StudioClientsCRUD() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredClients.map((cli) => {
+                pageRows.map((cli) => {
                   const isSelected = selectedRows.includes(cli.id);
                   return (
                     <TableRow
@@ -519,7 +487,7 @@ export default function StudioClientsCRUD() {
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Rows per page</span>
-              <Select value={rowsPerPage} onValueChange={(val) => val && setRowsPerPage(val)}>
+              <Select value={rowsPerPage} onValueChange={(val) => val && (setRowsPerPage(val), setCurrentPage(1))}>
                 <SelectTrigger className="h-8 w-16 bg-muted border-border text-xs rounded-xl text-foreground">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
@@ -530,19 +498,19 @@ export default function StudioClientsCRUD() {
               </Select>
             </div>
 
-            <span className="font-semibold text-foreground">Page 1 of 1</span>
+            <span className="font-semibold text-foreground">Page {page} of {pageCount}</span>
 
             <div className="flex items-center gap-1">
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="First page" disabled={page === 1} onClick={() => setCurrentPage(1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronsLeft className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Previous page" disabled={page === 1} onClick={() => setCurrentPage(page - 1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronLeft className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Next page" disabled={page === pageCount} onClick={() => setCurrentPage(page + 1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronRight className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Last page" disabled={page === pageCount} onClick={() => setCurrentPage(pageCount)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronsRight className="w-4 h-4" />
               </button>
             </div>
@@ -551,7 +519,7 @@ export default function StudioClientsCRUD() {
       </div>
 
       {/* CREATE / EDIT MODAL */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={(open) => { if (!saving) setIsModalOpen(open); }}>
         <DialogContent className="bg-background border border-border text-foreground max-w-lg rounded-3xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -563,8 +531,8 @@ export default function StudioClientsCRUD() {
           <form onSubmit={handleSaveClient} className="space-y-4 text-xs pt-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Contact Name</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="clients-name">Contact Name</label>
+                <Input id="clients-name"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -574,8 +542,8 @@ export default function StudioClientsCRUD() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Company Name</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="clients-company">Company Name</label>
+                <Input id="clients-company"
                   required
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
@@ -586,8 +554,8 @@ export default function StudioClientsCRUD() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Email Address</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="clients-email">Email Address</label>
+                <Input id="clients-email"
                   type="email"
                   required
                   value={formData.email}
@@ -597,8 +565,8 @@ export default function StudioClientsCRUD() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">IconPhone Number</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="clients-phone">IconPhone Number</label>
+                <Input id="clients-phone"
                   type="text"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -626,8 +594,8 @@ export default function StudioClientsCRUD() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Total Spent ($)</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="clients-total_spent">Total Spent ($)</label>
+                <Input id="clients-total_spent"
                   type="number"
                   value={formData.total_spent}
                   onChange={(e) => setFormData({ ...formData, total_spent: Number(e.target.value) })}
@@ -646,7 +614,7 @@ export default function StudioClientsCRUD() {
                 Cancel
               </Button>
               <Button
-                type="submit"
+                type="submit" disabled={saving}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-extrabold text-xs rounded-xl"
               >
                 {editingClient ? "Update Account" : "Save Account"}

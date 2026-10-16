@@ -5,47 +5,14 @@ import { IconStar, IconCircleCheck, IconCircleX, IconPlus, IconSearch, IconX, Ic
 import { supabase, fetchReviewsFromSupabase } from "@/lib/supabase-client";
 import { toast } from "sonner";
 
-// shadcn UI components
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
-  InputGroup,
-  InputGroupText,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  Badge, Button, Checkbox, Dialog, DialogContent, DialogHeader, DialogTitle,
+  DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, Input, InputGroup,
+  InputGroupInput, InputGroupText, Select, SelectContent, SelectItem, SelectTrigger,
+  SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs,
+  TabsList, TabsTrigger,
+} from "@/components/ui/studio-controls";
 
 interface ReviewItem {
   id: string;
@@ -64,14 +31,15 @@ export default function StudioReviewsCRUD() {
   const [activeTab, setActiveTab] = useState<"all" | "approved" | "pending">("all");
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState("10");
 
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
-      const data = await fetchReviewsFromSupabase();
-      setReviews(data as any);
-      setIsLoading(false);
+      try { const data = await fetchReviewsFromSupabase(true); setReviews(data as ReviewItem[]); }
+      catch { toast.error("Reviews could not be loaded. Check your connection and reload."); }
+      finally { setIsLoading(false); }
     }
     loadData();
   }, []);
@@ -95,78 +63,51 @@ export default function StudioReviewsCRUD() {
     status: "approved",
   });
 
-  const handleStatusChange = async (id: string, newStatus: string) => {
-    const previousReviews = [...reviews];
-    setReviews((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
-    );
-    const { error } = await supabase.from("reviews").update({ status: newStatus }).eq("id", id);
-    if (error) {
-      console.error(error);
-      setReviews(previousReviews);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Delete this review permanently?")) {
-      const previousReviews = [...reviews];
-      setReviews((prev) => prev.filter((r) => r.id !== id));
-      setSelectedRows((prev) => prev.filter((rId) => rId !== id));
-      const { error } = await supabase.from("reviews").delete().eq("id", id);
-      if (error) {
-        console.error(error);
-        setReviews(previousReviews);
-      }
-    }
-  };
-
-  const handleBulkStatusChange = async (newStatus: "approved" | "pending") => {
-    const previousReviews = [...reviews];
-    const affectedIds = [...selectedRows];
-    setReviews((prev) =>
-      prev.map((r) => (affectedIds.includes(r.id) ? { ...r, status: newStatus } : r))
-    );
-    setSelectedRows([]);
-    const { error } = await supabase.from("reviews").update({ status: newStatus }).in("id", affectedIds);
-    if (error) {
-      console.error(error);
-      setReviews(previousReviews);
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (confirm(`Delete ${selectedRows.length} selected reviews permanently?`)) {
-      const previousReviews = [...reviews];
-      const affectedIds = [...selectedRows];
-      setReviews((prev) => prev.filter((r) => !affectedIds.includes(r.id)));
-      setSelectedRows([]);
-      const { error } = await supabase.from("reviews").delete().in("id", affectedIds);
-      if (error) {
-        console.error(error);
-        setReviews(previousReviews);
-      }
-    }
-  };
-
-  const handleCreateReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsModalOpen(false);
-
-    const { data, error } = await supabase.from("reviews").insert([{
-      client_name: formData.client_name,
-      client_role: formData.client_role,
-      company: formData.company,
-      rating: formData.rating,
-      comment: formData.comment,
-      status: formData.status
-    }]).select();
-
-    if (error) {
-      console.error(error);
-      toast.error("Failed to create review");
-    } else if (data && data.length > 0) {
-      setReviews([data[0], ...reviews]);
-    }
+  const [busy, setBusy] = useState(false);
+  const [editingReview, setEditingReview] = useState<string | null>(null);
+  function openCreateReview() {
+    setEditingReview(null);
+    setFormData({ client_name: "", client_role: "", company: "", rating: 5, comment: "", status: "pending" });
+    setIsModalOpen(true);
+  }
+  function openEditReview(review: ReviewItem) {
+    setEditingReview(review.id);
+    setFormData({ client_name: review.client_name, client_role: review.client_role, company: review.company, rating: review.rating, comment: review.comment, status: review.status });
+    setIsModalOpen(true);
+  }
+  async function changeReviews(ids: string[], status?: string) {
+    if (busy || !ids.length) return;
+    if (!status && !confirm(`Delete ${ids.length} review(s) permanently?`)) return;
+    setBusy(true);
+    try {
+      const query = status ? supabase.from("reviews").update({ status }) : supabase.from("reviews").delete();
+      const { data, error } = await query.in("id", ids).select("id");
+      if (error) throw error;
+      const changed = new Set((data || []).map(item => item.id));
+      setReviews(previous => status ? previous.map(item => changed.has(item.id) ? { ...item, status } : item) : previous.filter(item => !changed.has(item.id)));
+      setSelectedRows(previous => previous.filter(id => !changed.has(id)));
+      if (changed.size !== ids.length) toast.error("Some records could not be changed. Check access and refresh.");
+      else toast.success(status ? "Review status updated" : "Reviews deleted");
+    } catch { toast.error("The change could not be saved. Please try again."); }
+    finally { setBusy(false); }
+  }
+  const handleStatusChange = (id: string, status: string) => changeReviews([id], status);
+  const handleDelete = (id: string) => changeReviews([id]);
+  const handleBulkStatusChange = (status: string) => changeReviews(selectedRows, status);
+  const handleBulkDelete = () => changeReviews(selectedRows);
+  const handleCreateReview = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    try {
+      const query = editingReview ? supabase.from("reviews").update(formData).eq("id", editingReview) : supabase.from("reviews").insert([formData]);
+      const { data, error } = await query.select().single();
+      if (error) throw error;
+      setReviews(previous => editingReview ? previous.map(item => item.id === editingReview ? data : item) : [data, ...previous]);
+      setIsModalOpen(false);
+      toast.success("Review saved");
+    } catch { toast.error("Could not save. Your review draft is still here."); }
+    finally { setBusy(false); }
   };
 
   const filteredReviews = useMemo(() => {
@@ -180,11 +121,15 @@ export default function StudioReviewsCRUD() {
     });
   }, [reviews, searchQuery, activeTab]);
 
+  const pageCount = Math.max(1, Math.ceil(filteredReviews.length / Number(rowsPerPage)));
+  const page = Math.min(currentPage, pageCount);
+  const pageRows = filteredReviews.slice((page - 1) * Number(rowsPerPage), page * Number(rowsPerPage));
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRows(filteredReviews.map((r) => r.id));
+      setSelectedRows(previous => Array.from(new Set([...previous, ...pageRows.map(item => item.id)])));
     } else {
-      setSelectedRows([]);
+      setSelectedRows(previous => previous.filter(id => !pageRows.some(item => item.id === id)));
     }
   };
 
@@ -197,7 +142,7 @@ export default function StudioReviewsCRUD() {
   };
 
   const isAllSelected =
-    filteredReviews.length > 0 && selectedRows.length === filteredReviews.length;
+    pageRows.length > 0 && pageRows.every(item => selectedRows.includes(item.id));
 
   const tabCounts = useMemo(() => {
     const app = reviews.filter((r) => r.status === "approved").length;
@@ -214,12 +159,12 @@ export default function StudioReviewsCRUD() {
             <IconStar className="w-6 h-6 text-[#22C55E] fill-[#22C55E]" /> Reviews
           </h1>
           <p className="text-xs text-muted-foreground font-normal mt-0.5">
-            Review client testimonials and moderate public feedback with reference-styled table controls.
+            Review client testimonials and moderate public feedback from your workspace.
           </p>
         </div>
 
         <Button
-          onClick={() => setIsModalOpen(true)}
+          onClick={openCreateReview}
         >
           <IconPlus className="w-4 h-4" />
           <span>Add Testimonial</span>
@@ -273,7 +218,7 @@ export default function StudioReviewsCRUD() {
 
               <InputGroupInput
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => (setSearchQuery(e.target.value), setCurrentPage(1))}
                 placeholder="Filter reviews..."
                 className="h-9 border-0 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
               />
@@ -283,12 +228,12 @@ export default function StudioReviewsCRUD() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   <IconColumns className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Customize IconColumns</span>
+                  <span>Customize columns</span>
                   <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-muted border-border text-foreground text-xs rounded-xl w-44">
-                <DropdownMenuLabel>Toggle IconColumns</DropdownMenuLabel>
+                <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-accent" />
                 <DropdownMenuCheckboxItem
                   checked={visibleColumns.client}
@@ -324,7 +269,7 @@ export default function StudioReviewsCRUD() {
             </DropdownMenu>
 
             <Button
-              onClick={() => setIsModalOpen(true)}
+              onClick={openCreateReview}
             >
               <IconPlus className="w-3.5 h-3.5" />
               <span>Add Testimonial</span>
@@ -378,7 +323,7 @@ export default function StudioReviewsCRUD() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredReviews.map((rev) => {
+                pageRows.map((rev) => {
                   const isSelected = selectedRows.includes(rev.id);
                   return (
                     <TableRow
@@ -453,6 +398,7 @@ export default function StudioReviewsCRUD() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="text-xs w-44">
+                            <DropdownMenuItem onClick={() => openEditReview(rev)}>Edit testimonial</DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleStatusChange(rev.id, "approved")}
                               className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
@@ -492,7 +438,7 @@ export default function StudioReviewsCRUD() {
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Rows per page</span>
-              <Select value={rowsPerPage} onValueChange={(val) => val && setRowsPerPage(val)}>
+              <Select value={rowsPerPage} onValueChange={(val) => val && (setRowsPerPage(val), setCurrentPage(1))}>
                 <SelectTrigger className="h-8 w-16 bg-muted border-border text-xs rounded-xl text-foreground">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
@@ -503,19 +449,19 @@ export default function StudioReviewsCRUD() {
               </Select>
             </div>
 
-            <span className="font-semibold text-foreground">Page 1 of 1</span>
+            <span className="font-semibold text-foreground">Page {page} of {pageCount}</span>
 
             <div className="flex items-center gap-1">
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="First page" disabled={page === 1} onClick={() => setCurrentPage(1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronsLeft className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Previous page" disabled={page === 1} onClick={() => setCurrentPage(page - 1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronLeft className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Next page" disabled={page === pageCount} onClick={() => setCurrentPage(page + 1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronRight className="w-4 h-4" />
               </button>
-              <button disabled className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <button aria-label="Last page" disabled={page === pageCount} onClick={() => setCurrentPage(pageCount)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
                 <IconChevronsRight className="w-4 h-4" />
               </button>
             </div>
@@ -524,20 +470,20 @@ export default function StudioReviewsCRUD() {
       </div>
 
       {/* CREATE MODAL */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={(open) => { if (!busy) setIsModalOpen(open); }}>
         <DialogContent className="bg-background border border-border text-foreground max-w-lg rounded-3xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
               <IconSparkles className="w-4 h-4 text-[#22C55E]" />
-              Add New Testimonial
+              {editingReview ? "Edit testimonial" : "Add testimonial"}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleCreateReview} className="space-y-4 text-xs pt-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Client Name</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="reviews-client_name">Client Name</label>
+                <Input id="reviews-client_name"
                   required
                   value={formData.client_name}
                   onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
@@ -547,8 +493,8 @@ export default function StudioReviewsCRUD() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Client Role</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="reviews-client_role">Client Role</label>
+                <Input id="reviews-client_role"
                   value={formData.client_role}
                   onChange={(e) => setFormData({ ...formData, client_role: e.target.value })}
                   className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
@@ -556,8 +502,8 @@ export default function StudioReviewsCRUD() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Company Name</label>
-                <Input
+                <label className="text-foreground font-semibold" htmlFor="reviews-company">Company Name</label>
+                <Input id="reviews-company"
                   required
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
@@ -584,8 +530,8 @@ export default function StudioReviewsCRUD() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Testimonial Comment</label>
-              <textarea
+              <label className="text-foreground font-semibold" htmlFor="reviews-comment">Testimonial Comment</label>
+              <textarea id="reviews-comment"
                 rows={3}
                 required
                 value={formData.comment}
@@ -605,7 +551,7 @@ export default function StudioReviewsCRUD() {
                 Cancel
               </Button>
               <Button
-                type="submit"
+                type="submit" disabled={busy}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-extrabold text-xs rounded-xl"
               >
                 Save Review

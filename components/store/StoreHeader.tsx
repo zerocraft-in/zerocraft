@@ -1,238 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  IconSearch,
-  IconHeart,
-  IconShoppingBag,
-  IconUser,
-  IconMenu2,
-  IconX,
-  IconSparkles,
-  IconSun,
-  IconMoon,
-} from "@tabler/icons-react";
-import { useTheme } from "next-themes";
+import { AnimatePresence, motion } from "framer-motion";
+import { IconMenu2, IconSearch, IconShoppingBag, IconX } from "@tabler/icons-react";
 import { useStore } from "@/lib/store/useStore";
+
+const navLinks = [
+  { label: "Home", href: "/store" },
+  { label: "Shop", href: "/store/shop" },
+  { label: "Categories", href: "/store/shop#categories" },
+  { label: "Custom products", href: "/store/shop?category=customized-gifts" },
+  { label: "About", href: "/store/about" },
+  { label: "Contact", href: "/store/contact" },
+];
 
 export default function StoreHeader() {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const { cart, wishlist, toggleCartDrawer, toggleSearchModal } = useStore();
-
+  const { cart, toggleCartDrawer, toggleSearchModal } = useStore();
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const wishlistCount = wishlist.length;
 
   useEffect(() => {
-    setMounted(true);
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
-    { label: "Home", href: "/store" },
-    { label: "Shop", href: "/store/shop" },
-    { label: "Categories", href: "/store/shop#categories" },
-    { label: "Custom Products", href: "/store/shop?category=customized-gifts" },
-    { label: "About", href: "/store/about" },
-    { label: "Contact", href: "/store/contact" },
-  ];
-
-  return (
-    <>
-      <header
-        className={`fixed top-0 inset-x-0 z-[200] transition-all duration-300 ${
-          scrolled
-            ? "py-3 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-200/60 dark:border-neutral-800/60 shadow-xs"
-            : "py-5 bg-transparent"
-        }`}
-      >
-        <div className="container-site flex items-center justify-between">
-          {/* Logo */}
-          <Link
-            href="/store"
-            className="flex items-center gap-2.5 group"
-            aria-label="ZeroCraft Store Home"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black group-hover:scale-105 transition-transform shadow-xs">
-              <svg
-                viewBox="0 0 24 24"
-                width={20}
-                height={20}
-                fill="currentColor"
-              >
-                <path d="M5.16.43c4.97,7.25,9.93,8.51,14.9,3.78,1.09,1.24,1.94,2.48,2.53,3.71-2.41,3.97-7.69,4.08-11.59,6.41,4.15-.64,8.18-.19,12.08,1.37-.44,1.21-1.13,2.42-2.07,3.63-5.6-5.34-11.2-3.92-16.8,4.26-1.48-1.89-2.57-3.78-3.3-5.67,2.87-6.36,8.78-7.1,12.63-8.59-3.92-.16-7.97-1.26-12.14-3.32.88-1.86,2.13-3.72,3.76-5.58h0Z" />
-              </svg>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-sm tracking-tight text-neutral-900 dark:text-white uppercase leading-none">
-                ZeroCraft
-              </span>
-              <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 tracking-widest uppercase">
-                Store
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-xs font-mono tracking-wider uppercase transition-colors relative py-1 ${
-                    isActive
-                      ? "text-neutral-900 dark:text-white font-semibold"
-                      : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                  }`}
-                >
-                  {link.label}
-                  {isActive && (
-                    <motion.span
-                      layoutId="activeNavIndicator"
-                      className="absolute bottom-0 inset-x-0 h-0.5 bg-lime-500 rounded-full"
-                    />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Header Action Buttons */}
-          <div className="flex items-center space-x-2 md:space-x-3">
-            {/* Search Trigger */}
-            <button
-              onClick={() => toggleSearchModal(true)}
-              aria-label="Search Store"
-              className="p-2.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors flex items-center gap-1.5 text-xs font-mono"
-            >
-              <IconSearch size={19} />
-              <span className="hidden sm:inline text-[11px] text-neutral-400">⌘K</span>
-            </button>
-
-            {/* Wishlist Button */}
-            <Link
-              href="/store/wishlist"
-              aria-label="Wishlist"
-              className="relative p-2.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
-            >
-              <IconHeart size={19} />
-              {wishlistCount > 0 && (
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-mono font-bold text-white shadow-xs">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Cart Trigger Drawer Button */}
-            <button
-              onClick={() => toggleCartDrawer(true)}
-              aria-label="Open Shopping Cart"
-              className="relative flex items-center gap-2 py-2 px-3.5 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-black font-semibold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity shadow-xs"
-            >
-              <IconShoppingBag size={17} />
-              <span className="hidden sm:inline font-mono">Cart</span>
-              {totalCartCount > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-lime-500 text-[10px] font-mono font-bold text-black ml-1">
-                  {totalCartCount}
-                </span>
-              )}
-            </button>
-
-            {/* Account Profile Link */}
-            <Link
-              href="/store/account"
-              aria-label="Account Profile"
-              className="hidden sm:flex p-2.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
-            >
-              <IconUser size={19} />
-            </Link>
-
-            {/* Theme Toggle Button */}
-            {mounted && (
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                aria-label="Toggle dark/light mode"
-                className="p-2.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
-              >
-                {theme === "dark" ? <IconSun size={19} className="text-lime-400" /> : <IconMoon size={19} />}
-              </button>
-            )}
-
-            {/* Mobile Hamburger Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
-              aria-label="Toggle Menu"
-            >
-              {mobileMenuOpen ? <IconX size={22} /> : <IconMenu2 size={22} />}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Drawer Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 top-[70px] z-[190] bg-white dark:bg-neutral-950 p-6 flex flex-col justify-between border-t border-neutral-200 dark:border-neutral-800 lg:hidden overflow-y-auto"
-          >
-            <nav className="flex flex-col space-y-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-xl font-bold text-neutral-900 dark:text-white hover:text-lime-600 dark:hover:text-lime-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                href="/store/account"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-xl font-bold text-neutral-900 dark:text-white hover:text-lime-600 dark:hover:text-lime-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
-              >
-                My Account Profile
-              </Link>
-              <Link
-                href="/store/wishlist"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-xl font-bold text-neutral-900 dark:text-white hover:text-lime-600 dark:hover:text-lime-400 transition-colors py-2 border-b border-neutral-100 dark:border-neutral-900"
-              >
-                Wishlist ({wishlistCount})
-              </Link>
-            </nav>
-
-            <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800 text-center">
-              <p className="text-xs font-mono text-neutral-400 mb-2">
-                Zerocraft Studio · Tenkasi, India
-              </p>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-black font-semibold text-xs uppercase tracking-wider"
-              >
-                Close Menu
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
+  return <>
+    <header className={`fixed inset-x-0 top-0 z-[200] bg-[#171717] text-white transition-all duration-300 ${scrolled ? "border-b border-white/10 py-3 shadow-xl" : "py-4"}`}>
+      <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-14">
+        <Link href="/store" className="group flex items-center gap-2.5" aria-label="ZeroCraft Store Home">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-black shadow-sm transition-transform group-hover:rotate-6"><svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M5.16.43c4.97,7.25,9.93,8.51,14.9,3.78,1.09,1.24,1.94,2.48,2.53,3.71-2.41,3.97-7.69,4.08-11.59,6.41,4.15-.64,8.18-.19,12.08,1.37-.44,1.21-1.13,2.42-2.07,3.63-5.6-5.34-11.2-3.92-16.8,4.26-1.48-1.89-2.57-3.78-3.3-5.67,2.87-6.36,8.78-7.1,12.63-8.59-3.92-.16-7.97-1.26-12.14-3.32.88-1.86,2.13-3.72,3.76-5.58h0Z" /></svg></span>
+          <span className="flex flex-col"><span className="text-sm font-black uppercase leading-none tracking-tight">ZeroCraft</span><span className="mt-1 text-[9px] uppercase tracking-[0.24em] text-white/45">Print studio</span></span>
+        </Link>
+        <nav className="hidden items-center gap-7 lg:flex">{navLinks.map((link) => <Link key={link.href} href={link.href} className={`relative py-2 text-[10px] font-bold uppercase tracking-[0.12em] transition-colors ${pathname === link.href ? "text-white" : "text-white/50 hover:text-white"}`}>{link.label}{pathname === link.href && <motion.span layoutId="store-active-nav" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#ffb703]" />}</Link>)}</nav>
+        <div className="flex items-center gap-1.5 sm:gap-2"><button onClick={() => toggleSearchModal(true)} aria-label="Search store" className="rounded-full p-2.5 text-white/75 transition-colors hover:bg-white/10 hover:text-white"><IconSearch size={18} /></button><button onClick={() => toggleCartDrawer(true)} aria-label="Open cart" className="relative flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-[10px] font-black uppercase tracking-wider text-black transition-colors hover:bg-[#ffb703]"><IconShoppingBag size={16} /><span className="hidden sm:inline">Cart</span>{totalCartCount > 0 && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ffb703] text-[10px]">{totalCartCount}</span>}</button><button onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Toggle menu" className="rounded-full p-2.5 text-white transition-colors hover:bg-white/10 lg:hidden">{mobileMenuOpen ? <IconX size={20} /> : <IconMenu2 size={20} />}</button></div>
+      </div>
+    </header>
+    <AnimatePresence>{mobileMenuOpen && <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} className="fixed inset-x-0 top-[68px] z-[190] flex max-h-[calc(100dvh-68px)] flex-col justify-between overflow-y-auto border-t border-white/10 bg-[#171717] p-6 text-white lg:hidden"><nav className="grid gap-1">{navLinks.map((link) => <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)} className="border-b border-white/10 py-4 text-xl font-black tracking-tight hover:text-[#ffb703]">{link.label}</Link>)}</nav><p className="border-t border-white/10 pt-6 text-center text-xs text-white/45">Zerocraft Studio · Tenkasi, India</p></motion.div>}</AnimatePresence>
+  </>;
 }

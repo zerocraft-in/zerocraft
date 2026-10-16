@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { IconHeart, IconHeartFilled, IconEye, IconShoppingBag } from "@tabler/icons-react";
 import { Product } from "@/lib/data/storeData";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
 
 interface ProductCardProps {
   product: Product;
@@ -16,6 +17,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart, toggleWishlist, isInWishlist, setQuickViewProduct } = useStore();
   const [isHovered, setIsHovered] = useState(false);
   const isWishlisted = isInWishlist(product.id);
+  const images = product.images?.filter(Boolean) ?? [];
+  const primaryImage = images[0] || "/images/products/posterized-art-print-mockup.png";
+  const secondaryImage = images[1] || primaryImage;
+  const isMerch = /t-?shirt|hoodie|merch|apparel/i.test(`${product.title} ${product.category}`);
 
 
   return (
@@ -24,25 +29,25 @@ export default function ProductCard({ product }: ProductCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="group relative flex flex-col rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300"
+      className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#151515]/10 bg-white shadow-[0_8px_24px_rgba(20,20,20,.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(20,20,20,.10)]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Wrapper */}
-      <div className="relative aspect-4/5 w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#e8e4dc]">
         <Link href={`/store/product/${product.id}`} className="block h-full w-full">
           <Image
-            src={isHovered && product.images[1] ? product.images[1] : product.images[0]}
+            src={isHovered ? secondaryImage : primaryImage}
             alt={product.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />
         </Link>
 
         {/* Badges Top-Left */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black shadow-xs">Concept</span>
+          <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-black shadow-sm">{isMerch ? "Merch" : "Print"}</span>
         </div>
 
         {/* Action Floating Buttons Top-Right */}
@@ -80,48 +85,15 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Product Content Details */}
-      <div className="flex flex-col flex-1 p-5">
-        {/* Category */}
-        <div className="flex items-center justify-between mb-1.5 text-xs text-neutral-500 dark:text-neutral-400 font-mono">
-          <span>{product.category}</span>
-          <span>Concept</span>
-        </div>
-
-        {/* Title */}
-        <Link href={`/store/product/${product.id}`} className="group-hover:text-lime-600 dark:group-hover:text-lime-400 transition-colors">
-          <h3 className="font-medium text-base text-neutral-900 dark:text-white line-clamp-1 mb-1">
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        <Link href={`/store/product/${product.id}`} className="transition-colors hover:text-[#e34d2e]">
+          <h3 className="mb-1 line-clamp-1 text-sm font-black leading-5 tracking-tight text-[#151515] sm:text-base">
             {product.title}
           </h3>
         </Link>
-
-        {/* Short Description */}
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1 mb-3">
-          {product.shortDescription}
-        </p>
-
-        {/* Color Swatches & Price Footer */}
-        <div className="mt-auto pt-3 border-t border-neutral-100 dark:border-neutral-800/60 flex items-center justify-between">
-          {/* Swatches */}
-          <div className="flex items-center gap-1.5">
-            {product.colors.slice(0, 3).map((color, idx) => (
-              <span
-                key={idx}
-                title={color.name}
-                className="w-3.5 h-3.5 rounded-full border border-neutral-300 dark:border-neutral-700 shadow-xs"
-                style={{ backgroundColor: color.hex }}
-              />
-            ))}
-            {product.colors.length > 3 && (
-              <span className="text-[10px] text-neutral-400 font-mono">+ {product.colors.length - 3}</span>
-            )}
-          </div>
-
-          {/* Pricing */}
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-semibold text-neutral-900 dark:text-white font-mono">
-              ${product.price.toFixed(2)} est.
-            </span>
-          </div>
+        <div className="mt-auto flex items-baseline gap-2 pt-4">
+          {product.originalPrice > product.price && <span className="text-xs text-[#151515]/40 line-through">{formatCatalogPrice(product.originalPrice, product.currency)}</span>}
+          <span className="text-base font-black tracking-tight text-[#151515]">{formatCatalogPrice(product.price, product.currency)}</span>
         </div>
       </div>
     </motion.div>

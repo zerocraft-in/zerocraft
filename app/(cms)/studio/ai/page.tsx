@@ -1,6 +1,21 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { IconCheck, IconClipboard, IconSparkles } from "@tabler/icons-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+const taskOptions = [
+  { value: "blog", label: "Blog outline" },
+  { value: "project", label: "Project concept" },
+  { value: "social", label: "Social captions" },
+  { value: "product", label: "Product description" },
+  { value: "reply", label: "Customer reply" },
+];
 
 export default function AiDraftPage() {
   const [task, setTask] = useState("blog");
@@ -8,6 +23,7 @@ export default function AiDraftPage() {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function generate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -21,5 +37,22 @@ export default function AiDraftPage() {
     finally { setBusy(false); }
   }
 
-  return <main className="mx-auto max-w-5xl space-y-7 pb-12"><div><p className="font-mono text-[10px] uppercase tracking-[.16em] text-muted-foreground">Studio / Intelligence</p><h1 className="mt-2 text-4xl font-semibold tracking-[-.06em]">AI studio<span className="text-[#a5ce00]">.</span></h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">A Gemini-powered drafting desk for content and operations. Add a factual brief, review every line, then copy the result into your workflow. Nothing is published or sent automatically.</p></div><div className="grid gap-4 lg:grid-cols-[1fr_.75fr]"><form onSubmit={generate} className="space-y-5 rounded-2xl border border-border bg-card p-6"><div><label className="block text-sm font-semibold" htmlFor="ai-task">What are we drafting?</label><select id="ai-task" value={task} onChange={(event) => setTask(event.target.value)} className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm"><option value="blog">Blog outline</option><option value="project">Project concept description</option><option value="social">Social captions</option><option value="product">Product description</option><option value="reply">Customer reply</option></select></div><div><label className="block text-sm font-semibold" htmlFor="ai-brief">Verified facts & direction</label><textarea id="ai-brief" value={brief} onChange={(event) => setBrief(event.target.value)} required minLength={10} maxLength={3000} rows={9} placeholder="Describe the real topic, audience, tone, and confirmed details…" className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm leading-relaxed" /><p className="mt-1 text-right font-mono text-[10px] text-muted-foreground">{brief.length} / 3000</p></div><button type="submit" disabled={busy} className="rounded-lg bg-[#c8fb00] px-5 py-3 text-sm font-semibold text-black disabled:opacity-60">{busy ? "Drafting…" : "Generate draft ↗"}</button>{error && <p role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive">{error}</p>}</form><aside className="rounded-2xl border border-border bg-card p-6"><p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Editorial safeguards</p><h2 className="mt-3 text-xl font-semibold">Your facts stay in control.</h2><ul className="mt-5 space-y-4 text-sm text-muted-foreground"><li>01 / Drafts use only the facts you provide.</li><li>02 / Unknown client names, results, and promises stay unclaimed.</li><li>03 / Review text before publishing or sending.</li><li>04 / Do not put customer personal data in the brief.</li></ul><p className="mt-7 border-t border-border pt-5 text-xs text-muted-foreground">Requires server-side GEMINI_API_KEY and GEMINI_MODEL. Provider availability and free-tier quota depend on the Google AI Studio account.</p></aside></div>{draft && <section className="space-y-3 rounded-2xl border border-border bg-card p-6"><div className="flex flex-wrap items-center justify-between gap-3"><label htmlFor="ai-output" className="text-lg font-semibold">Editable draft</label><button type="button" onClick={() => void navigator.clipboard.writeText(draft)} className="rounded-lg border border-border px-4 py-2 text-xs font-semibold hover:bg-muted">Copy text</button></div><textarea id="ai-output" value={draft} onChange={(event) => setDraft(event.target.value)} rows={17} className="w-full rounded-lg border border-border bg-background p-4 text-sm leading-relaxed" /></section>}</main>;
+  async function copyDraft() {
+    try { await navigator.clipboard.writeText(draft); setCopied(true); window.setTimeout(() => setCopied(false), 1600); }
+    catch { setError("Clipboard access was blocked. Select and copy the draft manually."); }
+  }
+
+  return <main className="mx-auto flex w-full max-w-screen-xl flex-col gap-6 pb-12">
+    <header><p className="text-sm font-medium text-muted-foreground">Studio / Intelligence</p><h1 className="mt-1 text-3xl font-semibold tracking-tight">AI studio</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">Turn a verified brief into a first draft. Review every line before using it; nothing is published or sent automatically.</p></header>
+    {error && <Alert variant="destructive"><AlertTitle>Drafting issue</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+    <div className="grid flex-1 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)]">
+      <Card><CardHeader><CardTitle className="flex items-center gap-2"><span className="rounded-lg bg-primary/10 p-2 text-primary"><IconSparkles size={18} /></span>Draft a new piece</CardTitle><CardDescription>Share only confirmed facts and a clear direction.</CardDescription></CardHeader><CardContent><form onSubmit={generate} className="space-y-5">
+        <div className="space-y-2"><Label htmlFor="ai-task">Draft type</Label><Select value={task} onValueChange={(value) => value && setTask(value)}><SelectTrigger id="ai-task" className="w-full"><SelectValue /></SelectTrigger><SelectContent>{taskOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select></div>
+        <div className="space-y-2"><Label htmlFor="ai-brief">Facts and direction</Label><Textarea id="ai-brief" value={brief} onChange={(event) => setBrief(event.target.value)} required minLength={10} maxLength={3000} rows={9} placeholder="Describe the real topic, audience, tone, and confirmed details…" className="min-h-52 resize-y leading-relaxed" /><p className="text-right text-xs tabular-nums text-muted-foreground">{brief.length} / 3000</p></div>
+        <Button type="submit" size="lg" disabled={busy || brief.trim().length < 10}>{busy ? "Creating draft…" : <><IconSparkles />Generate draft</>}</Button>
+      </form></CardContent></Card>
+      <Card><CardHeader><CardTitle>Editorial safeguards</CardTitle><CardDescription>Keep the content accurate and safe to use.</CardDescription></CardHeader><CardContent><ol className="space-y-4 text-sm">{["Use only facts you can verify.", "Avoid customer personal information.", "Check names, claims, and promises.", "Review the final text before publishing."].map((item, index) => <li key={item} className="flex gap-3"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-xs font-medium tabular-nums">{index + 1}</span><span className="pt-0.5 text-muted-foreground">{item}</span></li>)}</ol><p className="mt-6 border-t pt-4 text-xs leading-relaxed text-muted-foreground">Requires server-side <code>GEMINI_API_KEY</code> and <code>GEMINI_MODEL</code>. Drafts remain in this page until you copy them.</p></CardContent></Card>
+    </div>
+    {draft && <Card><CardHeader className="flex-row items-center justify-between gap-3"><div><CardTitle>Editable draft</CardTitle><CardDescription>Make changes here before copying it into your workflow.</CardDescription></div><Button type="button" variant="outline" onClick={() => void copyDraft()}>{copied ? <IconCheck /> : <IconClipboard />}{copied ? "Copied" : "Copy text"}</Button></CardHeader><CardContent><Textarea aria-label="Editable draft output" value={draft} onChange={(event) => setDraft(event.target.value)} rows={17} className="min-h-80 resize-y leading-relaxed" /></CardContent></Card>}
+  </main>;
 }

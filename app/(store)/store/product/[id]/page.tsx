@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import ProductCard from "@/components/store/ProductCard";
-import { PRODUCTS } from "@/lib/data/storeData";
+import type { CatalogProduct } from "@/lib/commerce/catalog";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
 import { toast } from "sonner";
 import {
   IconShoppingBag,
@@ -30,24 +31,56 @@ export default function ProductDetailPage({
   const router = useRouter();
   const { addToCart, toggleWishlist, isInWishlist } = useStore();
 
-  const product = PRODUCTS.find((p) => p.id === id || p.slug === id) || PRODUCTS[0];
+  const [catalogProduct, setCatalogProduct] = useState<CatalogProduct | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<CatalogProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>();
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/store/catalog?id=${encodeURIComponent(id)}`, { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        if (!cancelled && payload?.product) setCatalogProduct(payload.product);
+      })
+      .catch(() => undefined)
+      .finally(() => { if (!cancelled) setIsLoading(false); });
+    return () => { cancelled = true; };
+  }, [id]);
+
+  const activeProduct = catalogProduct;
+  const selectedVariant = activeProduct?.variants.find((variant) => variant.id === selectedVariantId) ?? activeProduct?.variants[0];
+  const displayPrice = selectedVariant?.price ?? activeProduct?.price ?? 0;
+  const displayCurrency = selectedVariant?.currency ?? activeProduct?.currency ?? null;
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || "");
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"specs" | "shipping" | "reviews">("specs");
   const [isZoomed, setIsZoomed] = useState(false);
 
-  const isWishlisted = isInWishlist(product.id);
+  useEffect(() => {
+    if (!activeProduct) return;
+    fetch(`/api/store/catalog?category=${encodeURIComponent(activeProduct.categorySlug)}&pageSize=5`, { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => setRelatedProducts((payload?.products?.products ?? []).filter((product: { id: string }) => product.id !== activeProduct.id).slice(0, 4)))
+      .catch(() => setRelatedProducts([]));
+  }, [activeProduct]);
+
+  const isWishlisted = isInWishlist(activeProduct?.id ?? "");
+  const effectiveSelectedColor = selectedColor || activeProduct?.colors?.[0]?.name || "";
+  const effectiveSelectedSize = selectedSize || activeProduct?.sizes?.[0] || "";
 
   const handleAddToCart = () => {
-    addToCart(product, quantity, selectedColor, selectedSize);
-    toast.success(`Added ${product.title} to your cart!`);
+    if (!activeProduct) return;
+    addToCart(activeProduct, quantity, effectiveSelectedColor, effectiveSelectedSize, selectedVariant?.id, selectedVariant?.label);
+    toast.success(`Added ${activeProduct.title} to your cart!`);
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, selectedColor, selectedSize);
+    if (!activeProduct) return;
+    addToCart(activeProduct, quantity, effectiveSelectedColor, effectiveSelectedSize, selectedVariant?.id, selectedVariant?.label);
     router.push("/store/checkout");
   };
 
@@ -58,9 +91,13 @@ export default function ProductDetailPage({
     }
   };
 
-  const relatedProducts = PRODUCTS.filter(
-    (p) => p.categorySlug === product.categorySlug && p.id !== product.id
-  ).slice(0, 4);
+  if (isLoading) {
+    return <div className="container-site py-24 text-center text-sm text-neutral-500">Loading product details...</div>;
+  }
+
+  if (!activeProduct) {
+    return <div className="container-site py-24 text-center"><h1 className="text-2xl font-semibold">Product not found</h1><p className="mt-2 text-sm text-neutral-500">This product is no longer published or could not be loaded.</p><Link href="/store/shop" className="mt-6 inline-block text-sm text-lime-600 hover:underline">Return to the shop</Link></div>;
+  }
 
   return (
     <div className="py-8 min-h-screen">
@@ -68,8 +105,8 @@ export default function ProductDetailPage({
         <Breadcrumbs
           items={[
             { label: "Shop", href: "/store/shop" },
-            { label: product.category, href: `/store/category/${product.categorySlug}` },
-            { label: product.title },
+            { label: activeProduct.category, href: `/store/category/${activeProduct.categorySlug}` },
+            { label: activeProduct.title },
           ]}
         />
 
@@ -83,8 +120,8 @@ export default function ProductDetailPage({
               className="relative aspect-4/5 w-full rounded-3xl overflow-hidden bg-neutral-100 dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 cursor-zoom-in group shadow-xs"
             >
               <Image
-                src={product.images[activeImageIndex] || product.images[0]}
-                alt={product.title}
+                src={activeProduct.images[activeImageIndex] || activeProduct.images[0]}
+                alt={activeProduct.title}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -98,9 +135,9 @@ export default function ProductDetailPage({
             </div>
 
             {/* Thumbnail Row */}
-            {product.images.length > 1 && (
+            {activeProduct.images.length > 1 && (
               <div className="flex items-center gap-3 overflow-x-auto py-2 no-scrollbar">
-                {product.images.map((img, idx) => (
+                {activeProduct.images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImageIndex(idx)}
@@ -122,46 +159,59 @@ export default function ProductDetailPage({
             <div>
               {/* Category, Brand & Stock */}
               <div className="flex items-center justify-between text-xs font-mono text-neutral-400 mb-2">
-                <span>{product.brand} • {product.category}</span>
+                <span>{activeProduct.brand} • {activeProduct.category}</span>
                 <span className="text-lime-600 dark:text-lime-400">Catalog preview</span>
               </div>
 
               {/* Title */}
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white mb-3">
-                {product.title}
+                {activeProduct.title}
               </h1>
 
               {/* Product reference */}
               <div className="flex items-center gap-3 mb-6">
-                <span className="text-xs font-mono text-neutral-400">SKU: {product.sku}</span>
+                <span className="text-xs font-mono text-neutral-400">SKU: {activeProduct.sku}</span>
                 <span className="text-xs font-mono text-neutral-400">Availability confirmed after request</span>
               </div>
 
               {/* Draft price */}
               <div className="flex items-baseline gap-4 mb-6 p-4 rounded-2xl bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200/80 dark:border-neutral-800/80">
                 <span className="text-3xl font-bold font-mono text-neutral-900 dark:text-white">
-                  ${product.price.toFixed(2)} est.
+                  {formatCatalogPrice(displayPrice, displayCurrency)}
                 </span>
               </div>
 
               {/* Short Description */}
               <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6 font-light">
-                {product.description}
+                {activeProduct.description}
               </p>
 
+              {activeProduct.variants.length > 1 && (
+                <div className="mb-6">
+                  <label className="block text-xs font-mono uppercase text-neutral-400 mb-2">Variant</label>
+                  <div className="flex flex-wrap gap-2">
+                    {activeProduct.variants.map((variant) => (
+                      <button key={variant.id} onClick={() => setSelectedVariantId(variant.id)} className={`px-4 py-2 rounded-xl text-xs font-mono border transition-all ${selectedVariant?.id === variant.id ? "bg-black text-white dark:bg-white dark:text-black border-transparent font-bold" : "border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400"}`}>
+                        {variant.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Color Swatches */}
-              {product.colors && product.colors.length > 0 && (
+              {activeProduct.colors && activeProduct.colors.length > 0 && (
                 <div className="mb-6">
                   <label className="block text-xs font-mono uppercase text-neutral-400 mb-2">
-                    Color Finish: <strong className="text-neutral-900 dark:text-white font-sans">{selectedColor}</strong>
+                    Color Finish: <strong className="text-neutral-900 dark:text-white font-sans">{effectiveSelectedColor}</strong>
                   </label>
                   <div className="flex flex-wrap gap-2.5">
-                    {product.colors.map((color) => (
+                    {activeProduct.colors.map((color) => (
                       <button
                         key={color.name}
                         onClick={() => setSelectedColor(color.name)}
                         className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono border transition-all ${
-                          selectedColor === color.name
+                        effectiveSelectedColor === color.name
                             ? "border-lime-500 bg-lime-500/10 text-lime-700 dark:text-lime-300 font-semibold"
                             : "border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400"
                         }`}
@@ -178,18 +228,18 @@ export default function ProductDetailPage({
               )}
 
               {/* Size Selector */}
-              {product.sizes && product.sizes.length > 0 && (
+              {activeProduct.sizes && activeProduct.sizes.length > 0 && (
                 <div className="mb-8">
                   <label className="block text-xs font-mono uppercase text-neutral-400 mb-2">
-                    Size Dimension: <strong className="text-neutral-900 dark:text-white font-sans">{selectedSize}</strong>
+                    Size Dimension: <strong className="text-neutral-900 dark:text-white font-sans">{effectiveSelectedSize}</strong>
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {product.sizes.map((size) => (
+                    {activeProduct.sizes.map((size) => (
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
                         className={`px-4 py-2 rounded-xl text-xs font-mono border transition-all ${
-                          selectedSize === size
+                        effectiveSelectedSize === size
                             ? "bg-black text-white dark:bg-white dark:text-black border-transparent font-bold"
                             : "border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400"
                         }`}
@@ -230,7 +280,7 @@ export default function ProductDetailPage({
                 </button>
 
                 <button
-                  onClick={() => toggleWishlist(product)}
+                  onClick={() => toggleWishlist(activeProduct)}
                   className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   aria-label="Wishlist"
                 >
@@ -296,7 +346,7 @@ export default function ProductDetailPage({
 
           {activeTab === "specs" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {product.specifications?.map((spec, i) => (
+              {activeProduct.specifications?.map((spec, i) => (
                 <div key={i} className="flex justify-between py-3 border-b border-neutral-100 dark:border-neutral-800/60 text-xs font-mono">
                   <span className="text-neutral-400">{spec.label}</span>
                   <span className="font-medium text-neutral-900 dark:text-white">{spec.value}</span>
@@ -320,8 +370,8 @@ export default function ProductDetailPage({
               <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">
                 You May Also Like
               </h2>
-              <Link href={`/store/category/${product.categorySlug}`} className="text-xs font-mono text-lime-600 dark:text-lime-400 hover:underline">
-                View all in {product.category} →
+              <Link href={`/store/category/${activeProduct.categorySlug}`} className="text-xs font-mono text-lime-600 dark:text-lime-400 hover:underline">
+                View all in {activeProduct.category} →
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

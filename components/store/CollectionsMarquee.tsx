@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { COLLECTIONS } from "@/lib/data/storeData";
+import type { CatalogCollection } from "@/lib/commerce/catalog";
 import { IconArrowRight } from "@tabler/icons-react";
 
-export default function CollectionsMarquee() {
+export default function CollectionsMarquee({ collections }: { collections: CatalogCollection[] }) {
   return (
     <section className="py-20 bg-neutral-900 text-white overflow-hidden">
       <div className="container-site mb-12">
@@ -27,7 +27,7 @@ export default function CollectionsMarquee() {
 
       {/* Infinite Scroll / Grid Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 md:px-12">
-        {COLLECTIONS.slice(0, 4).map((col, idx) => (
+        {collections.slice(0, 4).map((col, idx) => (
           <motion.div
             key={col.id}
             initial={{ opacity: 0, scale: 0.95 }}

@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { IconArrowUpRight } from "@tabler/icons-react";
-import { CATEGORIES, PRODUCTS } from "@/lib/data/storeData";
+import type { CatalogCategory } from "@/lib/commerce/catalog";
 
-export default function CategoryGrid() {
+export default function CategoryGrid({ categories }: { categories: CatalogCategory[] }) {
   return (
     <section className="py-16 md:py-24 border-b border-neutral-200/60 dark:border-neutral-800/60">
       <div className="container-site">
@@ -27,7 +27,7 @@ export default function CategoryGrid() {
 
         {/* Category Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {CATEGORIES.map((cat, idx) => (
+          {categories.map((cat, idx) => (
             <motion.div
               key={cat.id}
               initial={{ opacity: 0, y: 30 }}
@@ -54,7 +54,7 @@ export default function CategoryGrid() {
                 {/* Top Badge: Item Count */}
                 <div className="absolute top-4 left-4 z-10">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-medium bg-white/20 backdrop-blur-md text-white border border-white/20">
-                    {PRODUCTS.filter((product) => product.categorySlug === cat.slug).length} ideas
+                    {cat.itemCount} ideas
                   </span>
                 </div>
 

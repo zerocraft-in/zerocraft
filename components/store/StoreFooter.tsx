@@ -1,106 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { IconArrowUp } from "@tabler/icons-react";
-import { studioSocials } from "@/lib/studio-config";
+import { IconArrowUp, IconArrowUpRight } from "@tabler/icons-react";
 
 export default function StoreFooter() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <footer className="bg-neutral-950 text-neutral-400 text-xs border-t border-neutral-900">
-      {/* Top Banner */}
-      <div className="border-b border-neutral-900 py-12">
-        <div className="container-site flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-black font-bold">
-              ZC
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-white uppercase tracking-wider">
-                ZeroCraft Store
-              </h3>
-              <p className="text-xs text-neutral-400 font-light">
-                A preview of products and custom ideas from the studio.
-              </p>
-            </div>
-          </div>
-
-          <p className="font-mono text-neutral-300">Requests are reviewed by the studio. No online payment is collected.</p>
-        </div>
-      </div>
-
-      {/* Main Link Columns */}
-      <div className="py-16 container-site grid grid-cols-2 md:grid-cols-5 gap-8">
-        {/* Col 1: Brand & Domain */}
-        <div className="col-span-2 space-y-4">
-          <h4 className="font-mono text-white uppercase tracking-widest text-xs font-semibold">
-            About ZeroCraft
-          </h4>
-          <p className="text-xs text-neutral-400 leading-relaxed font-light max-w-sm">
-            Explore a preview of the studio catalog. Product specifications, availability, delivery, and pricing are confirmed before fulfillment.
-          </p>
+    <footer className="border-t border-white/10 bg-[#111111] text-white/60">
+      <div className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:px-14 lg:py-12">
+        <div className="flex flex-col gap-8 border-b border-white/10 pb-9 sm:flex-row sm:items-end sm:justify-between">
+          <Link href="/store" className="group flex w-fit items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sm font-black text-black transition-transform group-hover:-rotate-6">ZC</span>
+            <span><strong className="block text-sm uppercase tracking-[0.14em] text-white">Zerocraft</strong><span className="block text-[10px] uppercase tracking-[0.18em] text-white/45">Print studio</span></span>
+          </Link>
+          <p className="max-w-xs text-[10px] font-bold uppercase leading-5 tracking-[0.14em] text-white/45 sm:text-right">Made to order · Studio-reviewed orders · Tenkasi, India</p>
         </div>
 
-        {/* Col 2: Quick Links */}
-        <div className="space-y-3">
-          <h4 className="font-mono text-white uppercase tracking-widest text-xs font-semibold">
-            Quick Links
-          </h4>
-          <ul className="space-y-2">
-            <li><Link href="/store" className="hover:text-white transition-colors">Home</Link></li>
-            <li><Link href="/store/shop" className="hover:text-white transition-colors">Shop Catalog</Link></li>
-            <li><Link href="/store/about" className="hover:text-white transition-colors">About Us</Link></li>
-            <li><Link href="/store/contact" className="hover:text-white transition-colors">Contact Support</Link></li>
-            <li><Link href="/store/wishlist" className="hover:text-white transition-colors">My Wishlist</Link></li>
-            <li><Link href="/store/cart" className="hover:text-white transition-colors">Shopping Cart</Link></li>
-          </ul>
+        <div className="flex flex-col gap-7 py-8 sm:flex-row sm:items-center sm:justify-between">
+          <nav className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-bold uppercase tracking-[0.16em]">
+            <Link href="/store" className="transition-colors hover:text-white">Home</Link>
+            <Link href="/store/shop" className="transition-colors hover:text-white">Shop</Link>
+            <Link href="/store/shop?category=t-shirts" className="transition-colors hover:text-white">Apparel</Link>
+            <Link href="/store/shop?category=customized-gifts" className="transition-colors hover:text-white">Custom</Link>
+            <Link href="/store/contact" className="transition-colors hover:text-white">Contact</Link>
+          </nav>
+          <button onClick={scrollToTop} className="flex w-fit items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:text-[#ffb703]">Back to top <IconArrowUp size={14} /></button>
         </div>
 
-        {/* Col 3: Categories */}
-        <div className="space-y-3">
-          <h4 className="font-mono text-white uppercase tracking-widest text-xs font-semibold">
-            Categories
-          </h4>
-          <ul className="space-y-2">
-            <li><Link href="/store/category/posters" className="hover:text-white transition-colors">Posters</Link></li>
-            <li><Link href="/store/category/photo-frames" className="hover:text-white transition-colors">Photo Frames</Link></li>
-            <li><Link href="/store/category/customized-gifts" className="hover:text-white transition-colors">Customized Gifts</Link></li>
-            <li><Link href="/store/category/notebooks" className="hover:text-white transition-colors">Notebooks</Link></li>
-            <li><Link href="/store/category/accessories" className="hover:text-white transition-colors">Accessories</Link></li>
-            <li><Link href="/store/category/desk-decor" className="hover:text-white transition-colors">Desk Decor</Link></li>
-          </ul>
-        </div>
-
-        {/* Col 4: Policies & Help */}
-        <div className="space-y-3">
-          <h4 className="font-mono text-white uppercase tracking-widest text-xs font-semibold">
-            Customer Help
-          </h4>
-          <ul className="space-y-2">
-            <li><Link href="/store/contact" className="hover:text-white transition-colors">Contact the studio</Link></li>
-            <li><Link href="/store/account/orders" className="hover:text-white transition-colors">Order requests in this browser</Link></li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Bottom Copyright & Back to Top */}
-      <div className="border-t border-neutral-900 py-6">
-        <div className="container-site flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px]">
-          <p>© {new Date().getFullYear()} Zerocraft Studio. All rights reserved.</p>
-
-          <div className="flex items-center space-x-4">
-            {studioSocials.map((social) => <a key={social.label} href={social.url} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{social.label}</a>)}
-          </div>
-
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-1 text-white hover:text-lime-400 transition-colors uppercase tracking-wider font-semibold"
-          >
-            Back to top <IconArrowUp size={14} />
-          </button>
+        <div className="flex flex-col justify-between gap-2 border-t border-white/10 pt-5 text-[10px] uppercase tracking-[0.14em] text-white/35 sm:flex-row">
+          <span>© {new Date().getFullYear()} Zerocraft Studio</span>
+          <span className="inline-flex items-center gap-1">Originals for your space <IconArrowUpRight size={12} /></span>
         </div>
       </div>
     </footer>

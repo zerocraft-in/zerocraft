@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
+import { useCartValidation } from "@/lib/store/useCartValidation";
 import { toast } from "sonner";
 import {
   IconTruck,
@@ -13,11 +15,32 @@ import {
   IconCash,
 } from "@tabler/icons-react";
 
+const countryCode = (value: string) => {
+  const normalized = value.trim().toLowerCase();
+  const aliases: Record<string, string> = {
+    india: "IN",
+    ind: "IN",
+    "united states": "US",
+    usa: "US",
+    "united kingdom": "GB",
+    uk: "GB",
+    canada: "CA",
+    australia: "AU",
+    singapore: "SG",
+    uae: "AE",
+    "united arab emirates": "AE",
+  };
+  if (aliases[normalized]) return aliases[normalized];
+  return /^[a-z]{2,3}$/i.test(value.trim()) ? value.trim().toUpperCase() : "IN";
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart, couponCode, discountPercentage, userProfile, addOrder } = useStore();
+  const { validation, isValidating, error: validationError } = useCartValidation(cart);
 
   const [loading, setLoading] = useState(false);
+  const [idempotencyKey] = useState(() => `checkout-${crypto.randomUUID()}`);
   const [deliveryMethod, setDeliveryMethod] = useState<"standard" | "express" | "overnight">("standard");
 
   const [formData, setFormData] = useState({
@@ -28,10 +51,10 @@ export default function CheckoutPage() {
     city: userProfile.address.city,
     state: userProfile.address.state,
     postalCode: userProfile.address.postalCode,
-    country: userProfile.address.country,
+    country: countryCode(userProfile.address.country || "IN"),
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -52,6 +75,14 @@ export default function CheckoutPage() {
       toast.error("Your cart is empty!");
       return;
     }
+    if (isValidating || !validation) {
+      toast.error("Please wait while we check the live catalog.");
+      return;
+    }
+    if (!validation.valid) {
+      toast.error(validationError || "Resolve the unavailable cart lines before continuing.");
+      return;
+    }
 
     setLoading(true);
 
@@ -60,10 +91,17 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.fullName, email: formData.email,
+          idempotencyKey,
           address: { fullName: formData.fullName, street: formData.street, city: formData.city, state: formData.state, postalCode: formData.postalCode, country: formData.country, phone: formData.phone },
-          items: cart.map((item) => ({ productId: item.product.id, quantity: item.quantity, color: item.selectedColor, size: item.selectedSize })),
-          delivery: deliveryMethod, coupon: couponCode,
+          items: cart.map((item) => ({
+            productId: item.product.id,
+            ...(item.selectedVariantId ? { variantId: item.selectedVariantId } : {}),
+            quantity: item.quantity,
+            ...(item.selectedColor?.trim() ? { color: item.selectedColor.trim() } : {}),
+            ...(item.selectedSize?.trim() ? { size: item.selectedSize.trim() } : {}),
+            ...(item.customizationReference?.trim() ? { customizationReference: item.customizationReference.trim() } : {}),
+          })),
+          delivery: deliveryMethod, paymentMethod: "cod",
         }),
       });
       const result = await response.json();
@@ -79,7 +117,7 @@ export default function CheckoutPage() {
           { step: "Shipped", timestamp: "Pending", completed: false },
           { step: "Delivered", timestamp: "Pending", completed: false },
         ],
-        items: saved.items.map((item: { productId: string; title: string; image: string; price: number; quantity: number; color?: string; size?: string }, index: number) => ({ ...item, id: `${saved.id}-${index}` })),
+        items: saved.items.map((item: { productId: string; title: string; image?: string; price?: number; unitPrice?: number; quantity: number; color?: string; size?: string }, index: number) => ({ ...item, price: item.price ?? item.unitPrice ?? 0, image: item.image ?? "", id: `${saved.id}-${index}` })),
         subtotal: saved.subtotal, discount: saved.discount, shippingFee: saved.shipping_fee, tax: saved.tax, total: saved.total,
         shippingAddress: { fullName: formData.fullName, street: formData.street, city: formData.city, state: formData.state, postalCode: formData.postalCode, country: formData.country, phone: formData.phone },
         paymentMethod: "Cash on Delivery — unpaid",
@@ -98,16 +136,16 @@ export default function CheckoutPage() {
         <Breadcrumbs
           items={[
             { label: "Cart", href: "/store/cart" },
-            { label: "Checkout" },
+            { label: "Fast checkout" },
           ]}
         />
 
         <div className="my-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
           <span className="text-label text-lime-600 dark:text-lime-400 mb-2 block">
-            Order request
+            Fast checkout
           </span>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            Review your order
+            Complete your order in one step
           </h1>
         </div>
 
@@ -209,15 +247,23 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-neutral-400 uppercase">Country</label>
-                  <input
-                    type="text"
+                  <label className="text-neutral-400 uppercase" htmlFor="checkout-country">Country</label>
+                  <select
+                    id="checkout-country"
                     required
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
                     className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-lime-400"
-                  />
+                  >
+                    <option value="IN">India</option>
+                    <option value="US">United States</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="SG">Singapore</option>
+                    <option value="AE">United Arab Emirates</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -245,7 +291,7 @@ export default function CheckoutPage() {
                       <p className="text-[11px] text-neutral-500 font-light">Dispatched in reinforced tubes</p>
                     </div>
                   </div>
-                  <span className="text-xs font-mono font-bold">{subtotal > 100 ? "FREE" : "$9.00"}</span>
+                  <span className="text-xs font-mono font-bold">{subtotal > 100 ? "FREE" : formatCatalogPrice(9, cart[0]?.product.currency)}</span>
                 </label>
 
                 <label
@@ -263,7 +309,7 @@ export default function CheckoutPage() {
                       <p className="text-[11px] text-neutral-500 font-light">Priority dispatch & live tracking</p>
                     </div>
                   </div>
-                  <span className="text-xs font-mono font-bold">$15.00</span>
+                  <span className="text-xs font-mono font-bold">{formatCatalogPrice(15, cart[0]?.product.currency)}</span>
                 </label>
 
                 <label
@@ -281,7 +327,7 @@ export default function CheckoutPage() {
                       <p className="text-[11px] text-neutral-500 font-light">Guaranteed next morning arrival</p>
                     </div>
                   </div>
-                  <span className="text-xs font-mono font-bold">$25.00</span>
+                  <span className="text-xs font-mono font-bold">{formatCatalogPrice(25, cart[0]?.product.currency)}</span>
                 </label>
               </div>
             </div>
@@ -301,21 +347,26 @@ export default function CheckoutPage() {
               <h2 className="text-base font-bold text-neutral-900 dark:text-white font-mono uppercase tracking-wider pb-4 border-b border-neutral-200 dark:border-neutral-800">
                 Order Review ({cart.length} items)
               </h2>
+              {(isValidating || validationError || (validation && !validation.valid)) && (
+                <div className="rounded-xl border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/20 dark:text-amber-300">
+                  {isValidating ? "Checking live product availability…" : validationError || "Some cart lines need attention before checkout."}
+                </div>
+              )}
 
               {/* Items List Mini */}
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1 no-scrollbar">
-                {cart.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-xs font-mono">
+                {cart.map((item) => (
+                  <div key={item.lineId} className="flex items-center justify-between text-xs font-mono">
                     <div className="flex items-center gap-3">
                       <div className="relative h-10 w-10 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 shrink-0">
                         <Image src={item.product.images[0]} alt={item.product.title} fill sizes="40px" className="object-cover" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-neutral-900 dark:text-white line-clamp-1">{item.product.title}</h4>
-                        <span className="text-[10px] text-neutral-400">Qty: {item.quantity}</span>
+                        <span className="text-[10px] text-neutral-400">Qty: {item.quantity}{item.selectedVariantLabel ? ` · ${item.selectedVariantLabel}` : ""}</span>
                       </div>
                     </div>
-                    <span className="font-bold text-neutral-900 dark:text-white">${(item.product.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-bold text-neutral-900 dark:text-white">{formatCatalogPrice(item.product.price * item.quantity, item.product.currency)}</span>
                   </div>
                 ))}
               </div>
@@ -324,25 +375,25 @@ export default function CheckoutPage() {
               <div className="space-y-2 pt-4 border-t border-neutral-200 dark:border-neutral-800 font-mono text-xs text-neutral-600 dark:text-neutral-300">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-neutral-900 dark:text-white">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold text-neutral-900 dark:text-white">{formatCatalogPrice(subtotal, cart[0]?.product.currency)}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                     <span>Discount ({couponCode})</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-{formatCatalogPrice(discountAmount, cart[0]?.product.currency)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span>Delivery Speed</span>
-                  <span>{deliveryFee === 0 ? "FREE" : `$${deliveryFee.toFixed(2)}`}</span>
+                  <span>{deliveryFee === 0 ? "FREE" : formatCatalogPrice(deliveryFee, cart[0]?.product.currency)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (8%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatCatalogPrice(tax, cart[0]?.product.currency)}</span>
                 </div>
                 <div className="flex justify-between pt-4 border-t border-neutral-200 dark:border-neutral-800 text-lg font-bold text-neutral-900 dark:text-white">
                   <span>Total Amount</span>
-                  <span className="text-xl text-lime-600 dark:text-lime-400">${grandTotal.toFixed(2)}</span>
+                  <span className="text-xl text-lime-600 dark:text-lime-400">{formatCatalogPrice(grandTotal, cart[0]?.product.currency)}</span>
                 </div>
               </div>
 
@@ -359,7 +410,7 @@ export default function CheckoutPage() {
                   </span>
                 ) : (
                   <>
-                    <IconCash size={16} /> Request order · ${grandTotal.toFixed(2)} due on delivery
+                    <IconCash size={16} /> Request order · {formatCatalogPrice(grandTotal, cart[0]?.product.currency)} due on delivery
                   </>
                 )}
               </button>

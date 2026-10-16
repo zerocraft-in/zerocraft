@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { IconCheck, IconPackage, IconArrowRight } from "@tabler/icons-react";
 import { useStore } from "@/lib/store/useStore";
+import { formatCatalogPrice } from "@/lib/commerce/format";
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
@@ -56,7 +57,7 @@ export default function OrderSuccessPage() {
               </div>
               <div className="flex justify-between font-bold text-sm text-neutral-900 dark:text-white pt-1">
                 <span>Estimated total · due on delivery</span>
-                <span className="text-lime-600 dark:text-lime-400">${matchedOrder.total.toFixed(2)}</span>
+                <span className="text-lime-600 dark:text-lime-400">{formatCatalogPrice(matchedOrder.total, matchedOrder.currency)}</span>
               </div>
             </div>
           )}

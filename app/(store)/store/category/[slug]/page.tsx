@@ -3,14 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import ProductCard from "@/components/store/ProductCard";
-import { CATEGORIES, PRODUCTS } from "@/lib/data/storeData";
+import { getCategories, getProducts } from "@/lib/commerce/catalog";
 import { IconArrowLeft } from "@tabler/icons-react";
-
-export function generateStaticParams() {
-  return CATEGORIES.map((cat) => ({
-    slug: cat.slug,
-  }));
-}
 
 export default async function CategoryPage({
   params,
@@ -18,13 +12,14 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const category = CATEGORIES.find((c) => c.slug === slug);
+  const categories = await getCategories();
+  const category = categories.find((c) => c.slug === slug);
 
   if (!category) {
     notFound();
   }
 
-  const categoryProducts = PRODUCTS.filter((p) => p.categorySlug === slug);
+  const { products: categoryProducts } = await getProducts({ categorySlug: slug, page: 1, pageSize: 48 });
 
   return (
     <div className="py-8 min-h-screen">

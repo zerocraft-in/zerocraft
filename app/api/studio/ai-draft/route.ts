@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { isSameOrigin } from "@/lib/request-origin";
+import { getStoredIntegration, isIntegrationEnabled } from "@/lib/studio-integration-secrets";
 
 export const runtime = "nodejs";
 
@@ -19,8 +20,10 @@ export async function POST(request: Request) {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
   if (!["admin", "manager", "staff"].includes(profile?.role || "")) return Response.json({ error: "Studio access required." }, { status: 403 });
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL;
+  if (!(await isIntegrationEnabled("gemini").catch(() => true))) return Response.json({ error: "Gemini is disabled in Studio integrations. Enable it in Settings to use AI drafting." }, { status: 503 });
+  const saved = await getStoredIntegration<{ apiKey?: string; model?: string }>("gemini").catch(() => null);
+  const apiKey = saved?.apiKey || process.env.GEMINI_API_KEY;
+  const model = saved?.model || process.env.GEMINI_MODEL;
   if (!apiKey || !model) return Response.json({ error: "AI drafting is not configured. Set GEMINI_API_KEY and GEMINI_MODEL on the server." }, { status: 503 });
   if (!/^[a-zA-Z0-9_.-]+$/.test(model)) return Response.json({ error: "Invalid AI model configuration." }, { status: 503 });
 
