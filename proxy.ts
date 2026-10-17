@@ -23,11 +23,6 @@ export async function proxy(request: NextRequest) {
     return new NextResponse("Unknown host", { status: 421 });
   }
 
-  if (hostname === "www.zerocraft.in") {
-    if (methodCanRedirect) return NextResponse.redirect(`${domainUrlForRequest("studio", request.nextUrl, pathname, hostname)}${search}`, 308);
-    return new NextResponse("Use the canonical studio hostname", { status: 421 });
-  }
-
   if (!featureEnabled || area === "preview") return await updateSession(request);
 
   if (area === "studio" && (pathname === "/" || pathname.startsWith("/studio") || pathname === "/login" || pathname.startsWith("/api/studio"))) {
