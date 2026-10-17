@@ -31,6 +31,8 @@ interface WorkItem {
   created_at: string;
 }
 
+type WorkFormData = Omit<WorkItem, "id" | "created_at">;
+
 export default function StudioWorksCRUD() {
   const [works, setWorks] = useState<WorkItem[]>([]);
   const [activeTab, setActiveTab] = useState<"all" | "featured" | "standard">("all");
@@ -58,7 +60,7 @@ export default function StudioWorksCRUD() {
     }).catch(() => { toast.error("Records could not be loaded. Check your connection and reload."); });
   }, []);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<WorkFormData>({
     title: "",
     category: "Web App Design",
     image_url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&fit=crop",
