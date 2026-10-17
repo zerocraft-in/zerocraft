@@ -27,6 +27,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { ADMIN_ROUTES } from "@/lib/admin-routes";
 
 type NavigationChild = {
   label: string;
@@ -41,159 +42,56 @@ type NavigationItem = {
 };
 
 const navigation: NavigationItem[] = [
-  { label: "Dashboard", href: "/studio", icon: IconHome },
+  { label: "Dashboard", href: ADMIN_ROUTES.overview, icon: IconHome },
   {
-    label: "Store",
-    href: "/studio/store",
-    icon: IconShoppingBag,
-    children: [
-      { label: "Overview", href: "/studio/store", icon: IconHome },
-      {
-        label: "Products",
-        href: "/studio/store/products",
-        icon: IconBriefcase,
-      },
-      {
-        label: "Categories",
-        href: "/studio/store/categories",
-        icon: IconDatabase,
-      },
-      {
-        label: "Collections",
-        href: "/studio/store/collections",
-        icon: IconChartBar,
-      },
-      {
-        label: "Customization",
-        href: "/studio/store/customization",
-        icon: IconSettings,
-      },
-      {
-        label: "Inventory",
-        href: "/studio/store/inventory",
-        icon: IconDatabase,
-      },
-      {
-        label: "Discounts",
-        href: "/studio/store/discounts",
-        icon: IconUsers,
-      },
-      {
-        label: "Purchase orders",
-        href: "/studio/store/purchase-orders",
-        icon: IconFileText,
-      },
-      {
-        label: "Gift cards",
-        href: "/studio/store/gift-cards",
-        icon: IconBriefcase,
-      },
-    ],
-  },
-  {
-    label: "Orders",
-    href: "/studio/orders",
-    icon: IconFileText,
-    children: [
-      { label: "All Orders", href: "/studio/orders", icon: IconFileText },
-      { label: "Drafts", href: "/studio/orders/drafts", icon: IconBriefcase },
-      {
-        label: "Abandoned checkouts",
-        href: "/studio/orders/abandoned-checkouts",
-        icon: IconShoppingBag,
-      },
-      { label: "Pending", href: "/studio/orders/pending", icon: IconChartBar },
-      {
-        label: "Fulfillment",
-        href: "/studio/orders/fulfillment",
-        icon: IconDatabase,
-      },
-      {
-        label: "Returns",
-        href: "/studio/orders/returns",
-        icon: IconArrowUpRight,
-      },
-    ],
-  },
-  {
-    label: "Clients",
-    href: "/studio/clients",
-    icon: IconUsers,
-    children: [
-      { label: "All Clients", href: "/studio/clients", icon: IconUsers },
-      {
-        label: "Appointments",
-        href: "/studio/appointments",
-        icon: IconChartBar,
-      },
-      {
-        label: "Inquiries",
-        href: "/studio/clients/inquiries",
-        icon: IconFileText,
-      },
-      {
-        label: "Projects",
-        href: "/studio/clients/projects",
-        icon: IconBriefcase,
-      },
-    ],
-  },
-  {
-    label: "Works",
-    href: "/studio/works",
+    label: "Studio",
+    href: ADMIN_ROUTES.studio.works,
     icon: IconBriefcase,
     children: [
-      { label: "All Works", href: "/studio/works", icon: IconBriefcase },
-      { label: "Blogs", href: "/studio/blogs", icon: IconFileText },
-      { label: "Reviews", href: "/studio/reviews", icon: IconUsers },
-      {
-        label: "Categories",
-        href: "/studio/works/categories",
-        icon: IconDatabase,
-      },
-      {
-        label: "Featured Works",
-        href: "/studio/works/featured",
-        icon: IconChartBar,
-      },
+      { label: "Works", href: ADMIN_ROUTES.studio.works, icon: IconBriefcase },
+      { label: "Clients", href: ADMIN_ROUTES.studio.clients, icon: IconUsers },
+      { label: "Appointments", href: ADMIN_ROUTES.studio.appointments, icon: IconChartBar },
+      { label: "Blogs", href: ADMIN_ROUTES.studio.blogs, icon: IconFileText },
+      { label: "Reviews", href: ADMIN_ROUTES.studio.reviews, icon: IconUsers },
     ],
   },
   {
-    label: "Reports",
-    href: "/studio/reports",
-    icon: IconChartBar,
+    label: "Store",
+    href: ADMIN_ROUTES.store.overview,
+    icon: IconShoppingBag,
     children: [
-      { label: "Overview", href: "/studio/reports", icon: IconChartBar },
-      { label: "Sales", href: "/studio/reports/sales", icon: IconShoppingBag },
-      {
-        label: "Analytics",
-        href: "/studio/reports/analytics",
-        icon: IconDatabase,
-      },
-      {
-        label: "Automations",
-        href: "/studio/automations",
-        icon: IconBriefcase,
-      },
-      { label: "AI studio", href: "/studio/ai", icon: IconUsers },
+      { label: "Store Overview", href: ADMIN_ROUTES.store.overview, icon: IconHome },
+      { label: "Products", href: ADMIN_ROUTES.store.products, icon: IconBriefcase },
+      { label: "Categories", href: ADMIN_ROUTES.store.categories, icon: IconDatabase },
+      { label: "Collections", href: ADMIN_ROUTES.store.collections, icon: IconChartBar },
+      { label: "Inventory", href: ADMIN_ROUTES.store.inventory, icon: IconDatabase },
+      { label: "Customization", href: ADMIN_ROUTES.store.customization, icon: IconSettings },
+      { label: "Discounts", href: ADMIN_ROUTES.store.discounts, icon: IconUsers },
+      { label: "Gift Cards", href: ADMIN_ROUTES.store.giftCards, icon: IconBriefcase },
+      { label: "Purchase Orders", href: ADMIN_ROUTES.store.purchaseOrders, icon: IconFileText },
+      { label: "Transfers", href: ADMIN_ROUTES.store.transfers, icon: IconArrowUpRight },
     ],
   },
   {
-    label: "Database",
-    href: "/studio/database",
+    label: "Operations",
+    href: ADMIN_ROUTES.operations.orders,
+    icon: IconFileText,
+    children: [
+      { label: "Orders", href: ADMIN_ROUTES.operations.orders, icon: IconFileText },
+      { label: "Reports", href: ADMIN_ROUTES.operations.reports, icon: IconChartBar },
+    ],
+  },
+  {
+    label: "System",
+    href: ADMIN_ROUTES.system.database,
     icon: IconDatabase,
     children: [
-      { label: "Overview", href: "/studio/database", icon: IconDatabase },
-      {
-        label: "Storage",
-        href: "/studio/database/storage",
-        icon: IconBriefcase,
-      },
-      {
-        label: "Activity Logs",
-        href: "/studio/database/logs",
-        icon: IconFileText,
-      },
+      { label: "Database", href: ADMIN_ROUTES.system.database, icon: IconDatabase },
+      { label: "Staff", href: ADMIN_ROUTES.system.staff, icon: IconUsers },
+      { label: "AI", href: ADMIN_ROUTES.system.ai, icon: IconUsers },
+      { label: "Automations", href: ADMIN_ROUTES.system.automations, icon: IconBriefcase },
+      { label: "Integrations", href: ADMIN_ROUTES.system.integrations, icon: IconSettings },
+      { label: "Settings", href: ADMIN_ROUTES.system.settings, icon: IconSettings },
     ],
   },
 ];

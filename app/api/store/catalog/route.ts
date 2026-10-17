@@ -11,7 +11,10 @@ export async function GET(request: Request) {
   const pageSize = Number(url.searchParams.get("pageSize") || 24);
   const query = url.searchParams.get("query") || undefined;
   const categorySlug = url.searchParams.get("category") || undefined;
+  const subcategorySlug = url.searchParams.get("subcategory") || undefined;
   const collectionSlug = url.searchParams.get("collection") || undefined;
+  const designOrigin = (url.searchParams.get("origin") || undefined) as "original_zerocraft" | "licensed" | "fan_inspired" | undefined;
+  const availability = url.searchParams.get("availability") === "in-stock" ? "in-stock" as const : "all" as const;
   const sort = (url.searchParams.get("sort") || "newest") as "newest" | "price-asc" | "price-desc" | "title";
   const slug = url.searchParams.get("slug");
   const id = url.searchParams.get("id");
@@ -30,7 +33,7 @@ export async function GET(request: Request) {
         : Response.json({ error: "Product not found." }, { status: 404, headers: detailHeaders });
     }
     const [products, categories, collections] = await Promise.all([
-      getProducts({ page, pageSize, query, categorySlug, collectionSlug, sort }),
+      getProducts({ page, pageSize, query, categorySlug, subcategorySlug, collectionSlug, designOrigin, availability, sort }),
       getCategories(),
       getCollections().catch((error) => {
         console.warn("Collections are unavailable until the commerce foundation migration is applied", error);

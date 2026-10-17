@@ -6,7 +6,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { AnimatePresence, motion } from "framer-motion";
-import { IconArrowLeft, IconArrowRight, IconArrowUpRight, IconChevronDown, IconCircleCheck, IconSparkles } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowRight, IconArrowUpRight, IconChevronDown, IconCircleCheck, IconSparkles } from "@/components/store/StoreIcon";
 import type { CatalogProduct } from "@/lib/commerce/catalog";
 import ProductCard from "@/components/store/ProductCard";
 

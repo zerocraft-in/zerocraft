@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { IconArrowLeft, IconSearch } from "@tabler/icons-react";
+import { IconArrowLeft, IconSearch } from "@/components/store/StoreIcon";
 
 export default function NotFound() {
   return (

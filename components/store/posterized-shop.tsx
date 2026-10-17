@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { IconAdjustmentsHorizontal, IconArrowUpRight, IconLayoutGrid, IconList, IconLoader2, IconSearch, IconX } from "@tabler/icons-react";
+import { IconAdjustmentsHorizontal, IconArrowUpRight, IconLayoutGrid, IconList, IconLoader2, IconSearch, IconX } from "@/components/store/StoreIcon";
 import ProductCard from "@/components/store/ProductCard";
 import type { CatalogCategory, CatalogProduct } from "@/lib/commerce/catalog";
 

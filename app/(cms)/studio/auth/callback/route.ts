@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
+import { isSafeReturnPath, resolveDomainHost } from "@/lib/domains";
 import { createClient } from "@/utils/supabase/server";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
+  if (resolveDomainHost(new URL(request.url).hostname) !== "admin") {
+    return new NextResponse("Authentication callbacks require the admin hostname", { status: 421 });
+  }
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/studio";
-  const destination = new URL(next, origin);
-  const safeDestination = destination.origin === origin ? destination : new URL("/studio", origin);
+  const next = isSafeReturnPath(searchParams.get("next"), "/studio");
+  const safeDestination = new URL(next, origin);
 
   if (code) {
     const supabase = await createClient();

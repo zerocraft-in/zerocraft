@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { CatalogCollection } from "@/lib/commerce/catalog";
-import { IconArrowRight } from "@tabler/icons-react";
+import { IconArrowRight } from "@/components/store/StoreIcon";
 
 export default function CollectionsMarquee({ collections }: { collections: CatalogCollection[] }) {
   return (

@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { requireStudioAccess } from "@/lib/studio-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,11 +15,9 @@ const sources = [
 ] as const;
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return Response.json({ error: "Sign in to view studio data." }, { status: 401 });
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!["admin", "manager", "staff"].includes(profile?.role || "")) return Response.json({ error: "Studio access required." }, { status: 403 });
+  const access = await requireStudioAccess();
+  if (!access.ok) return access.response;
+  const { supabase } = access;
 
   const tables = await Promise.all(sources.map(async ({ name, label, href }) => {
     const [count, latest] = await Promise.all([

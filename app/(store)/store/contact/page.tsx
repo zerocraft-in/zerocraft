@@ -3,40 +3,16 @@
 import { useState } from "react";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { studio } from "@/lib/studio-config";
-import { IconArrowUpRight, IconMail } from "@tabler/icons-react";
+import { IconArrowUpRight, IconMail } from "@/components/store/StoreIcon";
 
 const questions = [
-  { question: "Can I place an order now?", answer: "The catalog is a preview. When ordering is configured, submitting an order creates a request for studio confirmation. No online payment is collected." },
-  { question: "Are product details and delivery estimates final?", answer: "No. The studio will confirm product specifications, availability, pricing, and delivery before fulfillment." },
-  { question: "How can I ask about a custom product?", answer: "Send us a brief description by email. Include the item, quantity, and any personalization you have in mind." },
+  ["Can I place an order now?", "Yes, you can build a cart and submit an order request. The studio reviews availability and confirms the final details before fulfillment."],
+  ["How long does dispatch take?", "Most studio-reviewed orders are packed within 2–4 working days. Made-to-order pieces may take a little longer."],
+  ["Can I ask about a custom product?", "Send a short brief with the product, quantity, dimensions and personalization you have in mind."],
+  ["What about returns?", "Unused and undamaged products can be requested for return within the published return window. Personalised products are handled separately."],
 ];
 
 export default function StoreContactPage() {
-  const [openQuestion, setOpenQuestion] = useState<number | null>(0);
-  return (
-    <div className="container-site min-h-screen py-8">
-      <Breadcrumbs items={[{ label: "Contact" }]} />
-      <div className="my-12 grid gap-12 border-t border-neutral-200 pt-12 dark:border-neutral-800 lg:grid-cols-2">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-lime-600">Store / Contact</span>
-          <h1 className="mt-5 max-w-xl text-4xl font-semibold tracking-tight sm:text-6xl">Let&apos;s talk about your idea.</h1>
-          <p className="mt-6 max-w-lg text-neutral-600 dark:text-neutral-400">Ask about a product, a custom request, or an existing order. We&apos;ll confirm what&apos;s available before any fulfillment.</p>
-          <a href={`mailto:${studio.email}?subject=Zerocraft%20Store%20Inquiry`} className="mt-8 inline-flex items-center gap-3 rounded-full bg-neutral-950 px-6 py-4 font-mono text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-lime-400 hover:text-black dark:bg-white dark:text-black">
-            <IconMail size={18} /> Email the studio <IconArrowUpRight size={18} />
-          </a>
-          <p className="mt-5 font-mono text-xs text-neutral-500">{studio.email} · Tenkasi, Tamil Nadu, India</p>
-        </div>
-        <section id="faq" aria-label="Store questions" className="space-y-2">
-          {questions.map((item, index) => (
-            <div key={item.question} className="border-b border-neutral-200 py-4 dark:border-neutral-800">
-              <button type="button" aria-expanded={openQuestion === index} onClick={() => setOpenQuestion(openQuestion === index ? null : index)} className="flex w-full items-center justify-between gap-6 text-left font-semibold">
-                {item.question}<span aria-hidden>{openQuestion === index ? "−" : "+"}</span>
-              </button>
-              {openQuestion === index && <p className="mt-4 max-w-lg text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">{item.answer}</p>}
-            </div>
-          ))}
-        </section>
-      </div>
-    </div>
-  );
+  const [openQuestion, setOpenQuestion] = useState(0);
+  return <div className="min-h-screen bg-[#f8f7f3] px-5 py-8 text-[#151515] sm:px-8 lg:px-14"><div className="mx-auto max-w-7xl"><Breadcrumbs items={[{ label: "Contact" }]} /><div className="my-10 grid gap-6 lg:grid-cols-[.9fr_1.1fr]"><section className="rounded-[10px] bg-[#211b16] p-8 text-white sm:p-12"><p className="text-[10px] font-black uppercase tracking-[.25em] text-[#f5b544]">Store / Contact</p><h1 className="mt-6 max-w-xl font-secondary text-5xl font-bold leading-[.92] tracking-[-.05em] sm:text-7xl">Let&apos;s talk about the next scene.</h1><p className="mt-7 max-w-lg text-sm leading-6 text-white/70">Ask about a product, a custom request or an existing order. We will confirm what is available before fulfillment.</p><a href={`mailto:${studio.email}?subject=Zerocraft%20Store%20Inquiry`} className="mt-8 inline-flex items-center gap-3 rounded-[5px] bg-white px-5 py-3 text-[10px] font-black uppercase tracking-wider text-[#151311] transition hover:bg-[#f5b544]"><IconMail size={16} /> Email the studio <IconArrowUpRight size={15} /></a><p className="mt-5 text-xs text-white/45">{studio.email} · Tenkasi, Tamil Nadu, India</p></section><section className="rounded-[10px] border border-black/10 bg-white/75 p-6 sm:p-10" aria-label="Store questions"><p className="text-[10px] font-black uppercase tracking-[.24em] text-[#e34d2e]">Need to know</p><h2 className="mt-3 font-secondary text-4xl font-bold leading-none tracking-[-.04em]">Answers before you order.</h2><div className="mt-8 divide-y divide-black/10">{questions.map(([question, answer], index) => <div key={question}><button type="button" aria-expanded={openQuestion === index} onClick={() => setOpenQuestion(openQuestion === index ? -1 : index)} className="flex w-full items-center justify-between gap-5 py-5 text-left text-sm font-black"><span>{question}</span><span className="text-xl font-normal text-[#e34d2e]" aria-hidden>{openQuestion === index ? "−" : "+"}</span></button>{openQuestion === index && <p className="max-w-xl pb-5 text-sm leading-6 text-black/60">{answer}</p>}</div>)}</div></section></div></div></div>;
 }

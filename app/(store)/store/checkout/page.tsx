@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,12 +8,13 @@ import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { useStore } from "@/lib/store/useStore";
 import { formatCatalogPrice } from "@/lib/commerce/format";
 import { useCartValidation } from "@/lib/store/useCartValidation";
+import { trackStoreEvent } from "@/lib/commerce/store-events";
 import { toast } from "sonner";
 import {
   IconTruck,
   IconShieldCheck,
   IconCash,
-} from "@tabler/icons-react";
+} from "@/components/store/StoreIcon";
 
 const countryCode = (value: string) => {
   const normalized = value.trim().toLowerCase();
@@ -38,6 +39,10 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart, couponCode, discountPercentage, userProfile, addOrder } = useStore();
   const { validation, isValidating, error: validationError } = useCartValidation(cart);
+
+  useEffect(() => {
+    if (cart.length > 0) trackStoreEvent("begin_checkout", { lineCount: cart.length, cartValue: cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) });
+  }, [cart]);
 
   const [loading, setLoading] = useState(false);
   const [idempotencyKey] = useState(() => `checkout-${crypto.randomUUID()}`);
@@ -68,6 +73,20 @@ export default function CheckoutPage() {
 
   const tax = (subtotal - discountAmount) * 0.08;
   const grandTotal = Math.max(0, subtotal - discountAmount + deliveryFee + tax);
+
+  if (cart.length === 0) {
+    return (
+      <div className="container-site flex min-h-[60vh] items-center justify-center py-16">
+        <div className="max-w-md rounded-3xl border border-neutral-200 bg-white p-10 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Your cart is empty</h1>
+          <p className="mt-3 text-sm text-neutral-500">Add a product before starting checkout.</p>
+          <Link href="/store/shop" className="mt-6 inline-flex rounded-2xl bg-lime-500 px-6 py-3 text-xs font-bold uppercase tracking-wider text-black hover:bg-lime-400">
+            Browse the shop
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();

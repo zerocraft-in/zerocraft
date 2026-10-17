@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { IconCheck, IconPackage, IconArrowRight } from "@tabler/icons-react";
+import { IconCheck, IconPackage, IconArrowRight } from "@/components/store/StoreIcon";
 import { useStore } from "@/lib/store/useStore";
 import { formatCatalogPrice } from "@/lib/commerce/format";
 

@@ -8,11 +8,15 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import { Toaster } from "sonner";
 import type { Metadata } from "next";
+import { domainOrigin } from "@/lib/domains";
+import CraftPatternBackground from "@/components/store/CraftPatternBackground";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(domainOrigin("store")),
+  alternates: { canonical: domainOrigin("store") },
   title: "Zerocraft Store",
   description: "Browse the Zerocraft Store catalog.",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
 export default function StoreLayout({
@@ -23,7 +27,8 @@ export default function StoreLayout({
   return (
     <ThemeProvider>
       <SmoothScroll>
-        <div id="zerocraft-store" className="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white transition-colors duration-500 font-primary">
+        <CraftPatternBackground>
+        <div id="zerocraft-store" className="craft-pattern-surface min-h-screen flex flex-col bg-[#f6f2eb] text-[#151311] font-primary">
           <StoreHeader />
           <main className="flex-1 pt-20">
             {children}
@@ -34,6 +39,7 @@ export default function StoreLayout({
           <StoreFooter />
           <Toaster position="bottom-right" richColors />
         </div>
+        </CraftPatternBackground>
       </SmoothScroll>
     </ThemeProvider>
   );

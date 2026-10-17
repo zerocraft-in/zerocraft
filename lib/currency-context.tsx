@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { CurrencyCode, CurrencyConfig, CURRENCIES, formatCurrency } from "./currency";
 
 interface CurrencyContextType {
@@ -18,14 +18,11 @@ const CurrencyContext = createContext<CurrencyContextType>({
 });
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<CurrencyCode>("USD");
-
-  useEffect(() => {
+  const [currency, setCurrencyState] = useState<CurrencyCode>(() => {
+    if (typeof window === "undefined") return "USD";
     const saved = localStorage.getItem("zerocraft_selected_currency") as CurrencyCode;
-    if (saved && CURRENCIES[saved]) {
-      setCurrencyState(saved);
-    }
-  }, []);
+    return saved && CURRENCIES[saved] ? saved : "USD";
+  });
 
   const setCurrency = (code: CurrencyCode) => {
     if (CURRENCIES[code]) {

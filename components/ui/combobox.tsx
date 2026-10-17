@@ -57,6 +57,8 @@ export function Combobox<T = any>({
 
   React.useEffect(() => {
     if (value !== undefined) {
+      // Synchronize the internal selection with the controlled value.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedItemState(value);
     }
   }, [value]);

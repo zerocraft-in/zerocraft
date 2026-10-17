@@ -1,6 +1,6 @@
-import { createClient } from "@/utils/supabase/server";
 import { isSameOrigin } from "@/lib/request-origin";
 import { getStoredIntegration, isIntegrationEnabled } from "@/lib/studio-integration-secrets";
+import { requireStudioAccess } from "@/lib/studio-auth";
 
 export const runtime = "nodejs";
 
@@ -14,11 +14,8 @@ const tasks = {
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return Response.json({ error: "Invalid request origin." }, { status: 403 });
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return Response.json({ error: "Sign in to use studio tools." }, { status: 401 });
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!["admin", "manager", "staff"].includes(profile?.role || "")) return Response.json({ error: "Studio access required." }, { status: 403 });
+  const access = await requireStudioAccess();
+  if (!access.ok) return access.response;
 
   if (!(await isIntegrationEnabled("gemini").catch(() => true))) return Response.json({ error: "Gemini is disabled in Studio integrations. Enable it in Settings to use AI drafting." }, { status: 503 });
   const saved = await getStoredIntegration<{ apiKey?: string; model?: string }>("gemini").catch(() => null);

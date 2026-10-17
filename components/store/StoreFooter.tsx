@@ -1,36 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { IconArrowUp, IconArrowUpRight } from "@tabler/icons-react";
+import { IconArrowUpRight } from "@/components/store/StoreIcon";
 
 export default function StoreFooter() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <footer className="border-t border-white/10 bg-[#111111] text-white/60">
-      <div className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:px-14 lg:py-12">
-        <div className="flex flex-col gap-8 border-b border-white/10 pb-9 sm:flex-row sm:items-end sm:justify-between">
-          <Link href="/store" className="group flex w-fit items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sm font-black text-black transition-transform group-hover:-rotate-6">ZC</span>
-            <span><strong className="block text-sm uppercase tracking-[0.14em] text-white">Zerocraft</strong><span className="block text-[10px] uppercase tracking-[0.18em] text-white/45">Print studio</span></span>
-          </Link>
-          <p className="max-w-xs text-[10px] font-bold uppercase leading-5 tracking-[0.14em] text-white/45 sm:text-right">Made to order · Studio-reviewed orders · Tenkasi, India</p>
-        </div>
-
-        <div className="flex flex-col gap-7 py-8 sm:flex-row sm:items-center sm:justify-between">
-          <nav className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-bold uppercase tracking-[0.16em]">
-            <Link href="/store" className="transition-colors hover:text-white">Home</Link>
-            <Link href="/store/shop" className="transition-colors hover:text-white">Shop</Link>
-            <Link href="/store/shop?category=t-shirts" className="transition-colors hover:text-white">Apparel</Link>
-            <Link href="/store/shop?category=customized-gifts" className="transition-colors hover:text-white">Custom</Link>
-            <Link href="/store/contact" className="transition-colors hover:text-white">Contact</Link>
+    <footer className="border-t border-black/10 bg-transparent text-[#151311]">
+      <div className="mx-auto max-w-[1440px] px-5 py-7 sm:px-8 lg:px-14 lg:py-9">
+        <div className="flex flex-col gap-7 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <Link href="/store" className="inline-flex items-center gap-2.5">
+              <span className="grid h-8 w-8 place-items-center rounded-[5px] bg-[#151311] text-[10px] font-black text-white">ZC</span>
+              <span><strong className="block text-xs uppercase tracking-[0.16em]">Zerocraft</strong><span className="mt-0.5 block text-[8px] uppercase tracking-[0.2em] text-black/45">Best of the store</span></span>
+            </Link>
+          </div>
+          <nav aria-label="Store footer" className="flex flex-wrap gap-x-5 gap-y-2 text-[10px] font-bold uppercase tracking-[0.14em] text-black/60 sm:justify-end">
+            <Link href="/store" className="hover:text-[#e34d2e]">Home</Link>
+            <Link href="/store/shop" className="hover:text-[#e34d2e]">Shop</Link>
+            <Link href="/store/shop?category=posters" className="hover:text-[#e34d2e]">Posters</Link>
+            <Link href="/store/shop?category=photo-frames" className="hover:text-[#e34d2e]">Frames</Link>
+            <Link href="/store/shop?category=t-shirts" className="hover:text-[#e34d2e]">Apparel</Link>
+            <Link href="/store/contact" className="hover:text-[#e34d2e]">Contact</Link>
           </nav>
-          <button onClick={scrollToTop} className="flex w-fit items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:text-[#ffb703]">Back to top <IconArrowUp size={14} /></button>
         </div>
-
-        <div className="flex flex-col justify-between gap-2 border-t border-white/10 pt-5 text-[10px] uppercase tracking-[0.14em] text-white/35 sm:flex-row">
-          <span>© {new Date().getFullYear()} Zerocraft Studio</span>
-          <span className="inline-flex items-center gap-1">Originals for your space <IconArrowUpRight size={12} /></span>
+        <div className="mt-6 flex flex-col justify-between gap-3 border-t border-black/10 pt-4 text-[9px] uppercase tracking-[0.14em] text-black/45 sm:flex-row">
+          <span>© {new Date().getFullYear()} Zerocraft Studio · Tenkasi, India</span>
+          <button onClick={scrollToTop} className="inline-flex w-fit items-center gap-1 hover:text-[#e34d2e]">Back to top <IconArrowUpRight size={12} /></button>
         </div>
       </div>
     </footer>

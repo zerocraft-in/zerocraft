@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconArrowLeft, IconCheck, IconPhoto, IconShoppingBag } from "@tabler/icons-react";
+import { IconArrowLeft, IconCheck, IconPhoto, IconShoppingBag } from "@/components/store/StoreIcon";
 import Link from "next/link";
 import { useStore } from "@/lib/store/useStore";
 type Layer={id:string;type:"text"|"image";x:number;y:number;width:number;height:number;content:string;color:string;fontSize:number;opacity:number}; type Schema={width:number;height:number;background:string;layers:Layer[]}; type Product={id:string;title:string;slug:string;price:number|null;price_paise:number|null;currency:string|null;currency_code:string|null;sku:string;stock:number|null;product_type:string;store_product_variants?:{id:string;label:string;sku:string;price:number|null;price_paise:number|null;currency_code:string|null;stock:number|null;is_active:boolean}[]};

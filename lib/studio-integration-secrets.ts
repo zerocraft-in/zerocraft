@@ -53,26 +53,6 @@ export async function getStoredIntegration<T>(provider: string): Promise<T | nul
   return encrypted ? decryptIntegrationSecret<T>(encrypted) : null;
 }
 
-/** Explicit credential reveal for an authenticated Studio admin route. */
-export async function getStoredIntegrationForAdmin<T>(provider: string): Promise<T | null> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey || !process.env.STUDIO_CREDENTIALS_ENCRYPTION_KEY) return null;
-
-  const response = await fetch(`${url}/rest/v1/studio_integrations?provider=eq.${encodeURIComponent(provider)}&select=encrypted_credentials&limit=1`, {
-    headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
-    cache: "no-store",
-    signal: AbortSignal.timeout(10_000),
-  });
-  if (!response.ok) {
-    if (response.status === 404 || response.status === 400) return null;
-    throw new Error("Could not read the Studio integration vault.");
-  }
-  const rows = await response.json() as { encrypted_credentials?: string | null }[];
-  const encrypted = rows[0]?.encrypted_credentials;
-  return encrypted ? decryptIntegrationSecret<T>(encrypted) : null;
-}
-
 export async function isIntegrationEnabled(provider: string): Promise<boolean> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconX, IconShoppingBag, IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import { IconX, IconShoppingBag, IconHeart, IconHeartFilled } from "@/components/store/StoreIcon";
 import { useStore } from "@/lib/store/useStore";
 import { formatCatalogPrice } from "@/lib/commerce/format";
 

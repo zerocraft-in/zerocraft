@@ -4,7 +4,7 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import ProductCard from "@/components/store/ProductCard";
 import { useStore } from "@/lib/store/useStore";
-import { IconHeart, IconShoppingBag, IconTrash } from "@tabler/icons-react";
+import { IconHeart, IconShoppingBag, IconTrash } from "@/components/store/StoreIcon";
 import { toast } from "sonner";
 
 export default function WishlistPage() {

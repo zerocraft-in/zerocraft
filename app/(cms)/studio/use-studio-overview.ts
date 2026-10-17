@@ -47,27 +47,34 @@ export function useStudioOverview() {
   const [data, setData] = useState<StudioOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     try {
       const response = await fetch("/api/studio/overview", {
         cache: "no-store",
+        signal,
       });
       const payload = await response.json();
       if (!response.ok)
         throw new Error(payload.error || "Studio data is unavailable.");
+      if (signal?.aborted) return;
       setData(payload as StudioOverview);
       setError(null);
     } catch (cause) {
+      if (signal?.aborted) return;
       setError(
         cause instanceof Error ? cause.message : "Studio data is unavailable.",
       );
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, []);
   useEffect(() => {
-    void Promise.resolve().then(refresh);
+    const controller = new AbortController();
+    // Initial data loading is an external fetch subscription for this hook.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refresh(controller.signal);
+    return () => controller.abort();
   }, [refresh]);
   return { data, loading, error, refresh };
 }

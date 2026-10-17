@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconBrandGoogle, IconDatabase, IconCheck, IconChevronRight, IconEye, IconEyeOff, IconLoader2, IconLock, IconPlugConnected, IconRefresh, IconUnlink, IconX } from "@tabler/icons-react";
+import { IconBrandGoogle, IconDatabase, IconCheck, IconChevronRight, IconLoader2, IconLock, IconPlugConnected, IconRefresh, IconUnlink, IconX } from "@tabler/icons-react";
 
 type Provider = "gemini" | "supabase";
 type Snapshot = {
@@ -44,12 +44,6 @@ export default function IntegrationsManager({ canManage }: { canManage: boolean 
   const [model, setModel] = useState("gemini-3.8-flash");
   const [projectUrl, setProjectUrl] = useState("");
   const [serviceKey, setServiceKey] = useState("");
-  const [environmentGeminiKey, setEnvironmentGeminiKey] = useState("");
-  const [showEnvironmentGeminiKey, setShowEnvironmentGeminiKey] = useState(false);
-  const [revealingEnvironmentKey, setRevealingEnvironmentKey] = useState(false);
-  const [supabaseEnvironment, setSupabaseEnvironment] = useState<{ projectUrl: string; serviceRoleKey: string; source: "vault" | "environment" } | null>(null);
-  const [showSupabaseEnvironment, setShowSupabaseEnvironment] = useState(false);
-  const [revealingSupabaseEnvironment, setRevealingSupabaseEnvironment] = useState(false);
   const [updatingGeminiState, setUpdatingGeminiState] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -136,42 +130,15 @@ export default function IntegrationsManager({ canManage }: { canManage: boolean 
   const ready = (provider: Provider) => provider === "gemini" && rowFor("gemini")?.enabled === false ? false : Boolean(rowFor(provider)?.status === "connected" || snapshot?.core[provider].ready);
   const geminiEnabled = rowFor("gemini")?.enabled !== false;
 
-  const toggleEnvironmentGeminiKey = async () => {
-    if (showEnvironmentGeminiKey) { setShowEnvironmentGeminiKey(false); return; }
-    if (!canManage) return;
-    setRevealingEnvironmentKey(true); setError("");
-    try {
-      const response = await fetch("/api/studio/integrations/gemini-key", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reveal: true }), cache: "no-store" });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Could not reveal the environment key.");
-      setEnvironmentGeminiKey(result.apiKey);
-      setShowEnvironmentGeminiKey(true);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not reveal the environment key."); }
-    finally { setRevealingEnvironmentKey(false); }
-  };
-
   const toggleGeminiEnabled = async () => {
     setUpdatingGeminiState(true); setError("");
     try {
       const response = await fetch("/api/studio/integrations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ provider: "gemini", enabled: !geminiEnabled }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not update Gemini state.");
-      if (!result.enabled) { setShowEnvironmentGeminiKey(false); setEnvironmentGeminiKey(""); }
       setNotice(`Gemini ${result.enabled ? "enabled" : "disabled"}.`); await refresh();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not update Gemini state."); }
     finally { setUpdatingGeminiState(false); }
-  };
-
-  const toggleSupabaseEnvironment = async () => {
-    if (showSupabaseEnvironment) { setShowSupabaseEnvironment(false); return; }
-    setRevealingSupabaseEnvironment(true); setError("");
-    try {
-      const response = await fetch("/api/studio/integrations/supabase-key", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reveal: true }), cache: "no-store" });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Could not reveal the Supabase environment values.");
-      setSupabaseEnvironment({ projectUrl: result.projectUrl, serviceRoleKey: result.serviceRoleKey, source: result.source === "vault" ? "vault" : "environment" }); setShowSupabaseEnvironment(true);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not reveal the Supabase environment values."); }
-    finally { setRevealingSupabaseEnvironment(false); }
   };
 
   return (
@@ -205,21 +172,6 @@ export default function IntegrationsManager({ canManage }: { canManage: boolean 
               <span className="text-xs text-muted-foreground">{disabled ? "Disabled by admin" : saved ? "Saved credential" : connected ? "Environment" : "Not configured"}</span>
               {provider === "gemini" && (connected || disabled) && <div className="text-xs text-muted-foreground">Model <strong className="font-medium text-foreground">{saved ? "Managed key" : snapshot?.core.gemini.model}</strong></div>}
               {provider === "supabase" && connected && <div className="text-xs text-muted-foreground">Project <strong className="font-medium text-foreground">{snapshot?.core.supabase.detail}</strong></div>}
-              {provider === "gemini" && (saved || (snapshot?.core.gemini.source === "environment" && snapshot.core.gemini.configured)) && canManage && <div className="w-full max-w-[280px] space-y-1.5">
-                <label className="flex justify-between gap-2 text-xs text-muted-foreground" htmlFor="studio-env-gemini-key">Gemini API key <span>{saved ? "Encrypted vault" : "Server environment"}</span></label>
-                <div className="flex h-9 overflow-hidden rounded-md border bg-background">
-                  <input className="min-w-0 flex-1 bg-transparent px-2 font-mono text-xs outline-none" id="studio-env-gemini-key" type={showEnvironmentGeminiKey ? "text" : "password"} readOnly value={showEnvironmentGeminiKey ? environmentGeminiKey : "••••••••••••••••••••"} autoComplete="off" />
-                  <button className="grid w-9 shrink-0 place-items-center border-l text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-wait disabled:opacity-50" type="button" onClick={() => void toggleEnvironmentGeminiKey()} disabled={revealingEnvironmentKey} aria-label={showEnvironmentGeminiKey ? "Hide Gemini API key" : "Show Gemini API key"}>{revealingEnvironmentKey ? <IconLoader2 className="animate-spin" size={15} /> : showEnvironmentGeminiKey ? <IconEyeOff size={15} /> : <IconEye size={15} />}</button>
-                </div>
-              </div>}
-              {provider === "supabase" && (saved || connected) && canManage && <div className="w-full max-w-[340px] space-y-1.5">
-                <label className="flex justify-between gap-2 text-xs text-muted-foreground" htmlFor="studio-env-supabase-key">Supabase credentials <span>{saved ? "Encrypted vault" : "Server environment"}</span></label>
-                <div className="flex min-h-9 overflow-hidden rounded-md border bg-background">
-                  <input className="min-w-0 flex-1 border-r bg-transparent px-2 font-mono text-xs outline-none" aria-label="Supabase project URL" readOnly value={showSupabaseEnvironment ? supabaseEnvironment?.projectUrl || "" : "https://••••••••.supabase.co"} autoComplete="off" />
-                  <input className="min-w-0 flex-1 bg-transparent px-2 font-mono text-xs outline-none" id="studio-env-supabase-key" aria-label="Supabase service role key" type={showSupabaseEnvironment ? "text" : "password"} readOnly value={showSupabaseEnvironment ? supabaseEnvironment?.serviceRoleKey || "" : "••••••••••••••••••••"} autoComplete="off" />
-                  <button className="grid w-9 shrink-0 place-items-center border-l text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-wait disabled:opacity-50" type="button" onClick={() => void toggleSupabaseEnvironment()} disabled={revealingSupabaseEnvironment} aria-label={showSupabaseEnvironment ? "Hide Supabase environment values" : "Show Supabase environment values"}>{revealingSupabaseEnvironment ? <IconLoader2 className="animate-spin" size={15} /> : showSupabaseEnvironment ? <IconEyeOff size={15} /> : <IconEye size={15} />}</button>
-                </div>
-              </div>}
             </div>
             <footer className="flex flex-wrap items-center justify-end gap-2 md:col-span-2">
               {canManage ? <button className="studio-integration-primary" disabled={busy || !snapshot?.encryptionConfigured || Boolean(snapshot?.migrationRequired)} onClick={() => startSetup(provider)}>{configured ? "Manage" : "Connect"}</button> : <span className="studio-integration-readonly">Admin setup</span>}
@@ -241,7 +193,7 @@ export default function IntegrationsManager({ canManage }: { canManage: boolean 
           </article>)}
         </div>
       </div>
-      <div className="studio-integrations-security"><IconLock size={15} /><span><strong>Protected credentials</strong><small>Saved credentials are encrypted with a deployment secret and excluded from status responses. An authenticated admin can reveal saved or environment credentials on request. Only admins can manage providers. Keep the encryption secret backed up; changing it requires re-entering saved credentials.</small></span><button onClick={() => void refresh()} aria-label="Refresh integration status"><IconRefresh size={15} /></button></div>
+      <div className="studio-integrations-security"><IconLock size={15} /><span><strong>Protected credentials</strong><small>Saved credentials are encrypted with a deployment secret and are never returned to the browser. Server-side operations use them only when needed. Only administrators can manage providers.</small></span><button onClick={() => void refresh()} aria-label="Refresh integration status"><IconRefresh size={15} /></button></div>
 
       {formProvider && <div className="studio-integration-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
         <section className="studio-integration-modal" role="dialog" aria-modal="true" aria-labelledby="integration-modal-title">

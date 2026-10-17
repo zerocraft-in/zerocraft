@@ -95,6 +95,8 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return
+    // Initialize the controlled carousel state from the external Embla instance.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)
@@ -219,6 +221,8 @@ function CarouselDots({ className, ...props }: React.ComponentProps<"div">) {
   React.useEffect(() => {
     if (!api) return
 
+    // Initialize pagination state from the external Embla instance.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onInit(api)
     onSelect(api)
 

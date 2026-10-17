@@ -31,12 +31,33 @@ function revalidateStoreCatalog(slug?: string) {
   if (slug) revalidatePath(`/store/product/${slug}`);
 }
 
+function buildCatalogHealth(categories: any[], products: any[]) {
+  const activeCategories = categories.filter((category) => category.is_active);
+  const activeSubcategories = activeCategories.flatMap((category) => (category.store_subcategories || []).filter((subcategory: any) => subcategory.is_active));
+  const activeProducts = products.filter((product) => product.status === "active");
+  const duplicateValues = (values: unknown[]) => [...new Set(values.filter(Boolean).map(String).filter((value, index, list) => list.indexOf(value) !== index))];
+  const categoryIds = new Set(activeCategories.map((category) => category.id));
+  const subcategoryIds = new Map(activeSubcategories.map((subcategory: any) => [subcategory.id, subcategory.category_id]));
+  return {
+    activeCategories: activeCategories.length,
+    activeSubcategories: activeSubcategories.length,
+    activeProducts: activeProducts.length,
+    productsWithoutMedia: activeProducts.filter((product) => !(product.store_product_media || []).some((media: any) => media.public_url || media.storage_path)).map((product) => product.slug),
+    productsWithoutVariants: activeProducts.filter((product) => !(product.store_product_variants || []).some((variant: any) => variant.is_active !== false)).map((product) => product.slug),
+    rightsReviewProducts: activeProducts.filter((product) => product.rights_status === "review_required").map((product) => product.slug),
+    orphanedTaxonomy: activeProducts.filter((product) => !product.category_id || !product.subcategory_id || !categoryIds.has(product.category_id) || !subcategoryIds.has(product.subcategory_id) || subcategoryIds.get(product.subcategory_id) !== product.category_id).map((product) => product.slug),
+    duplicateCategorySlugs: duplicateValues(categories.map((category) => category.slug)),
+    duplicateProductSlugs: duplicateValues(products.map((product) => product.slug)),
+    duplicateProductSkus: duplicateValues(products.map((product) => product.sku)),
+  };
+}
+
 export async function GET() {
   const { supabase, denied } = await studioClient();
   if (denied || !supabase) return denied;
   const [categories, products, recentOrders, orderSummary] = await Promise.all([
-    supabase.from("store_categories").select("id,name,slug,description,image_url,is_active,created_at,updated_at").order("name"),
-    supabase.from("store_products").select("id,category_id,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,write_version,created_at,updated_at,store_product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,store_inventory_levels(location_id,on_hand,reserved,reorder_point)),store_collection_products(collection:store_collections(id,name,slug,status))").order("updated_at", { ascending: false }),
+    supabase.from("store_categories").select("id,name,slug,description,image_url,is_active,created_at,updated_at,store_subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,created_at,updated_at)").order("name"),
+    supabase.from("store_products").select("id,category_id,subcategory_id,design_origin,rights_status,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,write_version,created_at,updated_at,store_product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,store_inventory_levels(location_id,on_hand,reserved,reorder_point)),store_collection_products(collection:store_collections(id,name,slug,status))").order("updated_at", { ascending: false }),
     supabase.from("store_orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(10),
     supabase.rpc("studio_store_order_summary"),
   ]);
@@ -49,17 +70,26 @@ export async function GET() {
     configured: catalogReady,
     catalogError: catalogReady ? null : catalogErrorMessage(categories.error || products.error),
     categories: categories.data || [], products: products.data || [],
+    catalogHealth: catalogReady ? buildCatalogHealth(categories.data || [], products.data || []) : null,
     orders: { available: orderReady, count: orderReady ? Number(orderSummary.data.count) : null, pending: orderReady ? Number(orderSummary.data.pending) : null, paidTotal: orderReady && oneCurrency ? Number(paidByCurrency[currencies[0]]) : null, currencyCount: currencies.length, currency: oneCurrency ? currencies[0] : null, paidByCurrency: orderReady ? paidByCurrency : {}, recent: orderReady ? recentOrders.data || [] : [] },
   }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 type CategoryInput = { name?: string; slug?: string; description?: string; image_url?: string; is_active?: boolean };
+type SubcategoryInput = { category_id?: string; name?: string; slug?: string; description?: string; image_url?: string; sort_order?: number; is_active?: boolean };
 type VariantInput = { id?: string; label: string; sku: string; options?: Record<string, string | string[]>; price: number; price_paise?: number | null; stock?: number | null; is_active?: boolean; store_inventory_levels?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[] };
-type ProductInput = { id?: string; write_version?: number; title?: string; slug?: string; category_id?: string | null; description?: string; product_type?: "physical" | "digital"; status?: "draft" | "active" | "archived"; sku?: string; price?: number; price_paise?: number | null; compare_at_price?: number | null; compare_at_price_paise?: number | null; currency?: string; currency_code?: string | null; stock?: number | null; image_url?: string; collection_ids?: string[]; variants?: VariantInput[] };
+type ProductInput = { id?: string; write_version?: number; title?: string; slug?: string; category_id?: string | null; subcategory_id?: string | null; design_origin?: "original_zerocraft" | "licensed" | "fan_inspired"; rights_status?: "not_applicable" | "approved_license" | "review_required"; description?: string; product_type?: "physical" | "digital"; status?: "draft" | "active" | "archived"; sku?: string; price?: number; price_paise?: number | null; compare_at_price?: number | null; compare_at_price_paise?: number | null; currency?: string; currency_code?: string | null; stock?: number | null; image_url?: string; collection_ids?: string[]; variants?: VariantInput[] };
 
 function validSlug(slug: unknown): slug is string { return typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug); }
 function validVariants(value: unknown): value is VariantInput[] {
   return Array.isArray(value) && value.length <= 60 && value.every((variant) => variant && typeof variant.label === "string" && variant.label.trim().length > 0 && typeof variant.sku === "string" && variant.sku.trim().length > 0 && Number.isFinite(Number(variant.price)) && Number(variant.price) >= 0 && (variant.stock == null || (Number.isInteger(Number(variant.stock)) && Number(variant.stock) >= 0)) && (!variant.options || (typeof variant.options === "object" && !Array.isArray(variant.options))));
+}
+
+function validateProductInput(product: ProductInput) {
+  if (!product.title?.trim() || !validSlug(product.slug) || !product.sku?.trim() || !["physical", "digital"].includes(product.product_type || "") || !["draft", "active", "archived"].includes(product.status || "") || !Number.isFinite(Number(product.price)) || Number(product.price) < 0 || (product.stock != null && (!Number.isInteger(Number(product.stock)) || Number(product.stock) < 0)) || (product.variants && !validVariants(product.variants))) return "Check the product name, SKU, type, status, price, stock, and variants.";
+  if (product.status === "active" && product.rights_status === "review_required") return "Products awaiting rights review cannot be published.";
+  if (product.status === "active" && (!product.category_id || !product.subcategory_id)) return "Active products require an active category and subcategory.";
+  return null;
 }
 
 function atomicError(error: { code?: string; message?: string } | null) {
@@ -78,6 +108,9 @@ async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createC
   const currency = (product.currency_code || product.currency || "INR").toUpperCase();
   const atomicProduct: Record<string, unknown> = {
     category_id: product.category_id || null,
+    subcategory_id: product.subcategory_id || null,
+    design_origin: product.design_origin || "original_zerocraft",
+    rights_status: product.rights_status || "not_applicable",
     title: product.title!.trim(),
     slug: product.slug,
     description: product.description || "",
@@ -132,6 +165,17 @@ async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createC
   });
 }
 
+async function saveProductTaxonomy(supabase: Awaited<ReturnType<typeof createClient>>, productId: string, product: ProductInput) {
+  const categoryId = product.category_id || null;
+  const subcategoryId = product.subcategory_id || null;
+  if (subcategoryId) {
+    const { data, error } = await supabase.from("store_subcategories").select("id,category_id").eq("id", subcategoryId).eq("is_active", true).maybeSingle();
+    if (error || !data || data.category_id !== categoryId) return { error: { code: "22023", message: "VALIDATION_ERROR: subcategory must belong to the selected category." } };
+  }
+  const { error } = await supabase.from("store_products").update({ subcategory_id: subcategoryId, design_origin: product.design_origin || "original_zerocraft", rights_status: product.rights_status || "not_applicable" }).eq("id", productId);
+  return { error };
+}
+
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
   const { supabase, denied } = await studioClient();
@@ -139,6 +183,13 @@ export async function POST(request: Request) {
   let body: { entity?: string; data?: CategoryInput | ProductInput };
   try { body = await request.json(); } catch { return jsonError("Invalid request body."); }
   const data = body.data || {};
+  if (body.entity === "subcategory") {
+    const subcategory = data as SubcategoryInput;
+    if (!subcategory.category_id || !subcategory.name?.trim() || !validSlug(subcategory.slug)) return jsonError("A parent category, name, and valid URL slug are required.");
+    const { data: created, error } = await supabase.from("store_subcategories").insert({ category_id: subcategory.category_id, name: subcategory.name.trim(), slug: subcategory.slug, description: subcategory.description || "", image_url: subcategory.image_url || "", sort_order: subcategory.sort_order ?? 0, is_active: subcategory.is_active ?? true }).select("id").single();
+    if (!error) revalidateStoreCatalog();
+    return error ? jsonError(error.code === "23505" ? "That subcategory slug already exists under this category." : "Subcategory could not be created.", 400) : Response.json({ id: created.id }, { status: 201 });
+  }
   if (body.entity === "category") {
     const category = data as CategoryInput;
     if (!category.name?.trim() || !validSlug(category.slug)) return jsonError("A category name and valid URL slug are required.");
@@ -148,10 +199,14 @@ export async function POST(request: Request) {
   }
   if (body.entity !== "product") return jsonError("Choose a valid store record type.");
   const product = data as ProductInput;
-  if (!product.title?.trim() || !validSlug(product.slug) || !product.sku?.trim() || !["physical", "digital"].includes(product.product_type || "") || !["draft", "active", "archived"].includes(product.status || "") || !Number.isFinite(Number(product.price)) || Number(product.price) < 0 || (product.stock != null && (!Number.isInteger(Number(product.stock)) || Number(product.stock) < 0)) || (product.variants && !validVariants(product.variants))) return jsonError("Check the product name, SKU, type, status, price, stock, and variants.");
+  const validationError = validateProductInput(product);
+  if (validationError) return jsonError(validationError);
   const { data: saved, error } = await saveProductAtomically(supabase, "create", null, product);
   if (error) return atomicError(error);
   const savedProduct = saved as { product_id?: string } | null;
+  if (!savedProduct?.product_id) return jsonError("Product could not be saved.");
+  const taxonomy = await saveProductTaxonomy(supabase, savedProduct.product_id, product);
+  if (taxonomy.error) return jsonError("The product taxonomy could not be saved.", 400);
   revalidateStoreCatalog(product.slug);
   return Response.json({ id: savedProduct?.product_id }, { status: 201 });
 }
@@ -164,6 +219,13 @@ export async function PATCH(request: Request) {
   try { body = await request.json(); } catch { return jsonError("Invalid request body."); }
   if (!body.id || !body.data || typeof body.data !== "object") return jsonError("A record and its changes are required.");
   const data = body.data;
+  if (body.entity === "subcategory") {
+    const subcategory = data as SubcategoryInput;
+    if (!subcategory.category_id || !subcategory.name?.trim() || !validSlug(subcategory.slug)) return jsonError("A parent category, name, and valid URL slug are required.");
+    const { error } = await supabase.from("store_subcategories").update({ category_id: subcategory.category_id, name: subcategory.name.trim(), slug: subcategory.slug, description: subcategory.description || "", image_url: subcategory.image_url || "", sort_order: subcategory.sort_order ?? 0, is_active: subcategory.is_active ?? true, updated_at: new Date().toISOString() }).eq("id", body.id);
+    if (!error) revalidateStoreCatalog();
+    return error ? jsonError(error.code === "23505" ? "That subcategory slug already exists under this category." : "Subcategory could not be updated.") : Response.json({ ok: true });
+  }
   if (body.entity === "category") {
     const category = data as CategoryInput;
     if (!category.name?.trim() || !validSlug(category.slug)) return jsonError("A category name and valid URL slug are required.");
@@ -173,9 +235,12 @@ export async function PATCH(request: Request) {
   }
   if (body.entity !== "product") return jsonError("Choose a valid store record type.");
   const product = data as ProductInput;
-  if (!product.title?.trim() || !validSlug(product.slug) || !product.sku?.trim() || !["physical", "digital"].includes(product.product_type || "") || !["draft", "active", "archived"].includes(product.status || "") || !Number.isFinite(Number(product.price)) || Number(product.price) < 0 || (product.stock != null && (!Number.isInteger(Number(product.stock)) || Number(product.stock) < 0)) || (product.variants && !validVariants(product.variants))) return jsonError("Check the product name, SKU, type, status, price, stock, and variants.");
+  const validationError = validateProductInput(product);
+  if (validationError) return jsonError(validationError);
   const { error } = await saveProductAtomically(supabase, "edit", body.id, product);
   if (error) return atomicError(error);
+  const taxonomy = await saveProductTaxonomy(supabase, body.id, product);
+  if (taxonomy.error) return jsonError("The product taxonomy could not be saved.", 400);
   revalidateStoreCatalog(product.slug);
   return Response.json({ ok: true });
 }
@@ -186,9 +251,10 @@ export async function DELETE(request: Request) {
   if (denied || !supabase) return denied;
   let body: { entity?: string; id?: string };
   try { body = await request.json(); } catch { return jsonError("Invalid request body."); }
-  if (!body.id || !["product", "category"].includes(body.entity || "")) return jsonError("Choose a valid store record.");
-  const table = body.entity === "category" ? "store_categories" : "store_products";
-  const { error } = await supabase.from(table).delete().eq("id", body.id);
+  if (!body.id || !["product", "category", "subcategory"].includes(body.entity || "")) return jsonError("Choose a valid store record.");
+  const table = body.entity === "category" ? "store_categories" : body.entity === "subcategory" ? "store_subcategories" : "store_products";
+  const changes = body.entity === "product" ? { status: "archived", updated_at: new Date().toISOString() } : { is_active: false, updated_at: new Date().toISOString() };
+  const { error } = await supabase.from(table).update(changes).eq("id", body.id);
   if (!error) revalidateStoreCatalog();
-  return error ? jsonError("The record could not be deleted. Products in a category will be kept uncategorized.") : Response.json({ ok: true });
+  return error ? jsonError("The record could not be archived.") : Response.json({ ok: true, archived: true });
 }

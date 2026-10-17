@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { IconArrowUpRight } from "@tabler/icons-react";
+import { IconArrowUpRight } from "@/components/store/StoreIcon";
 import type { CatalogCategory } from "@/lib/commerce/catalog";
 
 export default function CategoryGrid({ categories }: { categories: CatalogCategory[] }) {

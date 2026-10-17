@@ -1,6 +1,6 @@
 {
   "name": "zerocraft",
-  "version": "0.1.0",
+  "version": "0.0.18",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,6 +14,9 @@
     "verify:cart-correctness": "node --experimental-strip-types --experimental-loader ./scripts/ts-loader.mjs scripts/verify-cart-correctness.mjs",
     "verify:checkout-correctness": "node --experimental-strip-types --experimental-loader ./scripts/ts-loader.mjs scripts/verify-checkout-correctness.mjs",
     "verify:transactional-checkout": "node scripts/verify-transactional-checkout.mjs",
+    "test:security": "node --experimental-strip-types scripts/security/phase4b-security-tests.mjs",
+    "test:phase4e": "node scripts/security/phase4e-checkout-lifecycle-tests.mjs",
+    "verify:phase4e-d": "node scripts/security/phase4e-d-static-checks.mjs",
     "verify:seed": "node scripts/verify-seed-commerce.mjs",
     "seed": "npm run seed:commerce",
     "seed:commerce": "node scripts/seed-commerce.mjs",

@@ -3,17 +3,24 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-import { projects } from "@/lib/data/studio-projects";
 import RotatingWords from "@/components/ui/RotatingWords";
 import ArrowIcon from "@/components/ui/ArrowIcon";
 import StudioGlyph from "@/components/ui/StudioGlyph";
 import type Lenis from "lenis";
 
-export default function Works() {
+export type StudioProject = {
+  id: string;
+  title: string;
+  category: string;
+  image_url: string;
+  client_name: string;
+  description: string | null;
+  featured: boolean;
+};
+
+export default function Works({ projects }: { projects: StudioProject[] }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const [selected, setSelected] = useState<(typeof projects)[number] | null>(
-    null,
-  );
+  const [selected, setSelected] = useState<StudioProject | null>(null);
   useEffect(() => {
     if (!selected) return;
     const previousOverflow = document.body.style.overflow;
@@ -53,8 +60,7 @@ export default function Works() {
           Photography · Film &amp; Motion
         </p>
         <p className="studio-work__disclosure">
-          Concept explorations with illustrative imagery. Client credits and
-          project outcomes are not claimed.
+          Published projects from the Zerocraft Studio portfolio.
         </p>
         <div className="studio-work__grid">
           {projects.map((project, index) => (
@@ -67,8 +73,8 @@ export default function Works() {
               aria-label={`View ${project.title}`}
             >
               <Image
-                src={project.image}
-                alt={project.alt}
+                src={project.image_url}
+                alt={`${project.title} — ${project.category}`}
                 fill
                 sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
               />
@@ -78,7 +84,7 @@ export default function Works() {
                 <span>
                   <strong>{project.title}</strong>
                   <small>
-                    {project.category} · {project.kind}
+                    {project.category}{project.client_name ? ` · ${project.client_name}` : ""}
                   </small>
                 </span>
                 <span className="studio-circle" aria-hidden="true">
@@ -123,8 +129,8 @@ export default function Works() {
             </button>
             <div className="project-dialog__image">
               <Image
-                src={selected.image}
-                alt={selected.alt}
+                src={selected.image_url}
+                alt={`${selected.title} — ${selected.category}`}
                 fill
                 sizes="(max-width: 700px) 90vw, 700px"
               />
@@ -132,8 +138,7 @@ export default function Works() {
             <div className="project-dialog__copy">
               <span className="studio-eyebrow">{selected.category}</span>
               <h2 id="project-title">{selected.title}</h2>
-              <p>{selected.description}</p>
-              <p>Concept exploration · Illustrative image from Unsplash.</p>
+              <p>{selected.description || "A Zerocraft Studio project."}</p>
               <a href="mailto:hello@zerocraft.in">
                 Discuss a similar project <ArrowIcon direction="up-right" size={12} />
               </a>

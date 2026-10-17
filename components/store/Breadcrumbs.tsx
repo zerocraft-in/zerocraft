@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { IconChevronRight, IconHome } from "@tabler/icons-react";
+import { IconChevronRight, IconHome } from "@/components/store/StoreIcon";
 
 interface BreadcrumbItem {
   label: string;

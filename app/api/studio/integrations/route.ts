@@ -66,9 +66,13 @@ async function verify(provider: Provider, credentials: Record<string, string>) {
 
 export async function GET() {
   const { user, role } = await actor();
-  if (!user || !["admin", "manager", "staff"].includes(role || "")) {
-    return Response.json({ error: "Studio access required." }, { status: 403, headers: { "Cache-Control": "private, no-store" } });
+  if (!user) {
+    return Response.json({ error: "Authentication required." }, { status: 401, headers: { "Cache-Control": "private, no-store" } });
   }
+  if (role !== "admin") {
+    return Response.json({ error: "Administrator access required." }, { status: 403, headers: { "Cache-Control": "private, no-store" } });
+  }
+
   let databaseConnected = false;
   try {
     const response = await requestSupabase(process.env.NEXT_PUBLIC_SUPABASE_URL || "", process.env.SUPABASE_SERVICE_ROLE_KEY || "");

@@ -1,20 +1,13 @@
-import { createClient } from "@/utils/supabase/server";
 import { isSameOrigin } from "@/lib/request-origin";
 import { getStoredIntegration, isIntegrationEnabled } from "@/lib/studio-integration-secrets";
+import { requireStudioAccess } from "@/lib/studio-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function canUseStudio() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  return ["admin", "manager", "staff"].includes(profile?.role || "");
-}
-
 export async function GET() {
-  if (!(await canUseStudio())) return Response.json({ error: "Studio access required." }, { status: 403, headers: { "Cache-Control": "private, no-store" } });
+  const access = await requireStudioAccess();
+  if (!access.ok) return access.response;
   if (!(await isIntegrationEnabled("gemini").catch(() => true))) return Response.json({ configured: false }, { headers: { "Cache-Control": "private, no-store" } });
   const saved = await getStoredIntegration<{ apiKey?: string; model?: string }>("gemini").catch(() => null);
   return Response.json({ configured: Boolean((saved?.apiKey || process.env.GEMINI_API_KEY) && (saved?.model || process.env.GEMINI_MODEL)) }, { headers: { "Cache-Control": "private, no-store" } });
@@ -24,7 +17,8 @@ type ChatMessage = { role: "user" | "assistant"; text: string };
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return Response.json({ error: "Invalid request origin." }, { status: 403 });
-  if (!(await canUseStudio())) return Response.json({ error: "Studio access required." }, { status: 403 });
+  const access = await requireStudioAccess();
+  if (!access.ok) return access.response;
   if (!(await isIntegrationEnabled("gemini").catch(() => true))) return Response.json({ error: "Gemini is disabled in Studio integrations. Enable it in Settings to use the assistant." }, { status: 503 });
 
   const saved = await getStoredIntegration<{ apiKey?: string; model?: string }>("gemini").catch(() => null);

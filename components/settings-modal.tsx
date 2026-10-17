@@ -99,10 +99,17 @@ export function SettingsModal() {
     if (!open) return;
 
     const savedN8n = localStorage.getItem("n8n_whatsapp_webhook_url");
-    if (savedN8n) setN8nWebhookUrl(savedN8n);
+    if (savedN8n) {
+      // Restore persisted settings when the modal opens.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setN8nWebhookUrl(savedN8n);
+    }
 
     const savedSupa = localStorage.getItem("supabase_url");
-    if (savedSupa) setSupabaseUrl(savedSupa);
+    if (savedSupa) {
+      // Restore persisted settings when the modal opens.
+      setSupabaseUrl(savedSupa);
+    }
 
     if (typeof window !== "undefined" && "Notification" in window) {
       setPushPermission(Notification.permission);
@@ -116,8 +123,8 @@ export function SettingsModal() {
 
       if (user) {
         setCurrentUserEmail(user.email || "");
-        setIsOwner(user.email === "ivd.maran@gmail.com");
-        await ensureUserProfile(user);
+        const ownProfile = await ensureUserProfile(user);
+        setIsOwner(ownProfile?.role === "admin");
       }
 
       const allProfiles = await fetchProfilesFromSupabase();
@@ -574,8 +581,7 @@ export function SettingsModal() {
                             </tr>
                           ) : (
                             profiles.map((prof) => {
-                              const isProfOwner =
-                                prof.email === "ivd.maran@gmail.com";
+                              const isProfOwner = prof.role === "admin";
                               return (
                                 <tr
                                   key={prof.id}

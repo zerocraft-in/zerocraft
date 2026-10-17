@@ -38,13 +38,13 @@ export default function PluginsManager({
 }) {
   const [query, setQuery] = useState("");
   const [directoryOpen, setDirectoryOpen] = useState(false);
-  const items: PluginItem[] = [
+  const items = useMemo<PluginItem[]>(() => [
     { name: "AI writing assistant", description: "Draft content with your connected Gemini model.", state: geminiReady ? "Enabled" : "Needs setup", ready: geminiReady, href: "/studio/ai", icon: IconSparkles, kind: "App", action: "Open assistant" },
     { name: "Commerce", description: "Manage products, categories, and orders in Studio.", state: commerceReady ? "Ready" : "Check setup", ready: commerceReady, href: "/studio/store", icon: IconShoppingBag, kind: "App", action: "Open Store" },
     { name: "Event automations", description: "Manage order and appointment event workflows.", state: automationReady ? "Connected" : "Needs setup", ready: automationReady, href: "/studio/automations", icon: IconBolt, kind: "App", action: "Open automations" },
     { name: "Google Gemini", description: "Model provider used by the assistant and drafting tools.", state: geminiReady ? "Connected" : "Not connected", ready: geminiReady, href: "#integrations", icon: IconBrandGoogle, kind: "Connection", action: "Manage connection" },
     { name: "Supabase", description: "Database and authentication connection for this workspace.", state: supabaseReady ? "Connected" : "Check setup", ready: supabaseReady, href: "#integrations", icon: IconDatabase, kind: "Connection", action: "Manage connection" },
-  ];
+  ], [automationReady, commerceReady, geminiReady, supabaseReady]);
   const filtered = useMemo(() => items.filter((item) => `${item.name} ${item.description} ${item.kind}`.toLowerCase().includes(query.trim().toLowerCase())), [items, query]);
   const apps = filtered.filter((item) => item.kind === "App");
   const connections = filtered.filter((item) => item.kind === "Connection");

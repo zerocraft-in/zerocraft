@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import ProductCard from "@/components/store/ProductCard";
 import type { CatalogProduct } from "@/lib/commerce/catalog";
-import { IconSearch, IconX } from "@tabler/icons-react";
+import { IconSearch, IconX } from "@/components/store/StoreIcon";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");

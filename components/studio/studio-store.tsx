@@ -62,6 +62,17 @@ type Category = {
   description: string;
   image_url: string;
   is_active: boolean;
+  store_subcategories?: Subcategory[];
+};
+type Subcategory = {
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  description: string;
+  image_url: string;
+  sort_order: number;
+  is_active: boolean;
 };
 type Variant = {
   id?: string;
@@ -89,6 +100,9 @@ type ProductMedia = {
 type Product = {
   id: string;
   category_id: string | null;
+  subcategory_id: string | null;
+  design_origin: "original_zerocraft" | "licensed" | "fan_inspired";
+  rights_status: "not_applicable" | "approved_license" | "review_required";
   title: string;
   slug: string;
   description: string;
@@ -108,6 +122,18 @@ type Payload = {
   catalogError: string | null;
   categories: Category[];
   products: Product[];
+  catalogHealth: {
+    activeCategories: number;
+    activeSubcategories: number;
+    activeProducts: number;
+    productsWithoutMedia: string[];
+    productsWithoutVariants: string[];
+    rightsReviewProducts: string[];
+    orphanedTaxonomy: string[];
+    duplicateCategorySlugs: string[];
+    duplicateProductSlugs: string[];
+    duplicateProductSkus: string[];
+  } | null;
   orders: {
     available: boolean;
     count: number | null;
@@ -134,6 +160,9 @@ const emptyProduct: ProductDraft = {
   title: "",
   slug: "",
   category_id: null,
+  subcategory_id: null,
+  design_origin: "original_zerocraft",
+  rights_status: "not_applicable",
   description: "",
   product_type: "physical",
   status: "draft",
@@ -150,6 +179,15 @@ const emptyCategory: Omit<Category, "id"> = {
   slug: "",
   description: "",
   image_url: "",
+  is_active: true,
+};
+const emptySubcategory: Omit<Subcategory, "id"> = {
+  category_id: "",
+  name: "",
+  slug: "",
+  description: "",
+  image_url: "",
+  sort_order: 0,
   is_active: true,
 };
 const money = (amount: number, currency: string) =>
@@ -198,6 +236,7 @@ export default function StudioStore({
   const [editor, setEditor] = useState<
     | { kind: "product"; value: ProductDraft; id?: string }
     | { kind: "category"; value: Omit<Category, "id">; id?: string }
+    | { kind: "subcategory"; value: Omit<Subcategory, "id">; id?: string }
     | null
   >(null);
   const [mediaBusy, setMediaBusy] = useState(false);
@@ -348,11 +387,11 @@ export default function StudioStore({
   }
 
   async function remove(
-    entity: "product" | "category",
+    entity: "product" | "category" | "subcategory",
     id: string,
     name: string,
   ) {
-    if (busy || !window.confirm(`Delete “${name}”? This cannot be undone.`))
+    if (busy || !window.confirm(`Archive “${name}”? It will be hidden from the public store and kept for history.`))
       return;
     setBusy(true);
     setError("");
@@ -519,6 +558,14 @@ export default function StudioStore({
         : { ...emptyCategory },
     });
   }
+  function editSubcategory(subcategory?: Subcategory, categoryId?: string) {
+    setError("");
+    setEditor({
+      kind: "subcategory",
+      id: subcategory?.id,
+      value: subcategory ? { ...subcategory } : { ...emptySubcategory, category_id: categoryId || categories[0]?.id || "" },
+    });
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 pb-14">
@@ -566,6 +613,18 @@ export default function StudioStore({
               "Apply supabase/studio-store-catalog.sql in your Supabase project to enable product and category management."}
           </span>
         </div>
+      )}
+      {data?.configured && data.catalogHealth && (
+        <section className="grid gap-3 rounded-xl border border-border bg-card p-4 shadow-sm" aria-label="Catalog health">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div><p className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground">CATALOG HEALTH</p><h2 className="mt-1 text-base font-semibold">Public catalog readiness</h2></div>
+            <span className={`rounded-full px-3 py-1 text-xs font-medium ${data.catalogHealth.productsWithoutMedia.length || data.catalogHealth.productsWithoutVariants.length || data.catalogHealth.rightsReviewProducts.length || data.catalogHealth.orphanedTaxonomy.length || data.catalogHealth.duplicateProductSlugs.length || data.catalogHealth.duplicateProductSkus.length ? "bg-amber-500/10 text-amber-700 dark:text-amber-300" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"}`}>
+              {data.catalogHealth.productsWithoutMedia.length || data.catalogHealth.productsWithoutVariants.length || data.catalogHealth.rightsReviewProducts.length || data.catalogHealth.orphanedTaxonomy.length || data.catalogHealth.duplicateProductSlugs.length || data.catalogHealth.duplicateProductSkus.length ? "Needs review" : "Ready to publish"}
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeProducts}</strong><span className="text-xs text-muted-foreground">active products</span></div><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeCategories}</strong><span className="text-xs text-muted-foreground">active categories</span></div><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeSubcategories}</strong><span className="text-xs text-muted-foreground">active subcategories</span></div></div>
+          {(data.catalogHealth.productsWithoutMedia.length || data.catalogHealth.productsWithoutVariants.length || data.catalogHealth.rightsReviewProducts.length || data.catalogHealth.orphanedTaxonomy.length || data.catalogHealth.duplicateProductSlugs.length || data.catalogHealth.duplicateProductSkus.length) > 0 && <p className="text-xs leading-5 text-amber-700 dark:text-amber-300">Review missing media ({data.catalogHealth.productsWithoutMedia.length}), variants ({data.catalogHealth.productsWithoutVariants.length}), rights ({data.catalogHealth.rightsReviewProducts.length}), taxonomy ({data.catalogHealth.orphanedTaxonomy.length}) or duplicate slugs/SKUs before publishing.</p>}
+        </section>
       )}
       {view === "overview" && (
         <StoreOverview
@@ -976,6 +1035,14 @@ export default function StudioStore({
                   <span className="flex items-center gap-1">
                     <button
                       type="button"
+                      disabled={busy}
+                      onClick={() => editSubcategory(undefined, category.id)}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <IconPlus size={14} /> Subcategory
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => editCategory(category)}
                       className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                       aria-label={`Edit ${category.name}`}
@@ -994,6 +1061,15 @@ export default function StudioStore({
                       <IconTrash size={16} />
                     </button>
                   </span>
+                  {(category.store_subcategories || []).length > 0 && (
+                    <div className="ml-12 mt-2 flex flex-wrap gap-2">
+                      {(category.store_subcategories || []).map((subcategory) => (
+                        <button key={subcategory.id} type="button" onClick={() => editSubcategory(subcategory)} className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:border-foreground hover:text-foreground">
+                          {subcategory.name} · {subcategory.is_active ? "Active" : "Hidden"}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
@@ -1131,6 +1207,29 @@ export default function StudioStore({
                     Visible in the store
                   </label>
                 </>
+              ) : editor.kind === "subcategory" ? (
+                <>
+                  <label>
+                    Parent category
+                    <select value={editor.value.category_id} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, category_id: event.target.value } })}>
+                      <option value="">Choose a category</option>
+                      {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Subcategory name
+                    <input required maxLength={100} value={editor.value.name} onChange={(event) => { const name = event.target.value; setEditor({ ...editor, value: { ...editor.value, name, slug: editor.id ? editor.value.slug : slugify(name) } }); }} />
+                  </label>
+                  <label>
+                    URL slug
+                    <input required pattern="[a-z0-9]+(-[a-z0-9]+)*" value={editor.value.slug} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, slug: event.target.value } })} />
+                  </label>
+                  <label>
+                    Description
+                    <textarea rows={3} value={editor.value.description} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, description: event.target.value } })} />
+                  </label>
+                  <label className={`${labelClass} flex items-center gap-2`}><input type="checkbox" checked={editor.value.is_active} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, is_active: event.target.checked } })} /> Visible in the store</label>
+                </>
               ) : (
                 <>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -1200,6 +1299,7 @@ export default function StudioStore({
                             value: {
                               ...editor.value,
                               category_id: event.target.value || null,
+                              subcategory_id: null,
                             },
                           })
                         }
@@ -1210,6 +1310,34 @@ export default function StudioStore({
                             {category.name}
                           </option>
                         ))}
+                      </select>
+                    </label>
+                    <label>
+                      Subcategory
+                      <select
+                        value={editor.value.subcategory_id || ""}
+                        onChange={(event) => setEditor({ ...editor, value: { ...editor.value, subcategory_id: event.target.value || null } })}
+                      >
+                        <option value="">Choose a subcategory</option>
+                        {(categories.find((category) => category.id === editor.value.category_id)?.store_subcategories || []).map((subcategory) => (
+                          <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Design origin
+                      <select value={editor.value.design_origin} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, design_origin: event.target.value as ProductDraft["design_origin"] } })}>
+                        <option value="original_zerocraft">Original Zerocraft design</option>
+                        <option value="licensed">Licensed design</option>
+                        <option value="fan_inspired">Fan-inspired design</option>
+                      </select>
+                    </label>
+                    <label>
+                      Rights status
+                      <select value={editor.value.rights_status} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, rights_status: event.target.value as ProductDraft["rights_status"] } })}>
+                        <option value="not_applicable">Not applicable</option>
+                        <option value="approved_license">Approved license</option>
+                        <option value="review_required">Review required</option>
                       </select>
                     </label>
                     <label>

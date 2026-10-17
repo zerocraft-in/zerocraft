@@ -11,6 +11,8 @@ export function ThemeToggle() {
 
   // Ensures component is mounted on client to access correct theme
   React.useEffect(() => {
+    // The mounted guard prevents server/client theme markup mismatches.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

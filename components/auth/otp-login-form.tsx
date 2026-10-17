@@ -199,7 +199,7 @@ export function OtpLoginForm() {
           setSession(data.session);
         }
         // Successfully verified - redirect to studio dashboard with refreshed cookies
-        window.location.href = "/studio";
+        router.push("/studio");
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");

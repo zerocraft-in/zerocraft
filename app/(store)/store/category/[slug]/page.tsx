@@ -1,17 +1,32 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import ProductCard from "@/components/store/ProductCard";
 import { getCategories, getProducts } from "@/lib/commerce/catalog";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowLeft } from "@/components/store/StoreIcon";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const category = (await getCategories()).find((item) => item.slug === slug);
+  if (!category) return { title: "Category not found | Zerocraft Store" };
+  return {
+    title: `${category.name} | Zerocraft Store`,
+    description: category.description || `Browse ${category.name} products from Zerocraft Store.`,
+    openGraph: { title: `${category.name} | Zerocraft Store`, description: category.description || undefined, images: category.image ? [category.image] : undefined },
+  };
+}
 
 export default async function CategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ subcategory?: string }>;
 }) {
   const { slug } = await params;
+  const { subcategory: subcategorySlug } = await searchParams;
   const categories = await getCategories();
   const category = categories.find((c) => c.slug === slug);
 
@@ -19,7 +34,8 @@ export default async function CategoryPage({
     notFound();
   }
 
-  const { products: categoryProducts } = await getProducts({ categorySlug: slug, page: 1, pageSize: 48 });
+  const selectedSubcategory = category.subcategories.find((item) => item.slug === subcategorySlug);
+  const { products: categoryProducts } = await getProducts({ categorySlug: slug, subcategorySlug: selectedSubcategory?.slug, page: 1, pageSize: 48 });
 
   return (
     <div className="py-8 min-h-screen">
@@ -27,7 +43,8 @@ export default async function CategoryPage({
         <Breadcrumbs
           items={[
             { label: "Shop", href: "/store/shop" },
-            { label: category.name },
+            { label: category.name, href: `/store/category/${category.slug}` },
+            ...(selectedSubcategory ? [{ label: selectedSubcategory.name }] : []),
           ]}
         />
 
@@ -48,7 +65,7 @@ export default async function CategoryPage({
               {categoryProducts.length} Items Available
             </span>
             <h1 className="text-3xl md:text-6xl font-bold tracking-tight text-white mb-3">
-              {category.name}
+              {selectedSubcategory?.name || category.name}
             </h1>
             <p className="text-sm md:text-base text-neutral-300 font-light leading-relaxed">
               {category.description}

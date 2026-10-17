@@ -15,7 +15,7 @@ import {
   IconSettings,
   IconCheck,
   IconArrowRight,
-} from "@tabler/icons-react";
+} from "@/components/store/StoreIcon";
 
 export default function AccountPage() {
   const { userProfile, updateProfile, orders, wishlist } = useStore();

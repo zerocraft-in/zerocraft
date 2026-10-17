@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { studio, studioSocials } from "@/lib/studio-config";
+import { domainOrigin } from "@/lib/domains";
 import { cn } from "@/lib/utils";
 import "@fontsource/inter/300.css";
 import "@fontsource/inter/400.css";
@@ -7,10 +8,11 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "@fontsource/inter/800.css";
+import "@fontsource/inter/900.css";
 import "./fonts.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(studio.url),
+  metadataBase: new URL(domainOrigin("studio")),
   title: {
     default: "Zerocraft Studio — Creative & Digital Studio",
     template: "%s | Zerocraft Studio",

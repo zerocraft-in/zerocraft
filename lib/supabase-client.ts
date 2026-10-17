@@ -314,11 +314,8 @@ export async function ensureUserProfile(user: {
 }) {
   if (!user || !user.id || !user.email) return null;
 
-  const isOwner = user.email === "ivd.maran@gmail.com";
-  const defaultRole: UserRole = isOwner ? "admin" : "client";
-  const defaultName = isOwner
-    ? "Maran (Owner)"
-    : user.user_metadata?.full_name || user.email.split("@")[0];
+  const defaultRole: UserRole = "client";
+  const defaultName = user.user_metadata?.full_name || user.email.split("@")[0];
 
   const payload = {
     id: user.id,

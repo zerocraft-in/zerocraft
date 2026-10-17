@@ -64,6 +64,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export type StoreProduct = {
   id: string;
   category_id: string | null;
+  subcategory_id: string | null;
+  design_origin: "original_zerocraft" | "licensed" | "fan_inspired";
+  rights_status: "not_applicable" | "approved_license" | "review_required";
   title: string;
   slug: string;
   description: string;

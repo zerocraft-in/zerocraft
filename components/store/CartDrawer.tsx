@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconX, IconTrash, IconShoppingBag, IconTag, IconArrowRight, IconCheck } from "@tabler/icons-react";
+import { IconX, IconTrash, IconShoppingBag, IconTag, IconArrowRight, IconCheck } from "@/components/store/StoreIcon";
 import { useStore } from "@/lib/store/useStore";
 import { formatCatalogPrice } from "@/lib/commerce/format";
 import { useCartValidation } from "@/lib/store/useCartValidation";
@@ -30,6 +30,7 @@ export default function CartDrawer() {
   const shipping = subtotal > 100 || subtotal === 0 ? 0 : 9.0;
   const tax = (subtotal - discountAmount) * 0.08;
   const total = Math.max(0, subtotal - discountAmount + shipping + tax);
+  const canCheckout = Boolean(cart.length > 0 && !isValidating && validation?.valid);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,10 +243,17 @@ export default function CartDrawer() {
                   </Link>
                   <Link
                     href="/store/checkout"
-                    onClick={() => toggleCartDrawer(false)}
-                    className="py-3 px-4 rounded-xl bg-lime-500 text-black font-semibold text-xs uppercase tracking-wider text-center hover:bg-lime-400 transition-colors flex items-center justify-center gap-1.5 shadow-md"
+                    aria-disabled={!canCheckout}
+                    onClick={(event) => {
+                      if (!canCheckout) {
+                        event.preventDefault();
+                        return;
+                      }
+                      toggleCartDrawer(false);
+                    }}
+                    className={`py-3 px-4 rounded-xl font-semibold text-xs uppercase tracking-wider text-center transition-colors flex items-center justify-center gap-1.5 shadow-md ${canCheckout ? "bg-lime-500 text-black hover:bg-lime-400" : "cursor-not-allowed bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500"}`}
                   >
-                    Checkout <IconArrowRight size={16} />
+                    {isValidating ? "Checking..." : "Checkout"} <IconArrowRight size={16} />
                   </Link>
                 </div>
               </div>

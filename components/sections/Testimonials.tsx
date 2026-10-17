@@ -64,7 +64,7 @@ export default function Testimonials() {
                 }}
               >
                 <p className="testimonials__quote">
-                  "{testimonials[currentIndex].quote}"
+                  &quot;{testimonials[currentIndex].quote}&quot;
                 </p>
                 <div className="testimonials__author-info">
                   <span className="testimonials__author">

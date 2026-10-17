@@ -71,6 +71,8 @@ function ScrambleTextTag({ text }: { text: string }) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // This synchronizes the displayed scramble text when the tag's input changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplayText(text);
   }, [text]);
 

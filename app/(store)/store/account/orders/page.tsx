@@ -5,7 +5,7 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { useStore } from "@/lib/store/useStore";
 import { formatCatalogPrice } from "@/lib/commerce/format";
-import { IconPackage, IconArrowRight, IconCheck, IconTruck, IconClock } from "@tabler/icons-react";
+import { IconPackage, IconArrowRight, IconCheck, IconTruck, IconClock } from "@/components/store/StoreIcon";
 
 export default function MyOrdersPage() {
   const { orders } = useStore();

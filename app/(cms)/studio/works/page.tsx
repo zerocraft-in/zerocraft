@@ -27,6 +27,7 @@ interface WorkItem {
   client_name: string;
   description: string;
   featured: boolean;
+  status: "published" | "draft" | "archived";
   created_at: string;
 }
 
@@ -64,6 +65,7 @@ export default function StudioWorksCRUD() {
     client_name: "",
     description: "",
     featured: true,
+    status: "draft" as const,
   });
 
   const openCreateModal = () => {
@@ -75,6 +77,7 @@ export default function StudioWorksCRUD() {
       client_name: "",
       description: "",
       featured: true,
+      status: "draft",
     });
     setIsModalOpen(true);
   };
@@ -88,6 +91,7 @@ export default function StudioWorksCRUD() {
       client_name: work.client_name,
       description: work.description,
       featured: work.featured,
+      status: work.status,
     });
     setIsModalOpen(true);
   };
@@ -555,6 +559,23 @@ export default function StudioWorksCRUD() {
                 placeholder="Overview of project achievements..."
                 className="w-full p-3 rounded-xl bg-muted border border-border text-foreground placeholder-zinc-600 focus:outline-none focus:border-[#22C55E] text-xs"
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-foreground font-semibold" htmlFor="works-status">Publication status</label>
+              <Select
+                value={formData.status}
+                onValueChange={(val) => val && setFormData({ ...formData, status: val as "published" | "draft" | "archived" })}
+              >
+                <SelectTrigger id="works-status" className="bg-muted border-border text-foreground h-10 rounded-xl text-xs focus:ring-[#22C55E]">
+                  <SelectValue placeholder="Publication status" />
+                </SelectTrigger>
+                <SelectContent className="bg-muted border-border text-foreground text-xs rounded-xl">
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex items-center gap-2 pt-2">

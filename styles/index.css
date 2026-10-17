@@ -5,6 +5,120 @@
 
 @import "../styles/globals.css";
 
+/* Zerocraft Store: a quiet, deterministic print-studio pattern layer. */
+.craft-pattern-background {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background: #f6f2eb;
+}
+
+.craft-pattern-surface {
+  --store-ink: #151311;
+  --store-paper: #f6f2eb;
+  --store-orange: #e34d2e;
+  --store-yellow: #f5b544;
+  background-color: var(--store-paper);
+  background-image: radial-gradient(circle at 12% 0%, rgba(227, 77, 46, .06), transparent 26rem), radial-gradient(circle at 92% 22%, rgba(245, 181, 68, .08), transparent 24rem), url("/patterns/craft-pattern.svg");
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: auto, auto, 560px 560px;
+  background-blend-mode: multiply;
+}
+
+.dark .craft-pattern-surface {
+  background-blend-mode: soft-light;
+}
+
+.dark .craft-pattern-background {
+  background: #151311;
+}
+
+/* Store direction: warm paper, CRT-orange signal colour, small editorial radii, no card shadows. */
+#zerocraft-store {
+  --store-radius: 8px;
+  --store-radius-tight: 5px;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-feature-settings: "kern", "liga", "cv11";
+  letter-spacing: -0.012em;
+}
+
+#zerocraft-store :is(body, button, input, select, textarea, nav, label, small, span, a) {
+  font-family: var(--font-primary), "Helvetica Neue", Arial, sans-serif;
+}
+
+#zerocraft-store .font-secondary,
+#zerocraft-store :is(h1, h2) {
+  font-family: var(--font-secondary), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+
+#zerocraft-store :is(h3, h4, h5, h6) {
+  font-family: var(--font-primary), "Helvetica Neue", Arial, sans-serif;
+}
+
+#zerocraft-store h1,
+#zerocraft-store h2,
+#zerocraft-store h3,
+#zerocraft-store h4 {
+  font-weight: 900;
+  font-variation-settings: "opsz" 32, "wght" 900;
+}
+
+#zerocraft-store .store-hero-slider h1,
+#zerocraft-store .store-instagram-feed h2 {
+  font-family: var(--font-secondary), Georgia, serif;
+  font-weight: 700;
+  font-variation-settings: normal;
+}
+
+#zerocraft-store :is(.rounded-2xl, .rounded-3xl) { border-radius: var(--store-radius); }
+#zerocraft-store :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) { box-shadow: none !important; }
+#zerocraft-store .backdrop-blur-sm,
+#zerocraft-store .backdrop-blur-md { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+
+.store-hero-slider__grain {
+  background-image: url("/patterns/craft-pattern.svg");
+  background-size: 460px 460px;
+  mix-blend-mode: screen;
+}
+
+.store-social-section__orbit {
+  position: absolute;
+  top: -8rem;
+  right: 8%;
+  width: 22rem;
+  height: 22rem;
+  border: 1px solid rgba(227, 77, 46, .25);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.store-social-section__orbit::before,
+.store-social-section__orbit::after {
+  content: "";
+  position: absolute;
+  inset: 1.5rem;
+  border: 1px dashed rgba(21, 19, 17, .16);
+  border-radius: 50%;
+}
+
+.store-social-section__orbit::after { inset: 4.5rem; border-style: solid; border-color: rgba(245, 181, 68, .45); }
+.store-social-tile { background-color: #f8f4ed; background-image: url("/patterns/craft-pattern.svg"); background-size: 240px 240px; background-blend-mode: multiply; }
+.store-social-tile--2 { background-color: #e9dfd0; transform: translateY(1.2rem); }
+.store-social-tile--3 { background-color: #f3ede4; transform: translateY(-.5rem); }
+.store-social-tile--4 { background-color: #ddd1c0; transform: translateY(1rem); }
+
+@media (max-width: 640px) {
+  .store-social-section__orbit { right: -8rem; top: -6rem; width: 18rem; height: 18rem; }
+  .store-social-tile--2, .store-social-tile--3, .store-social-tile--4 { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #zerocraft-store *, #zerocraft-store *::before, #zerocraft-store *::after { scroll-behavior: auto !important; }
+}
+
+
 /* â”€â”€ Site Layout â”€â”€ */
 .site-main {
   width: 100%;

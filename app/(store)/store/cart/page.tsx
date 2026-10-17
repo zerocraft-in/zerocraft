@@ -7,7 +7,7 @@ import Breadcrumbs from "@/components/store/Breadcrumbs";
 import { useStore } from "@/lib/store/useStore";
 import { formatCatalogPrice } from "@/lib/commerce/format";
 import { useCartValidation } from "@/lib/store/useCartValidation";
-import { IconTrash, IconShoppingBag, IconTag, IconGift, IconArrowRight, IconTruck, IconShieldCheck } from "@tabler/icons-react";
+import { IconTrash, IconShoppingBag, IconTag, IconGift, IconArrowRight, IconTruck, IconShieldCheck } from "@/components/store/StoreIcon";
 import { toast } from "sonner";
 
 export default function CartPage() {
@@ -31,6 +31,7 @@ export default function CartPage() {
   const shippingCost = subtotal > 100 || subtotal === 0 ? 0 : 9.0;
   const tax = (subtotal - discountAmount) * 0.08;
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingCost + tax);
+  const canCheckout = Boolean(cart.length > 0 && !isValidating && validation?.valid);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,9 +265,13 @@ export default function CartPage() {
                 {/* Checkout CTA */}
                 <Link
                   href="/store/checkout"
-                  className="w-full py-4 px-6 rounded-2xl bg-lime-500 text-black font-bold text-xs uppercase tracking-wider text-center hover:bg-lime-400 transition-colors flex items-center justify-center gap-2 shadow-lg"
+                  aria-disabled={!canCheckout}
+                  onClick={(event) => {
+                    if (!canCheckout) event.preventDefault();
+                  }}
+                  className={`w-full py-4 px-6 rounded-2xl font-bold text-xs uppercase tracking-wider text-center transition-colors flex items-center justify-center gap-2 shadow-lg ${canCheckout ? "bg-lime-500 text-black hover:bg-lime-400" : "cursor-not-allowed bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500"}`}
                 >
-                  Proceed to Checkout <IconArrowRight size={18} />
+                  {isValidating ? "Checking availability..." : "Proceed to Checkout"} <IconArrowRight size={18} />
                 </Link>
 
                 <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-center gap-4 text-[11px] font-mono text-neutral-400">

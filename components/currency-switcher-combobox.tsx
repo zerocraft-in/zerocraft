@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import {
   Combobox,
   ComboboxContent,
@@ -44,11 +45,12 @@ export function CurrencySwitcherCombobox({
           <ComboboxValue>
             {(item: CurrencyConfig) => (
               <span className="flex items-center gap-2">
-                <img
+                <Image
                   src={`https://flagcdn.com/${item.countryCode.toLowerCase()}.svg`}
                   alt={item.name}
                   width={18}
                   height={14}
+                  unoptimized
                   className="rounded-xs shrink-0 object-cover"
                 />
                 <span className="font-bold text-foreground">
@@ -62,11 +64,12 @@ export function CurrencySwitcherCombobox({
           <ComboboxList>
             {currencyItems.map((item) => (
               <ComboboxItem key={item.code} value={item}>
-                <img
+                <Image
                   src={`https://flagcdn.com/${item.countryCode.toLowerCase()}.svg`}
                   alt={item.name}
                   width={18}
                   height={13}
+                  unoptimized
                   className="rounded-xs shrink-0 object-cover"
                 />
                 <div className="flex items-center justify-between w-full min-w-0 pr-1">

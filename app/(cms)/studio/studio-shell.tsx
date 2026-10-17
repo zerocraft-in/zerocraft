@@ -68,15 +68,15 @@ import {
   markNotificationAsReadInSupabase,
 } from "@/lib/supabase-client";
 import { FloatingLogout, FloatingSidebar } from "./floating-nav";
+import { ADMIN_ROUTES } from "@/lib/admin-routes";
 
 const primaryNavigation = [
-  { label: "Dashboard", href: "/studio", icon: IconHome },
-  { label: "Store", href: "/studio/store", icon: IconShoppingBag },
-  { label: "Orders", href: "/studio/orders", icon: IconFileText },
-  { label: "Clients", href: "/studio/clients", icon: IconUsers },
-  { label: "Works", href: "/studio/works", icon: IconBriefcase },
-  { label: "Reports", href: "/studio/reports", icon: IconChartBar },
-  { label: "Database", href: "/studio/database", icon: IconDatabase },
+  { label: "Dashboard", href: ADMIN_ROUTES.overview, icon: IconHome },
+  { label: "Studio", href: ADMIN_ROUTES.studio.works, icon: IconBriefcase },
+  { label: "Store", href: ADMIN_ROUTES.store.overview, icon: IconShoppingBag },
+  { label: "Orders", href: ADMIN_ROUTES.operations.orders, icon: IconFileText },
+  { label: "Reports", href: ADMIN_ROUTES.operations.reports, icon: IconChartBar },
+  { label: "System", href: ADMIN_ROUTES.system.database, icon: IconDatabase },
 ];
 
 function isPrimaryNavigationActive(pathname: string, href: string) {
@@ -85,91 +85,63 @@ function isPrimaryNavigationActive(pathname: string, href: string) {
   );
 }
 
-const groups = [
+type StudioNavigationLink = {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string; stroke?: number }>;
+};
+
+type StudioNavigationGroup = {
+  label: string;
+  links: StudioNavigationLink[];
+};
+
+const groups: StudioNavigationGroup[] = [
   {
-    label: "Workspace",
-    links: [{ label: "Dashboard", href: "/studio", icon: IconHome }],
+    label: "Overview",
+    links: [{ label: "Dashboard", href: ADMIN_ROUTES.overview, icon: IconHome }],
+  },
+  {
+    label: "Studio",
+    links: [
+      { label: "Works", href: ADMIN_ROUTES.studio.works, icon: IconBriefcase },
+      { label: "Clients", href: ADMIN_ROUTES.studio.clients, icon: IconUsers },
+      { label: "Appointments", href: ADMIN_ROUTES.studio.appointments, icon: IconCalendar },
+      { label: "Blogs", href: ADMIN_ROUTES.studio.blogs, icon: IconFileText },
+      { label: "Reviews", href: ADMIN_ROUTES.studio.reviews, icon: IconStar },
+    ],
   },
   {
     label: "Store",
     links: [
-      { label: "Overview", href: "/studio/store", icon: IconChartBar },
-      { label: "Orders", href: "/studio/orders", icon: IconFileText },
-      { label: "Drafts", href: "/studio/orders/drafts", icon: IconFileText },
-      {
-        label: "Abandoned checkouts",
-        href: "/studio/orders/abandoned-checkouts",
-        icon: IconFileText,
-      },
-      {
-        label: "Products",
-        href: "/studio/store#products",
-        icon: IconShoppingBag,
-      },
-      {
-        label: "Collections",
-        href: "/studio/store/collections",
-        icon: IconShoppingBag,
-      },
-      {
-        label: "Inventory",
-        href: "/studio/store/inventory",
-        icon: IconDatabase,
-      },
-      {
-        label: "Purchase orders",
-        href: "/studio/store/purchase-orders",
-        icon: IconFileText,
-      },
-      {
-        label: "Transfers",
-        href: "/studio/store/transfers",
-        icon: IconFileText,
-      },
-      {
-        label: "Gift cards",
-        href: "/studio/store/gift-cards",
-        icon: IconShoppingBag,
-      },
-      {
-        label: "Categories",
-        href: "/studio/store#categories",
-        icon: IconDatabase,
-      },
-    ],
-  },
-  {
-    label: "Customers",
-    links: [
-      {
-        label: "Appointments",
-        href: "/studio/appointments",
-        icon: IconCalendar,
-      },
-      { label: "Clients", href: "/studio/clients", icon: IconUsers },
-    ],
-  },
-  {
-    label: "Content",
-    links: [
-      { label: "Works", href: "/studio/works", icon: IconBriefcase },
-      { label: "Blogs", href: "/studio/blogs", icon: IconFileText },
-      { label: "Reviews", href: "/studio/reviews", icon: IconStar },
+      { label: "Store Overview", href: ADMIN_ROUTES.store.overview, icon: IconChartBar },
+      { label: "Products", href: ADMIN_ROUTES.store.products, icon: IconShoppingBag },
+      { label: "Categories", href: ADMIN_ROUTES.store.categories, icon: IconDatabase },
+      { label: "Collections", href: ADMIN_ROUTES.store.collections, icon: IconShoppingBag },
+      { label: "Inventory", href: ADMIN_ROUTES.store.inventory, icon: IconDatabase },
+      { label: "Customization", href: ADMIN_ROUTES.store.customization, icon: IconSettings },
+      { label: "Discounts", href: ADMIN_ROUTES.store.discounts, icon: IconUsers },
+      { label: "Gift Cards", href: ADMIN_ROUTES.store.giftCards, icon: IconShoppingBag },
+      { label: "Purchase Orders", href: ADMIN_ROUTES.store.purchaseOrders, icon: IconFileText },
+      { label: "Transfers", href: ADMIN_ROUTES.store.transfers, icon: IconFileText },
     ],
   },
   {
     label: "Operations",
     links: [
-      { label: "Reports", href: "/studio/reports", icon: IconChartBar },
-      { label: "Database", href: "/studio/database", icon: IconDatabase },
-      { label: "Automations", href: "/studio/automations", icon: IconBolt },
-      { label: "AI studio", href: "/studio/ai", icon: IconSparkles },
+      { label: "Orders", href: ADMIN_ROUTES.operations.orders, icon: IconFileText },
+      { label: "Reports", href: ADMIN_ROUTES.operations.reports, icon: IconChartBar },
     ],
   },
   {
-    label: "Workspace settings",
+    label: "System",
     links: [
-      { label: "Settings", href: "/studio/settings", icon: IconSettings },
+      { label: "Database", href: ADMIN_ROUTES.system.database, icon: IconDatabase },
+      { label: "Staff", href: ADMIN_ROUTES.system.staff, icon: IconUsers },
+      { label: "AI", href: ADMIN_ROUTES.system.ai, icon: IconSparkles },
+      { label: "Automations", href: ADMIN_ROUTES.system.automations, icon: IconBolt },
+      { label: "Integrations", href: ADMIN_ROUTES.system.integrations, icon: IconSettings },
+      { label: "Settings", href: ADMIN_ROUTES.system.settings, icon: IconSettings },
     ],
   },
 ];
