@@ -83,7 +83,7 @@ export function isSafeReturnPath(value: string | null | undefined, fallback = "/
 }
 
 export function storeRoute(path: string) {
-  return path === "/" ? "/store" : path.startsWith("/store") ? path : `/store${path}`;
+  return path === "/" ? "/" : path.startsWith("/store") ? path : `/store${path}`;
 }
 
 export function adminRoute(path: string) {

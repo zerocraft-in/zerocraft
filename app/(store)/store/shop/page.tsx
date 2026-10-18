@@ -1,11 +1,15 @@
-import CatalogShop from "@/components/store/catalog-shop";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Shop | Zerocraft Store",
-  description: "Browse curated posters, apparel, art prints and accessories from Zerocraft Store.",
-};
+import ZeroPopShop from "@/components/zeropop-shop";
+import ZeroPopStorePage from "@/components/zeropop-store-page";
 
 export default function ShopPage() {
-  return <CatalogShop />;
+  return (
+    <ZeroPopStorePage
+      eyebrow="02 / The edit"
+      title="Find your"
+      accent="scene."
+      description="Original ZEROPOP prints, wearable graphics, considered frames and small objects for people who collect a feeling."
+    >
+      <ZeroPopShop />
+    </ZeroPopStorePage>
+  );
 }

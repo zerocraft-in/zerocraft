@@ -4,12 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconX, IconShoppingBag, IconHeart, IconHeartFilled } from "@/components/store/StoreIcon";
+import { IconX, IconShoppingBag } from "@/components/store/StoreIcon";
 import { useStore } from "@/lib/store/useStore";
 import { formatCatalogPrice } from "@/lib/commerce/format";
 
 export default function QuickViewModal() {
-  const { quickViewProduct, setQuickViewProduct, addToCart, toggleWishlist, isInWishlist } = useStore();
+  const { quickViewProduct, setQuickViewProduct, addToCart } = useStore();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -18,7 +18,6 @@ export default function QuickViewModal() {
   if (!quickViewProduct) return null;
 
   const product = quickViewProduct;
-  const isWishlisted = isInWishlist(product.id);
   const currentColor = selectedColor || (product.colors?.[0]?.name ?? "");
   const currentSize = selectedSize || (product.sizes?.[0] ?? "");
 
@@ -193,17 +192,6 @@ export default function QuickViewModal() {
                   Add to Cart
                 </button>
 
-                {/* Wishlist Toggle */}
-                <button
-                  onClick={() => toggleWishlist(product)}
-                  className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                >
-                  {isWishlisted ? (
-                    <IconHeartFilled size={20} className="text-rose-500" />
-                  ) : (
-                    <IconHeart size={20} />
-                  )}
-                </button>
               </div>
 
               {/* View Full Product Page Link */}

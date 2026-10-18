@@ -32,12 +32,6 @@ interface StoreState {
   applyCoupon: (code: string) => { success: boolean; message: string };
   setGiftNote: (note: string) => void;
 
-  // Wishlist State
-  wishlist: Product[];
-  toggleWishlist: (product: Product) => void;
-  isInWishlist: (productId: string) => boolean;
-  clearWishlist: () => void;
-
   // UI State
   searchModalOpen: boolean;
   quickViewProduct: Product | null;
@@ -143,20 +137,6 @@ export const useStore = create<StoreState>()(
 
       setGiftNote: (note) => set({ giftNote: note }),
 
-      // Wishlist
-      wishlist: [],
-      toggleWishlist: (product) => {
-        const { wishlist } = get();
-        const exists = wishlist.some((item) => item.id === product.id);
-        if (exists) {
-          set({ wishlist: wishlist.filter((item) => item.id !== product.id) });
-        } else {
-          set({ wishlist: [...wishlist, product] });
-        }
-      },
-      isInWishlist: (productId) => get().wishlist.some((item) => item.id === productId),
-      clearWishlist: () => set({ wishlist: [] }),
-
       // UI
       searchModalOpen: false,
       quickViewProduct: null,
@@ -215,7 +195,6 @@ export const useStore = create<StoreState>()(
       },
       partialize: (state) => ({
         cart: state.cart,
-        wishlist: state.wishlist,
         couponCode: state.couponCode,
         discountPercentage: state.discountPercentage,
         userProfile: state.userProfile,

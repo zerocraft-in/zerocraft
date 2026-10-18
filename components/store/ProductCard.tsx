@@ -5,8 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  IconHeart,
-  IconHeartFilled,
   IconEye,
   IconShoppingBag,
 } from "@/components/store/StoreIcon";
@@ -24,10 +22,9 @@ export default function ProductCard({
   product,
   priority = false,
 }: ProductCardProps) {
-  const { addToCart, toggleWishlist, isInWishlist, setQuickViewProduct } =
+  const { addToCart, setQuickViewProduct } =
     useStore();
   const [isHovered, setIsHovered] = useState(false);
-  const isWishlisted = isInWishlist(product.id);
   const images = product.images?.filter(Boolean) ?? [];
   const primaryImage = images[0] || "/og-image.jpg";
   const secondaryImage = images[1] || primaryImage;
@@ -86,25 +83,6 @@ export default function ProductCard({
 
           {/* Action Floating Buttons Top-Right */}
           <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-            <button
-              onClick={() => {
-                toggleWishlist(product);
-                trackStoreEvent("wishlist_add", {
-                  productId: product.id,
-                  productName: product.title,
-                });
-              }}
-              aria-label={
-                isWishlisted ? "Remove from wishlist" : "Add to wishlist"
-              }
-              className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-black/25 bg-white/95 backdrop-blur-md text-neutral-800 transition-all hover:scale-105 hover:border-[#e34d2e] hover:text-[#e34d2e] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e34d2e]"
-            >
-              {isWishlisted ? (
-                <IconHeartFilled size={18} className="text-rose-500" />
-              ) : (
-                <IconHeart size={18} />
-              )}
-            </button>
             <button
               onClick={() => setQuickViewProduct(product)}
               aria-label="Quick view"

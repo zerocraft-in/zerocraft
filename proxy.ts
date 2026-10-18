@@ -47,11 +47,13 @@ export async function proxy(request: NextRequest) {
   }
 
   if (area === "store") {
+    if (pathname === "/padam-club.html") return await updateSession(request);
     if (pathname === "/studio" || pathname.startsWith("/studio/") || pathname === "/login") {
       if (methodCanRedirect) return NextResponse.redirect(`${domainUrlForRequest("admin", request.nextUrl, pathname, hostname)}${search}`, 308);
       return new NextResponse("Admin routes require the admin hostname", { status: 421 });
     }
     if (pathname.startsWith("/api/studio")) return new NextResponse("Admin API requires the admin hostname", { status: 421 });
+    if (pathname === "/store") return rewriteWithSession(request, "/");
     if (pathname === "/" || pathname === "/shop" || (!pathname.startsWith("/store") && !pathname.startsWith("/api/"))) {
       return rewriteWithSession(request, storeRoute(pathname));
     }

@@ -5,6 +5,24 @@
 
 @import "../styles/globals.css";
 
+.padam-storefront {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.padam-frame {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  border: 0;
+}
+
+.padam-native-storefront {
+  min-height: 100vh;
+  width: 100%;
+}
+
 /* Zerocraft Store: a quiet, deterministic print-studio pattern layer. */
 .craft-pattern-background {
   position: relative;
@@ -82,6 +100,86 @@
   background-size: 460px 460px;
   mix-blend-mode: screen;
 }
+
+.store-hero-slider__grid {
+  background-image: linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(90deg, rgba(0,0,0,.8), transparent 75%);
+}
+
+.store-hero-slider__sticker {
+  display: grid;
+  width: 7.5rem;
+  height: 7.5rem;
+  place-content: center;
+  gap: .1rem;
+  border: 2px solid #151311;
+  border-radius: 50%;
+  background: #d3ff00;
+  color: #151311;
+  text-align: center;
+  box-shadow: 6px 6px 0 #e34d2e;
+}
+.store-hero-slider__sticker span { font-size: .55rem; font-weight: 900; letter-spacing: .22em; }
+.store-hero-slider__sticker strong { font-size: 1.65rem; line-height: .82; letter-spacing: -.09em; }
+.store-hero-slider__sticker small { margin-top: .35rem; font-size: .48rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.store-hero-slider__crosshair { border: 1px solid rgba(245,181,68,.8); border-radius: 50%; }
+.store-hero-slider__crosshair::before, .store-hero-slider__crosshair::after { content: ""; position: absolute; background: rgba(245,181,68,.8); }
+.store-hero-slider__crosshair::before { top: 50%; left: -1rem; right: -1rem; height: 1px; }
+.store-hero-slider__crosshair::after { top: -1rem; bottom: -1rem; left: 50%; width: 1px; }
+
+.store-signal-strip { overflow: hidden; border-block: 1px solid #151311; background: #d3ff00; color: #151311; transform: rotate(-1.2deg) scale(1.03); }
+.store-signal-strip__track { display: flex; width: max-content; align-items: center; gap: 1.6rem; padding: .7rem 0; animation: store-marquee 24s linear infinite; font-size: .65rem; font-weight: 900; letter-spacing: .16em; white-space: nowrap; }
+.store-signal-strip__track i { font-size: 1rem; font-style: normal; }
+.store-urban-panel { position: relative; }
+.store-urban-panel::before { content: "TRENDING / 2026"; position: absolute; right: 0; top: 2.75rem; color: rgba(21,19,17,.18); font-size: .55rem; font-weight: 900; letter-spacing: .18em; transform: rotate(90deg) translateX(100%); transform-origin: right top; }
+
+/* Full storefront system: ink, paper, signal and a little bit of street-poster energy. */
+#zerocraft-store {
+  --store-ink: #151311;
+  --store-paper: #f6f2eb;
+  --store-paper-deep: #e9dfd0;
+  --store-signal: #e34d2e;
+  --store-acid: #d3ff00;
+  --store-gold: #f5b544;
+  --store-line: rgba(21, 19, 17, .14);
+  color: var(--store-ink);
+}
+
+#zerocraft-store :is(h1, h2, h3, h4) { text-wrap: balance; }
+#zerocraft-store :is(h1, h2) { font-family: var(--font-secondary), Georgia, serif; }
+#zerocraft-store .font-secondary { font-family: var(--font-secondary), Georgia, serif; }
+#zerocraft-store :is(input, select, textarea) { border-radius: 5px; border-color: var(--store-line); background-color: rgba(255,255,255,.45); }
+#zerocraft-store :is(input, select, textarea):focus { border-color: var(--store-signal); box-shadow: 0 0 0 3px rgba(227,77,46,.12); }
+#zerocraft-store .rounded-3xl { border-radius: 10px; }
+#zerocraft-store .rounded-2xl { border-radius: 8px; }
+#zerocraft-store .shadow-lg, #zerocraft-store .shadow-xl { box-shadow: 8px 8px 0 rgba(21,19,17,.08); }
+#zerocraft-store .store-product-page,
+#zerocraft-store .store-product-page + * { position: relative; }
+#zerocraft-store .store-product-page::before { content: "ZER\A OCRAFT"; white-space: pre; position: absolute; right: 2vw; top: 10rem; color: rgba(21,19,17,.05); font-size: clamp(3rem, 9vw, 9rem); font-weight: 900; line-height: .78; letter-spacing: -.12em; pointer-events: none; }
+#zerocraft-store .store-product-page .bg-white\/70 { background: rgba(255,255,255,.62); border-color: var(--store-line); }
+#zerocraft-store .store-product-page :is(.bg-lime-500, .bg-lime-400) { background: var(--store-acid); }
+#zerocraft-store .store-product-page :is(.text-lime-600, .text-lime-400) { color: var(--store-ink); }
+#zerocraft-store .store-product-page :is(button, a).rounded-2xl { border-radius: 5px; }
+#zerocraft-store .store-product-page .bg-\[\#151311\] { background-color: var(--store-ink); }
+
+/* The legacy cart/checkout routes use neutral utility classes; normalize them to the new paper system. */
+#zerocraft-store :is(.bg-neutral-900, .dark\:bg-neutral-900, .bg-neutral-950, .dark\:bg-neutral-950) { background-color: rgba(255,255,255,.64); }
+#zerocraft-store :is(.bg-neutral-50, .dark\:bg-neutral-950) { background-color: rgba(255,255,255,.42); }
+#zerocraft-store :is(.border-neutral-200, .border-neutral-200\/80, .dark\:border-neutral-800, .border-neutral-100) { border-color: var(--store-line); }
+#zerocraft-store :is(.text-neutral-900, .dark\:text-white) { color: var(--store-ink); }
+#zerocraft-store :is(.text-lime-600, .dark\:text-lime-400, .text-emerald-600) { color: var(--store-signal); }
+#zerocraft-store :is(.bg-lime-500, .bg-lime-400) { background-color: var(--store-acid); color: var(--store-ink); }
+#zerocraft-store :is(.bg-lime-500, .bg-lime-400):hover { background-color: #b9e500; }
+#zerocraft-store :is(.rounded-3xl, .rounded-2xl) { border-color: var(--store-line); }
+
+@media (max-width: 640px) {
+  #zerocraft-store .store-product-page::before { right: -1rem; top: 8rem; font-size: 4rem; }
+}
+
+@keyframes store-marquee { to { transform: translateX(-50%); } }
+
+@media (prefers-reduced-motion: reduce) { .store-signal-strip__track { animation: none; } }
 
 .store-social-section__orbit {
   position: absolute;

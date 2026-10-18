@@ -63,9 +63,10 @@ export default function CatalogShop() {
   return (
     <main className="min-h-screen bg-transparent text-[#151515]">
       <section className="mx-auto max-w-7xl px-5 pb-8 pt-12 sm:px-8 lg:px-14 lg:pt-20">
-        <p className="text-[10px] font-black uppercase tracking-[.22em] text-[#e34d2e]">Zerocraft Store / Catalog</p>
+        <p className="text-[10px] font-black uppercase tracking-[.22em] text-[#e34d2e]">02 / Zerocraft Store — The current edit</p>
         <h1 className="mt-4 font-secondary text-6xl font-black leading-[.88] tracking-[-.07em] sm:text-8xl">Find your <span className="text-[#e34d2e]">scene.</span></h1>
-        <p className="mt-5 max-w-xl text-sm leading-6 text-black/60">Browse original prints, frames, apparel and accessories by format, culture and design language.</p>
+        <p className="mt-5 max-w-xl text-sm leading-6 text-black/60">Original prints, wearable graphics, considered frames and small objects for people who collect a feeling.</p>
+        <div className="mt-7 flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-[.14em] text-black/45"><span className="rounded-full border border-black/15 bg-white/55 px-3 py-2">Made in Tenkasi</span><span className="rounded-full border border-black/15 bg-white/55 px-3 py-2">Small-batch drops</span><span className="rounded-full border border-black/15 bg-white/55 px-3 py-2">India-wide delivery</span></div>
       </section>
 
       <section id="categories" className="border-y border-black/15 bg-transparent px-5 py-5 sm:px-8 lg:px-14">

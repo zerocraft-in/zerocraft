@@ -6,7 +6,6 @@ export type StoreEventName =
   | "view_item"
   | "search"
   | "filter_apply"
-  | "wishlist_add"
   | "add_to_cart"
   | "begin_checkout"
   | "newsletter_signup"
