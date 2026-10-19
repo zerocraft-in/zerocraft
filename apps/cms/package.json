@@ -1,0 +1,30 @@
+{
+  "name": "@zerocraft/cms",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3002",
+    "build": "next build",
+    "start": "next start --port 3002",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@fontsource-variable/hanken-grotesk": "^5.2.8",
+    "@fontsource/inter": "^5.3.0",
+    "@shadcn/react": "^0.3.1",
+    "@zerocraft/supabase": "0.1.0",
+    "cmdk": "^1.1.1",
+    "cn": "^0.5.0",
+    "date-fns": "^4.4.0",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.5.0",
+    "next": "^16.1.1",
+    "react": "^19.2.3",
+    "react-day-picker": "^10.0.2",
+    "react-dom": "^19.2.3",
+    "react-resizable-panels": "^4.14.6",
+    "recharts": "^3.8.0",
+    "shiki": "^4.5.0"
+  }
+}

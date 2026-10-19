@@ -2,12 +2,22 @@
   "name": "zerocraft",
   "version": "0.0.20",
   "private": true,
+  "packageManager": "npm@11.17.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "turbo run dev",
+    "dev:studio": "turbo run dev --filter=@zerocraft/studio",
+    "dev:store": "turbo run dev --filter=@zerocraft/store",
+    "dev:cms": "turbo run dev --filter=@zerocraft/cms",
+    "build": "turbo run build",
+    "build:studio": "turbo run build --filter=@zerocraft/studio",
+    "build:store": "turbo run build --filter=@zerocraft/store",
+    "build:cms": "turbo run build --filter=@zerocraft/cms",
+    "typecheck": "turbo run typecheck",
     "lint": "eslint .",
-    "typecheck": "next typegen && tsc --noEmit",
     "verify": "npm run verify:seed",
     "verify:commerce": "node scripts/verify-commerce-schema.mjs",
     "verify:commerce-correctness": "node --experimental-strip-types scripts/verify-commerce-correctness.mjs",
@@ -70,6 +80,7 @@
     "eslint-config-next": "^16.3.0",
     "supabase": "^2.121.0",
     "tailwindcss": "^4.3.3",
+    "turbo": "^2.11.9",
     "typescript": "^5"
   },
   "allowScripts": {
