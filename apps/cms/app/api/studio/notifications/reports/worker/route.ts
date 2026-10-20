@@ -8,9 +8,11 @@ export const dynamic = "force-dynamic";
 const JOB_NAME = "studio-weekly-notification-report";
 
 export async function POST(request: Request) {
-  const expected = process.env.CRON_SECRET || process.env.WEEKLY_REPORT_WORKER_SECRET;
   const provided = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!expected || provided !== expected) return Response.json({ error: "Unauthorized worker request." }, { status: 401 });
+  const validSecrets = [process.env.CRON_SECRET, process.env.WEEKLY_REPORT_WORKER_SECRET].filter(
+    (value): value is string => Boolean(value),
+  );
+  if (!provided || !validSecrets.includes(provided)) return Response.json({ error: "Unauthorized worker request." }, { status: 401 });
   const supabase = createServiceClient();
   const { data: queued } = await supabase.from("studio_notification_report_runs").select("id,period_start,period_end").eq("job_name", JOB_NAME).eq("status", "queued").order("created_at", { ascending: true }).limit(1).maybeSingle();
   if (!queued) return Response.json({ ok: true, status: "empty" });
