@@ -38,13 +38,43 @@ export async function POST(request: Request) {
   const access = await requireStudioAccess();
   if (!access.ok) return access.response;
   if (access.role !== "admin") return denied("Only administrators can invite team members.", 403);
-  let body: { email?: unknown; fullName?: unknown; role?: unknown };
+  let body: { action?: unknown; inviteId?: unknown; email?: unknown; fullName?: unknown; role?: unknown };
   try { body = await request.json(); } catch { return denied("Invalid invitation request."); }
+  const service = serviceClient();
+  if (body.action === "resend") {
+    const inviteId = typeof body.inviteId === "string" ? body.inviteId.trim() : "";
+    if (!inviteId) return denied("A valid invitation is required.");
+    if (!service) return denied("Resending invitations requires SUPABASE_SERVICE_ROLE_KEY on the server.", 503);
+    const { data: previousInvite, error: previousInviteError } = await service.from("studio_team_invites").select("id,email,role,status,expires_at,auth_user_id").eq("id", inviteId).maybeSingle();
+    if (previousInviteError || !previousInvite) return denied("Invitation not found.", 404);
+    const expiredPending = previousInvite.status === "pending" && new Date(previousInvite.expires_at).getTime() <= Date.now();
+    if (!(previousInvite.status === "expired" || previousInvite.status === "email_failed" || expiredPending)) return denied("Only expired or failed invitations can be resent.", 409);
+    if (!previousInvite.auth_user_id) return denied("This invitation has no account to reactivate.", 409);
+    const { data: profile } = await service.from("profiles").select("full_name").eq("id", previousInvite.auth_user_id).maybeSingle();
+    const { error: activateError } = await service.auth.admin.updateUserById(previousInvite.auth_user_id, { ban_duration: "none" });
+    if (activateError) return denied("The invitation account could not be reactivated.", 503);
+    await service.from("profiles").update({ is_active: true, updated_at: new Date().toISOString() }).eq("id", previousInvite.auth_user_id);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const redirectTo = `${new URL(request.url).origin}/auth/callback?next=/`;
+    const { data: linkData, error: linkError } = await service.auth.admin.generateLink({ type: "invite", email: previousInvite.email, options: { redirectTo, data: { full_name: profile?.full_name || previousInvite.email.split("@")[0], invited_role: previousInvite.role } } });
+    if (linkError || !linkData.properties?.action_link) return denied("The replacement invitation link could not be generated.", 503);
+    await service.from("studio_team_invites").update({ status: "revoked", revoked_at: new Date().toISOString() }).eq("id", previousInvite.id);
+    const { data: invite, error: inviteError } = await service.from("studio_team_invites").insert({ email: previousInvite.email, role: previousInvite.role, auth_user_id: previousInvite.auth_user_id, invited_by: access.user.id, expires_at: expiresAt }).select("id,email,role,status,expires_at,created_at").single();
+    if (inviteError) return denied("The replacement invitation could not be recorded.", 503);
+    try {
+      await sendEmail(teamInvitationEmail({ recipient: previousInvite.email, role: previousInvite.role, inviteUrl: linkData.properties.action_link, inviterName: access.user.email || "A ZeroCraft administrator", expiresAt }));
+    } catch (error) {
+      await service.from("studio_team_invites").update({ status: "email_failed" }).eq("id", invite.id);
+      console.error("Team invitation resend failed", error);
+      return denied("The replacement invitation was created, but email delivery failed.", 502);
+    }
+    await service.from("store_audit_logs").insert({ actor_id: access.user.id, action: "team.invite_resent", entity_type: "team_invite", entity_id: invite.id, metadata: { email: previousInvite.email, role: previousInvite.role, previousInviteId: previousInvite.id } });
+    return Response.json({ invite }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
+  }
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const fullName = typeof body.fullName === "string" ? body.fullName.trim().slice(0, 120) : "";
   const roleValue = typeof body.role === "string" ? body.role.trim() : "staff";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !roles.includes(roleValue as ManagedRole) || roleValue === "client") return denied("Enter a valid email and a Studio role.");
-  const service = serviceClient();
   if (!service) return denied("Invitations are not configured yet. Add SUPABASE_SERVICE_ROLE_KEY to the server environment.", 503);
   const role = roleValue as Exclude<ManagedRole, "client">;
   const { data: existing } = await service.from("profiles").select("id,email,role,is_active").eq("email", email).maybeSingle();
