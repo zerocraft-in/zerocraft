@@ -28,6 +28,7 @@ export async function GET(request: Request) {
     await service.from("store_audit_logs").insert({ actor_id: null, action: "team.invite_expired", entity_type: "team_invite", entity_id: invite.id, metadata: { email: invite.email, role: invite.role, expiresAt: invite.expires_at, trigger: "scheduled" } });
     expiredCount += 1;
   }
+  await service.from("store_audit_logs").insert({ actor_id: null, action: "team.invite_expiry_cleanup", entity_type: "team_invite_cleanup", entity_id: null, metadata: { expiredCount, checkedAt: now, trigger: "scheduled" } });
   return Response.json({ ok: true, expiredCount, checkedAt: now }, { headers: { "Cache-Control": "no-store" } });
 }
 
