@@ -101,3 +101,40 @@ export async function PATCH(request: Request) {
   await access.supabase.from("store_audit_logs").insert({ actor_id: access.user.id, action: isActive === undefined ? "team.role_changed" : "team.access_changed", entity_type: "profile", entity_id: id, metadata: { email: previous.email, from: { role: previous.role, isActive: previous.is_active }, to: { role: data.role, isActive: data.is_active } } });
   return Response.json({ member: data }, { headers: { "Cache-Control": "private, no-store" } });
 }
+
+export async function DELETE(request: Request) {
+  if (!isSameOrigin(request)) return denied("Invalid request origin.", 403);
+  const access = await requireStudioAccess();
+  if (!access.ok) return access.response;
+  if (access.role !== "admin") return denied("Only administrators can remove team access.", 403);
+  let body: { kind?: unknown; id?: unknown; confirm?: unknown };
+  try { body = await request.json(); } catch { return denied("Invalid removal request."); }
+  const kind = body.kind === "invite" || body.kind === "member" ? body.kind : "";
+  const id = typeof body.id === "string" ? body.id.trim() : "";
+  if (!kind || !id || body.confirm !== true) return denied("Removal confirmation is required.");
+  const service = serviceClient();
+  if (!service) return denied("Removal controls require SUPABASE_SERVICE_ROLE_KEY on the server.", 503);
+
+  if (kind === "invite") {
+    const { data: invite, error } = await service.from("studio_team_invites").select("id,email,role,status,auth_user_id").eq("id", id).maybeSingle();
+    if (error || !invite) return denied("Invitation not found.", 404);
+    if (invite.status !== "pending") return denied("Only pending invitations can be revoked.", 409);
+    if (invite.auth_user_id) {
+      const { error: authError } = await service.auth.admin.updateUserById(invite.auth_user_id, { ban_duration: "876000h" });
+      if (authError) return denied("The invitation account could not be disabled.", 503);
+      await service.from("profiles").update({ is_active: false, updated_at: new Date().toISOString() }).eq("id", invite.auth_user_id);
+    }
+    const { error: revokeError } = await service.from("studio_team_invites").update({ status: "revoked", revoked_at: new Date().toISOString() }).eq("id", id);
+    if (revokeError) return denied("The invitation could not be revoked.", 503);
+    await service.from("store_audit_logs").insert({ actor_id: access.user.id, action: "team.invite_revoked", entity_type: "team_invite", entity_id: id, metadata: { email: invite.email, role: invite.role } });
+    return Response.json({ revoked: true }, { headers: { "Cache-Control": "private, no-store" } });
+  }
+
+  if (id === access.user.id) return denied("You cannot remove your own administrator account.", 400);
+  const { data: member, error: memberError } = await service.from("profiles").select("id,email,full_name,role,is_active").eq("id", id).maybeSingle();
+  if (memberError || !member) return denied("Team member not found.", 404);
+  const { error: deleteError } = await service.auth.admin.deleteUser(id);
+  if (deleteError) return denied("The team member could not be removed.", 503);
+  await service.from("store_audit_logs").insert({ actor_id: access.user.id, action: "team.member_removed", entity_type: "profile", entity_id: id, metadata: { email: member.email, role: member.role, isActive: member.is_active } });
+  return Response.json({ removed: true }, { headers: { "Cache-Control": "private, no-store" } });
+}
