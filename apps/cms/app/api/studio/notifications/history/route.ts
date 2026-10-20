@@ -1,11 +1,11 @@
-import { requireStudioAccess } from "@/lib/studio-auth";
+import { requireStudioPermission } from "@/lib/studio-auth";
 import { renderNotificationReportPdf } from "@/lib/notifications/report-pdf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("notifications.read");
   if (!access.ok) return access.response;
   const requestUrl = new URL(request.url);
   const type = requestUrl.searchParams.get("type") || "";
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("notifications.manage");
   if (!access.ok) return access.response;
   let body: { id?: unknown; all?: boolean };
   try { body = await request.json(); } catch { return Response.json({ error: "Invalid notification request." }, { status: 400 }); }

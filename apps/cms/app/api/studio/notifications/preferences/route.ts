@@ -1,10 +1,10 @@
-import { requireStudioAccess } from "@/lib/studio-auth";
+import { requireStudioPermission } from "@/lib/studio-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("notifications.read");
   if (!access.ok) return access.response;
   const { data, error } = await access.supabase.from("studio_notification_preferences").select("automation_failure_enabled,low_stock_enabled,updated_at").eq("user_id", access.user.id).maybeSingle();
   if (error) return Response.json({ error: "Notification preferences are unavailable." }, { status: 503 });
@@ -12,7 +12,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("notifications.manage");
   if (!access.ok) return access.response;
   let body: { automationFailureEnabled?: boolean; lowStockEnabled?: boolean };
   try { body = await request.json(); } catch { return Response.json({ error: "Invalid preferences payload." }, { status: 400 }); }

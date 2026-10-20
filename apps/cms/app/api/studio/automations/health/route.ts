@@ -1,4 +1,4 @@
-import { requireStudioAccess } from "@/lib/studio-auth";
+import { requireStudioPermission } from "@/lib/studio-auth";
 import { notifyAutomationFailure, type AutomationFailureRun } from "@/lib/email/automation-failures";
 
 export const runtime = "nodejs";
@@ -14,7 +14,7 @@ function latestExpectedWeeklyRun(weekday: number, hour: number, now = new Date()
 }
 
 export async function GET() {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("automations.read");
   if (!access.ok) return access.response;
   const { data, error } = await access.supabase.rpc("studio_get_automation_health");
   if (error) {
@@ -62,7 +62,7 @@ export async function GET() {
 }
 
 export async function POST() {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("automations.manage");
   if (!access.ok) return access.response;
   if (access.role !== "admin" && access.role !== "manager") {
     return Response.json({ error: "Only admins and managers can run automations manually." }, { status: 403 });

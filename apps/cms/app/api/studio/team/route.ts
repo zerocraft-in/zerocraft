@@ -1,4 +1,4 @@
-import { requireStudioAccess } from "@/lib/studio-auth";
+import { requireStudioPermission } from "@/lib/studio-auth";
 import { createServiceClient } from "@/lib/supabase-service";
 import { sendEmail } from "@/lib/email/smtp";
 import { teamInvitationEmail } from "@/lib/email/templates";
@@ -19,7 +19,7 @@ function serviceClient() {
 }
 
 export async function GET() {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("team.read");
   if (!access.ok) return access.response;
   if (access.role !== "admin") return denied("Only administrators can manage team access.", 403);
   const { data, error } = await access.supabase.from("profiles").select("id,email,full_name,avatar_url,role,is_active,created_at,updated_at").order("created_at", { ascending: true });
@@ -35,7 +35,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return denied("Invalid request origin.", 403);
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("team.manage");
   if (!access.ok) return access.response;
   if (access.role !== "admin") return denied("Only administrators can invite team members.", 403);
   let body: { action?: unknown; inviteId?: unknown; email?: unknown; fullName?: unknown; role?: unknown };
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   if (!isSameOrigin(request)) return denied("Invalid request origin.", 403);
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("team.manage");
   if (!access.ok) return access.response;
   if (access.role !== "admin") return denied("Only administrators can manage team access.", 403);
   let body: { id?: unknown; role?: unknown; isActive?: unknown };
@@ -134,7 +134,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   if (!isSameOrigin(request)) return denied("Invalid request origin.", 403);
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("team.manage");
   if (!access.ok) return access.response;
   if (access.role !== "admin") return denied("Only administrators can remove team access.", 403);
   let body: { kind?: unknown; id?: unknown; confirm?: unknown };

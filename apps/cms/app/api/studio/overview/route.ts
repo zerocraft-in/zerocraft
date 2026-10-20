@@ -1,4 +1,4 @@
-import { requireStudioAccess } from "@/lib/studio-auth";
+import { requireStudioPermission } from "@/lib/studio-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -12,9 +12,10 @@ const sources = [
 ] as const;
 
 export async function GET() {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("dashboard.read");
   if (!access.ok) return access.response;
   const { supabase } = access;
+  const profileResult = await supabase.from("profiles").select("id,email,full_name,avatar_url,role").eq("id", access.user.id).maybeSingle();
 
   const tables = await Promise.all(sources.map(async ({ name, label, href }) => {
     const [count, latest] = await Promise.all([
@@ -31,13 +32,16 @@ export async function GET() {
     supabase.from("blogs").select("id", { count: "exact", head: true }),
   ]);
 
-  const [pendingOrders, pendingAppointments, recentOrders, recentAppointments, orderSummary, completedOrders] = await Promise.all([
+  const [pendingOrders, pendingAppointments, recentOrders, recentAppointments, orderSummary, completedOrders, lowStockResult, unreadNotifications, recentNotifications] = await Promise.all([
     supabase.from("store_orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("store_orders").select("id,order_number,status,created_at").order("created_at", { ascending: false }).limit(4),
     supabase.from("appointments").select("id,client_name,status,created_at").order("created_at", { ascending: false }).limit(4),
     supabase.rpc("studio_store_order_summary"),
     supabase.from("store_orders").select("id", { count: "exact", head: true }).in("status", ["completed", "shipped"]),
+    supabase.from("store_inventory_levels").select("location_id,on_hand,reserved,reorder_point"),
+    supabase.from("notifications").select("id", { count: "exact", head: true }).eq("read", false),
+    supabase.from("notifications").select("id,title,message,type,category,read,link,created_at").order("created_at", { ascending: false }).limit(5),
   ]);
   const storeOrdersTable = tables.find((table) => table.name === "store_orders");
   if (pendingOrders.error || recentOrders.error) {
@@ -64,6 +68,10 @@ export async function GET() {
     featuredProjects: featuredCountResult.error ? null : featuredCountResult.count,
     publishedBlogs: publishedBlogsResult.error ? null : publishedBlogsResult.count,
     totalBlogs: totalBlogsResult.error ? null : totalBlogsResult.count,
+    workspaceProfile: profileResult.error ? null : profileResult.data,
+    lowStock: lowStockResult.error ? null : (lowStockResult.data || []).filter((row) => Number(row.on_hand) - Number(row.reserved) <= Number(row.reorder_point)).length,
+    unreadNotifications: unreadNotifications.error ? null : unreadNotifications.count,
+    notifications: recentNotifications.error ? [] : recentNotifications.data || [],
     recent,
     checkedAt: new Date().toISOString(),
   }, { headers: { "Cache-Control": "private, no-store" } });

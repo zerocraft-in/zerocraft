@@ -52,6 +52,7 @@ import {
 } from "@/lib/supabase-client";
 import {
   getAdminNavigationForRole,
+  getAdminRoutePermission,
   getAdminBreadcrumbs,
   isAdminNavigationGroupActive,
   isAdminRouteActive,
@@ -83,7 +84,8 @@ export default function StudioShell({ children, user }: Props) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const navigation = useMemo(() => getAdminNavigationForRole(user.role), [user.role]);
+  const [permissions, setPermissions] = useState<string[] | null>(null);
+  const navigation = useMemo(() => getAdminNavigationForRole(user.role, permissions), [user.role, permissions]);
   const navigationLinks = useMemo(() => navigation.flatMap((group) => group.links), [navigation]);
   const results = useMemo(
     () =>
@@ -108,6 +110,20 @@ export default function StudioShell({ children, user }: Props) {
   );
   const unread = notices.filter((item) => !item.read).length;
   const breadcrumbs = getAdminBreadcrumbs(pathname);
+  useEffect(() => {
+    let current = true;
+    void fetch("/api/studio/me", { cache: "no-store" }).then(async (response) => {
+      if (!response.ok) return;
+      const payload = await response.json();
+      if (current && Array.isArray(payload.permissions)) setPermissions(payload.permissions);
+    }).catch(() => undefined);
+    return () => { current = false; };
+  }, []);
+  useEffect(() => {
+    if (!permissions) return;
+    const required = getAdminRoutePermission(pathname);
+    if (required && !permissions.includes(required)) router.replace("/");
+  }, [pathname, permissions, router]);
   useEffect(() => {
     let current = true;
     const load = async () => {

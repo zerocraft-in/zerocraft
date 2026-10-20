@@ -1,4 +1,4 @@
-import { requireStudioAccess } from "@/lib/studio-auth";
+import { requireStudioPermission } from "@/lib/studio-auth";
 import { createServiceClient } from "@/lib/supabase-service";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ function nextCleanupAt(now = new Date()) {
 }
 
 export async function GET() {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("team.read");
   if (!access.ok) return access.response;
   if (access.role !== "admin") return Response.json({ error: "Only administrators can view team invitation health." }, { status: 403 });
   let service;

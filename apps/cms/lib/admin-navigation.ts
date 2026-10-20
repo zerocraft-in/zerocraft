@@ -150,12 +150,31 @@ export const ADMIN_NAVIGATION_LINKS = ADMIN_NAVIGATION.flatMap(
   (group) => group.links,
 );
 
-export function getAdminNavigationForRole(role: string): readonly AdminNavigationGroup[] {
-  if (role === "admin") return ADMIN_NAVIGATION;
+const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
+  "/": "dashboard.read", "/studio": "dashboard.read", "/works": "content.read", "/blogs": "content.read",
+  "/clients": "clients.read", "/appointments": "appointments.read", "/store": "catalog.read",
+  "/store/products": "catalog.read", "/store/categories": "catalog.read", "/store/inventory": "inventory.read",
+  "/store/customization": "catalog.read", "/channels": "catalog.read", "/orders": "orders.read",
+  "/transactions": "billing.read", "/subscriptions": "billing.read", "/disputes": "billing.read",
+  "/reports": "reports.read", "/scheduling": "appointments.read", "/time-tracking": "appointments.read",
+  "/team": "team.read", "/whats-new": "content.read", "/settings": "settings.manage", "/devices": "settings.manage",
+  "/integrations": "settings.manage", "/audit-logs": "audit.read", "/email-events": "notifications.read",
+  "/automations": "automations.read", "/notifications": "notifications.read", "/notification-reports": "notifications.read",
+};
+
+export function getAdminRoutePermission(pathname: string) {
+  const match = Object.entries(ROUTE_PERMISSION)
+    .filter(([href]) => pathname === href || (href !== "/" && pathname.startsWith(`${href}/`)))
+    .sort(([left], [right]) => right.length - left.length)[0];
+  return match?.[1] || null;
+}
+
+export function getAdminNavigationForRole(role: string, permissions?: readonly string[] | null): readonly AdminNavigationGroup[] {
+  if (role === "admin" && permissions == null) return ADMIN_NAVIGATION;
   const allowedSystemLinks: AdminRoute[] = role === "manager"
     ? [ADMIN_ROUTES.system.emailEvents, ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications]
     : [ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications];
-  return ADMIN_NAVIGATION.flatMap((group) => {
+  const roleNavigation = role === "admin" ? ADMIN_NAVIGATION : ADMIN_NAVIGATION.flatMap((group) => {
     if (group.label !== "System") {
       if (group.label !== "Staff") return [group];
       const links = group.links.filter((link) => link.href !== ADMIN_ROUTES.staff.team);
@@ -163,6 +182,12 @@ export function getAdminNavigationForRole(role: string): readonly AdminNavigatio
     }
     const links = group.links.filter((link) => allowedSystemLinks.includes(link.href));
     return links.length ? [{ ...group, href: links[0].href, links }] : [];
+  });
+  if (permissions == null) return roleNavigation;
+  return roleNavigation.flatMap((group) => {
+    const links = group.links.filter((link) => !ROUTE_PERMISSION[link.href] || permissions.includes(ROUTE_PERMISSION[link.href]!));
+    if (!links.length) return [];
+    return [{ ...group, href: links.some((link) => link.href === group.href) ? group.href : links[0].href, links }];
   });
 }
 

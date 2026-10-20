@@ -1,4 +1,4 @@
-import { requireStudioAccess } from "@/lib/studio-auth";
+import { requireStudioPermission } from "@/lib/studio-auth";
 import { renderNotificationReportPdf } from "@/lib/notifications/report-pdf";
 import { sendTrackedEmail } from "@/lib/email/delivery";
 
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 const JOB_NAME = "studio-weekly-notification-report";
 
 export async function GET() {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("notifications.read");
   if (!access.ok) return access.response;
   const [{ data: settings }, { data: runs, error }] = await Promise.all([
     access.supabase.from("studio_notification_report_settings").select("job_name,enabled,weekday,send_hour_utc,recipient_roles,updated_at").eq("job_name", JOB_NAME).maybeSingle(),
@@ -19,7 +19,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("notifications.manage");
   if (!access.ok) return access.response;
   if (access.role !== "admin") return Response.json({ error: "Only admins can manage weekly reports." }, { status: 403 });
   let body: { enabled?: boolean; weekday?: number; sendHourUtc?: number; recipientRoles?: string[] };
@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const access = await requireStudioAccess();
+  const access = await requireStudioPermission("notifications.manage");
   if (!access.ok) return access.response;
   if (access.role !== "admin") return Response.json({ error: "Only admins can send weekly reports." }, { status: 403 });
   const now = new Date();
