@@ -68,3 +68,13 @@ export function automationFailureEmail(input: {
   const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b;max-width:620px;margin:0 auto;padding:28px"><p style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#666">ZeroCraft CMS · System alert</p><h2 style="margin:18px 0 8px">Automation failed</h2><p>The CMS detected a failed background automation run.</p><p><strong>Job:</strong> ${escapeHtml(jobName)}<br/><strong>Trigger:</strong> ${escapeHtml(trigger)}<br/><strong>Started:</strong> ${escapeHtml(dateLabel(input.startedAt))}</p><p style="padding:14px;background:#fff1f2;border:1px solid #fecdd3;border-radius:8px"><strong>Error:</strong> ${escapeHtml(errorMessage)}</p><p>Open <strong>System → Automation health</strong> in ZeroCraft CMS to review the run and retry it manually.</p></div>`;
   return { to: input.recipient, subject, text, html };
 }
+
+export function teamInvitationEmail(input: { recipient: string; role: string; inviteUrl: string; inviterName: string; expiresAt: string }) {
+  const role = input.role || "staff";
+  const inviter = input.inviterName || "A ZeroCraft administrator";
+  const expiry = dateLabel(input.expiresAt);
+  const subject = `You’re invited to ZeroCraft Studio as ${role}`;
+  const text = `You’ve been invited to ZeroCraft Studio as ${role} by ${inviter}.\n\nAccept your invitation: ${input.inviteUrl}\n\nThis invitation expires on ${expiry}.`;
+  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b;max-width:620px;margin:0 auto;padding:28px"><p style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#666">ZeroCraft Studio · Team access</p><h2 style="margin:18px 0 8px">You’re invited to ZeroCraft Studio</h2><p>${escapeHtml(inviter)} invited you to join the CMS as <strong>${escapeHtml(role)}</strong>.</p><p><a href="${escapeHtml(input.inviteUrl)}" style="display:inline-block;background:#18181b;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px">Accept invitation</a></p><p style="font-size:13px;color:#666">This invitation expires on ${escapeHtml(expiry)}.</p></div>`;
+  return { to: input.recipient, subject, text, html };
+}

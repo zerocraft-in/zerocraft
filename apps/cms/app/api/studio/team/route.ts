@@ -1,4 +1,7 @@
 import { requireStudioAccess } from "@/lib/studio-auth";
+import { createServiceClient } from "@/lib/supabase-service";
+import { sendEmail } from "@/lib/email/smtp";
+import { teamInvitationEmail } from "@/lib/email/templates";
 import { isSameOrigin } from "@/lib/request-origin";
 
 export const runtime = "nodejs";
@@ -11,18 +14,61 @@ function denied(message: string, status = 400) {
   return Response.json({ error: message }, { status, headers: { "Cache-Control": "private, no-store" } });
 }
 
+function serviceClient() {
+  try { return createServiceClient(); } catch { return null; }
+}
+
 export async function GET() {
   const access = await requireStudioAccess();
   if (!access.ok) return access.response;
   if (access.role !== "admin") return denied("Only administrators can manage team access.", 403);
-
-  const { data, error } = await access.supabase
-    .from("profiles")
-    .select("id,email,full_name,avatar_url,role,created_at,updated_at")
-    .order("created_at", { ascending: true });
+  const { data, error } = await access.supabase.from("profiles").select("id,email,full_name,avatar_url,role,is_active,created_at,updated_at").order("created_at", { ascending: true });
   if (error) return denied("Team members could not be loaded.", 503);
+  let invites: unknown[] = [];
+  const service = serviceClient();
+  if (service) {
+    const result = await service.from("studio_team_invites").select("id,email,role,status,expires_at,created_at").order("created_at", { ascending: false }).limit(25);
+    invites = result.data || [];
+  }
+  return Response.json({ members: data || [], invites }, { headers: { "Cache-Control": "private, no-store" } });
+}
 
-  return Response.json({ members: data || [] }, { headers: { "Cache-Control": "private, no-store" } });
+export async function POST(request: Request) {
+  if (!isSameOrigin(request)) return denied("Invalid request origin.", 403);
+  const access = await requireStudioAccess();
+  if (!access.ok) return access.response;
+  if (access.role !== "admin") return denied("Only administrators can invite team members.", 403);
+  let body: { email?: unknown; fullName?: unknown; role?: unknown };
+  try { body = await request.json(); } catch { return denied("Invalid invitation request."); }
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const fullName = typeof body.fullName === "string" ? body.fullName.trim().slice(0, 120) : "";
+  const roleValue = typeof body.role === "string" ? body.role.trim() : "staff";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !roles.includes(roleValue as ManagedRole) || roleValue === "client") return denied("Enter a valid email and a Studio role.");
+  const service = serviceClient();
+  if (!service) return denied("Invitations are not configured yet. Add SUPABASE_SERVICE_ROLE_KEY to the server environment.", 503);
+  const role = roleValue as Exclude<ManagedRole, "client">;
+  const { data: existing } = await service.from("profiles").select("id,email,role,is_active").eq("email", email).maybeSingle();
+  if (existing) return denied("This email already has a ZeroCraft account. Change its role from the team directory instead.", 409);
+  const { data: created, error: createError } = await service.auth.admin.createUser({ email, email_confirm: false, user_metadata: { full_name: fullName || email.split("@")[0], invited_role: role } });
+  if (createError || !created.user) return denied("The invitation account could not be created. Check whether this email is already registered.", 409);
+  const userId = created.user.id;
+  const { error: profileError } = await service.from("profiles").upsert({ id: userId, email, full_name: fullName || email.split("@")[0], role, is_active: true, updated_at: new Date().toISOString() }, { onConflict: "id" });
+  if (profileError) return denied("The invitation profile could not be prepared.", 503);
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const redirectTo = `${new URL(request.url).origin}/auth/callback?next=/`;
+  const { data: linkData, error: linkError } = await service.auth.admin.generateLink({ type: "invite", email, options: { redirectTo, data: { full_name: fullName || email.split("@")[0], invited_role: role } } });
+  if (linkError || !linkData.properties?.action_link) return denied("The invitation link could not be generated.", 503);
+  const { data: invite, error: inviteError } = await service.from("studio_team_invites").insert({ email, role, auth_user_id: userId, invited_by: access.user.id, expires_at: expiresAt }).select("id,email,role,status,expires_at,created_at").single();
+  if (inviteError) return denied("The invitation could not be recorded. Apply the team invitation migration first.", 503);
+  try {
+    await sendEmail(teamInvitationEmail({ recipient: email, role, inviteUrl: linkData.properties.action_link, inviterName: access.user.email || "A ZeroCraft administrator", expiresAt }));
+  } catch (error) {
+    await service.from("studio_team_invites").update({ status: "email_failed" }).eq("id", invite.id);
+    console.error("Team invitation email failed", error);
+    return denied("The account was created, but the invitation email could not be delivered. Check SMTP delivery logs.", 502);
+  }
+  await service.from("store_audit_logs").insert({ actor_id: access.user.id, action: "team.invited", entity_type: "profile", entity_id: userId, metadata: { email, role, inviteId: invite.id } });
+  return Response.json({ invite }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function PATCH(request: Request) {
@@ -30,38 +76,28 @@ export async function PATCH(request: Request) {
   const access = await requireStudioAccess();
   if (!access.ok) return access.response;
   if (access.role !== "admin") return denied("Only administrators can manage team access.", 403);
-
-  let body: { id?: unknown; role?: unknown };
+  let body: { id?: unknown; role?: unknown; isActive?: unknown };
   try { body = await request.json(); } catch { return denied("Invalid team update request."); }
   const id = typeof body.id === "string" ? body.id.trim() : "";
   const roleValue = typeof body.role === "string" ? body.role.trim() : "";
-  if (!id || !roles.includes(roleValue as ManagedRole)) return denied("A valid member and role are required.");
-  const role = roleValue as ManagedRole;
-  if (id === access.user.id && role !== "admin") return denied("You cannot remove your own administrator access.", 400);
-
-  const { data: previous, error: previousError } = await access.supabase
-    .from("profiles")
-    .select("id,email,full_name,role")
-    .eq("id", id)
-    .maybeSingle();
+  const role = roleValue ? roleValue as ManagedRole : undefined;
+  const isActive = typeof body.isActive === "boolean" ? body.isActive : undefined;
+  if (!id || (role && !roles.includes(role))) return denied("A valid member and role are required.");
+  if (id === access.user.id && ((role && role !== "admin") || isActive === false)) return denied("You cannot remove your own administrator access.", 400);
+  const { data: previous, error: previousError } = await access.supabase.from("profiles").select("id,email,full_name,role,is_active").eq("id", id).maybeSingle();
   if (previousError || !previous) return denied("Team member not found.", 404);
-
-  const { data, error } = await access.supabase
-    .from("profiles")
-    .update({ role, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .select("id,email,full_name,avatar_url,role,created_at,updated_at")
-    .single();
-  if (error) return denied("The team member role could not be updated.", 400);
-
-  const { error: auditError } = await access.supabase.from("store_audit_logs").insert({
-    actor_id: access.user.id,
-    action: "team.role_changed",
-    entity_type: "profile",
-    entity_id: id,
-    metadata: { email: previous.email, from: previous.role, to: role },
-  });
-  if (auditError) console.error("Team role audit failed", auditError);
-
+  const service = isActive === undefined ? null : serviceClient();
+  if (isActive !== undefined && !service) return denied("Suspension controls require SUPABASE_SERVICE_ROLE_KEY on the server.", 503);
+  if (isActive !== undefined) {
+    const { error: authError } = await service!.auth.admin.updateUserById(id, { ban_duration: isActive ? "none" : "876000h" });
+    if (authError) return denied("The authentication account could not be updated.", 503);
+  }
+  const updates = { ...(role ? { role } : {}), ...(isActive === undefined ? {} : { is_active: isActive }), updated_at: new Date().toISOString() };
+  const { data, error } = await access.supabase.from("profiles").update(updates).eq("id", id).select("id,email,full_name,avatar_url,role,is_active,created_at,updated_at").single();
+  if (error) {
+    if (isActive !== undefined) await service!.auth.admin.updateUserById(id, { ban_duration: previous.is_active ? "none" : "876000h" });
+    return denied("The team member access could not be updated.", 400);
+  }
+  await access.supabase.from("store_audit_logs").insert({ actor_id: access.user.id, action: isActive === undefined ? "team.role_changed" : "team.access_changed", entity_type: "profile", entity_id: id, metadata: { email: previous.email, from: { role: previous.role, isActive: previous.is_active }, to: { role: data.role, isActive: data.is_active } } });
   return Response.json({ member: data }, { headers: { "Cache-Control": "private, no-store" } });
 }

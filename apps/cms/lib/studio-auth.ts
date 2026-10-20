@@ -22,9 +22,9 @@ export async function requireStudioAccess(): Promise<StudioAccess | StudioDenied
     return { ok: false, response: Response.json({ error: "Sign in to use Studio." }, { status: 401, headers: { "Cache-Control": "private, no-store" } }) };
   }
 
-  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: profile, error } = await supabase.from("profiles").select("role,is_active").eq("id", user.id).maybeSingle();
   const role = profile?.role as StudioRole | undefined;
-  if (error || !role || !STUDIO_ROLES.includes(role)) {
+  if (error || !role || !STUDIO_ROLES.includes(role) || profile?.is_active === false) {
     return { ok: false, response: Response.json({ error: "Studio access required." }, { status: 403, headers: { "Cache-Control": "private, no-store" } }) };
   }
 
