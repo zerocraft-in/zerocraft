@@ -114,6 +114,7 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     links: [
       { label: "Scheduling", href: ADMIN_ROUTES.staff.scheduling, icon: IconCalendar },
       { label: "Time tracking", href: ADMIN_ROUTES.staff.timeTracking, icon: IconCalendar },
+      { label: "Team access", href: ADMIN_ROUTES.staff.team, icon: IconUsersGroup },
     ],
   },
   {
@@ -155,7 +156,11 @@ export function getAdminNavigationForRole(role: string): readonly AdminNavigatio
     ? [ADMIN_ROUTES.system.emailEvents, ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications]
     : [ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications];
   return ADMIN_NAVIGATION.flatMap((group) => {
-    if (group.label !== "System") return [group];
+    if (group.label !== "System") {
+      if (group.label !== "Staff") return [group];
+      const links = group.links.filter((link) => link.href !== ADMIN_ROUTES.staff.team);
+      return [{ ...group, href: links[0]?.href || group.href, links }];
+    }
     const links = group.links.filter((link) => allowedSystemLinks.includes(link.href));
     return links.length ? [{ ...group, href: links[0].href, links }] : [];
   });

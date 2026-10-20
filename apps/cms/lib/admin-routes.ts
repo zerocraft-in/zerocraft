@@ -25,6 +25,7 @@ export const ADMIN_ROUTES = {
   staff: {
     scheduling: "/scheduling",
     timeTracking: "/time-tracking",
+    team: "/team",
   },
   updates: {
     whatsNew: "/whats-new",
