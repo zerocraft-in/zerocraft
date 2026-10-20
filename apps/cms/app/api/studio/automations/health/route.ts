@@ -53,6 +53,7 @@ export async function GET() {
         ? "Weekly report delivery is paused."
         : "The latest expected weekly report completed successfully.";
   return Response.json({
+    role: access.role,
     automation: data?.[0] || null,
     runs: runs || [],
     lastEmailAlert: lastEmailAlert || null,

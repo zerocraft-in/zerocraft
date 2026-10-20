@@ -15,7 +15,7 @@ export async function GET() {
     access.supabase.from("studio_notification_report_runs").select("id,status,scheduled_for,period_start,period_end,started_at,finished_at,recipient_count,notification_count,error_message,created_at").eq("job_name", JOB_NAME).order("created_at", { ascending: false }).limit(20),
   ]);
   if (error) return Response.json({ error: "Weekly report history is unavailable." }, { status: 503 });
-  return Response.json({ settings, runs: runs || [] }, { headers: { "Cache-Control": "private, no-store" } });
+  return Response.json({ role: access.role, settings, runs: runs || [] }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function PUT(request: Request) {
