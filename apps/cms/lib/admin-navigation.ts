@@ -38,6 +38,8 @@ export type AdminNavigationGroup = {
   links: readonly AdminNavigationLink[];
 };
 
+export type StudioNavigationRole = "admin" | "manager" | "staff";
+
 export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
   {
     label: "Overview",
@@ -146,6 +148,18 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
 export const ADMIN_NAVIGATION_LINKS = ADMIN_NAVIGATION.flatMap(
   (group) => group.links,
 );
+
+export function getAdminNavigationForRole(role: string): readonly AdminNavigationGroup[] {
+  if (role === "admin") return ADMIN_NAVIGATION;
+  const allowedSystemLinks: AdminRoute[] = role === "manager"
+    ? [ADMIN_ROUTES.system.emailEvents, ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications]
+    : [ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications];
+  return ADMIN_NAVIGATION.flatMap((group) => {
+    if (group.label !== "System") return [group];
+    const links = group.links.filter((link) => allowedSystemLinks.includes(link.href));
+    return links.length ? [{ ...group, href: links[0].href, links }] : [];
+  });
+}
 
 export function isAdminRouteActive(pathname: string, href: string) {
   return pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));

@@ -1,12 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
+  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
+  IconHelpCircle,
+  IconLogout,
+  IconBell,
   IconSearch,
   IconSettings,
+  IconWorld,
 } from "@tabler/icons-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import {
   HoverCard,
@@ -27,69 +34,56 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import {
-  ADMIN_NAVIGATION,
+  type AdminNavigationGroup,
   isAdminNavigationGroupActive,
   isAdminRouteActive,
 } from "@/lib/admin-navigation";
 
 type StudioSidebarProps = {
   pathname: string;
+  user: { name: string; email: string; role: string };
+  navigation: readonly AdminNavigationGroup[];
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
-  onSearch: () => void;
+  onOpenSearch: () => void;
+  unread: number;
+  onToggleNotices: () => void;
+  isSigningOut: boolean;
+  onSignOut: () => void;
 };
-
-function StudioMark({ className = "size-7" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={className}
-      fill="none"
-    >
-      <path
-        d="M5 7.5h14M5 12h9M5 16.5h14"
-        stroke="currentColor"
-        strokeWidth="2.1"
-        strokeLinecap="round"
-      />
-      <path
-        d="m15.5 9.5 3 2.5-3 2.5"
-        stroke="currentColor"
-        strokeWidth="2.1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function StudioSidebar({
   pathname,
+  user,
+  navigation,
   collapsed,
   onCollapsedChange,
-  onSearch,
+  onOpenSearch,
+  unread,
+  onToggleNotices,
+  isSigningOut,
+  onSignOut,
 }: StudioSidebarProps) {
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(() =>
+    navigation.filter((group) => isAdminNavigationGroupActive(pathname, group)).map((group) => group.label),
+  );
+
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 hidden flex-col bg-backgroundshadow-xl transition-[width] duration-200 lg:flex ${collapsed ? "w-[72px]" : "w-[272px]"}`}
+      className={`fixed inset-y-0 left-0 z-50 hidden flex-col border-r border-sidebar-border/80 bg-sidebar/95 text-sidebar-foreground shadow-[12px_0_40px_rgba(15,23,42,0.04)] backdrop-blur-xl transition-[width] duration-200 lg:flex ${collapsed ? "w-[72px]" : "w-[280px]"}`}
     >
-      <SidebarHeader className="relative flex h-16 flex-row items-center gap-3 border-b border-white/10 px-4 py-0">
+      <SidebarHeader className="relative flex h-[76px] flex-row items-center justify-center px-4 py-0">
         <Link
           href="/"
-          className={`flex min-w-0 items-center gap-2.5 rounded-md px-1 py-1 text-white ${collapsed ? "flex-none" : "flex-1"}`}
+          aria-label="ZeroCraft home"
+          className="grid size-11 place-items-center rounded-2xl bg-[#151515] shadow-[0_8px_22px_rgba(0,0,0,0.12)] transition-transform hover:scale-105"
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#95bf47] text-[#102a12]">
-            <StudioMark className="size-4.5" />
-          </span>
-          {!collapsed && (
-            <span className="truncate text-base font-semibold">ZeroCraft</span>
-          )}
+          <img src="/icon.svg" alt="" className="size-7" />
         </Link>
         <button
           type="button"
           onClick={() => onCollapsedChange(!collapsed)}
-          className={`absolute top-4 grid size-8 place-items-center rounded-lg text-zinc-400 transition-colors hover:bg-white/10 hover:text-white ${collapsed ? "-right-4 border border-white/10 bg-[#242424] shadow-lg" : "right-3"}`}
+          className={`absolute top-4 grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground ${collapsed ? "-right-4 border border-border bg-background shadow-sm" : "right-3"}`}
           aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
         >
           {collapsed ? (
@@ -100,16 +94,54 @@ export function StudioSidebar({
         </button>
       </SidebarHeader>
 
+      {!collapsed && (
+        <div className="px-3">
+          <button
+            type="button"
+            className="flex w-full items-center gap-2.5 rounded-xl border border-sidebar-border bg-background/70 px-2.5 py-2 text-left shadow-sm transition-colors hover:bg-sidebar-accent"
+          >
+            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-foreground text-xs font-bold text-background">
+              {(user.name || "Z").slice(0, 1).toUpperCase()}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[13px] font-semibold">{user.name || "ZeroCraft"}</span>
+              <span className="block truncate text-[11px] text-muted-foreground">{user.role || "Administrator"}</span>
+            </span>
+            <IconChevronDown className="size-3.5 text-muted-foreground" />
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className="mt-2 flex h-10 w-full items-center gap-2.5 rounded-lg border border-sidebar-border bg-background px-3 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          >
+            <IconSearch className="size-4" />
+            <span className="flex-1 text-left">Search</span>
+            <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px]">Ctrl K</kbd>
+          </button>
+
+          <div className="mt-3 rounded-2xl border border-sidebar-border/70 bg-sidebar-accent/60 p-3 shadow-sm">
+            <div className="flex items-center justify-between text-[11px] font-medium">
+              <span>Complete your setup</span>
+              <span className="text-muted-foreground">100%</span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
+              <div className="h-full w-full rounded-full bg-foreground" />
+            </div>
+            <p className="mt-2 text-[11px] leading-4 text-muted-foreground">Your workspace is ready for daily operations.</p>
+          </div>
+        </div>
+      )}
+
       <button
         type="button"
-        onClick={onSearch}
-        className={`mx-3 mt-4 flex h-10 items-center rounded-lg bg-white/8 text-sm text-zinc-400 hover:bg-white/12 hover:text-white ${collapsed ? "justify-center px-0" : "gap-2.5 px-3"}`}
+        onClick={() => undefined}
+        className="hidden"
       >
-        <IconSearch className="size-4 shrink-0" />
         {!collapsed && (
           <>
             <span className="flex-1 text-left">Search</span>
-            <kbd className="rounded bg-white/8 px-1.5 py-0.5 text-[10px]">
+            <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px]">
               ⌘K
             </kbd>
           </>
@@ -121,8 +153,8 @@ export function StudioSidebar({
       >
         <SidebarGroup className="p-0">
           <SidebarGroupContent>
-            <SidebarMenu aria-label="CMS navigation">
-              {ADMIN_NAVIGATION.map((group) => {
+            <SidebarMenu aria-label="CMS navigation" className="gap-1">
+              {navigation.map((group) => {
                 const groupActive = isAdminNavigationGroupActive(
                   pathname,
                   group,
@@ -131,9 +163,21 @@ export function StudioSidebar({
                   (link) => link.href !== group.href,
                 );
                 const GroupIcon = group.icon;
+                const groupExpanded = expandedGroups.includes(group.label) || groupActive;
 
                 return (
-                  <SidebarMenuItem key={group.label}>
+                  <Collapsible
+                    key={group.label}
+                    open={groupExpanded}
+                    onOpenChange={(open) =>
+                      setExpandedGroups((current) =>
+                        open
+                          ? [...new Set([...current, group.label])]
+                          : current.filter((label) => label !== group.label),
+                      )
+                    }
+                  >
+                  <SidebarMenuItem>
                     {collapsed && childLinks.length > 0 ? (
                       <HoverCard>
                         <HoverCardTrigger
@@ -145,7 +189,7 @@ export function StudioSidebar({
                               aria-label={group.label}
                               tabIndex={-1}
                               onPointerDown={(event) => event.preventDefault()}
-                              className={`h-10 justify-center rounded-lg px-0 ${groupActive ? "bg-[#303030] text-white" : "text-zinc-400 hover:bg-white/8 hover:text-zinc-100"}`}
+                              className={`h-10 justify-center rounded-lg px-0 ${groupActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"}`}
                             />
                           }
                         >
@@ -180,21 +224,30 @@ export function StudioSidebar({
                         </HoverCardContent>
                       </HoverCard>
                     ) : (
-                      <SidebarMenuButton
-                        render={<Link href={group.href} />}
-                        tooltip={collapsed ? group.label : undefined}
-                        isActive={pathname === group.href}
-                        aria-current={
-                          pathname === group.href ? "page" : undefined
-                        }
-                        className={`h-10 rounded-lg ${collapsed ? "justify-center px-0" : "gap-3 px-3"} ${pathname === group.href ? "bg-[#303030] font-medium text-white" : groupActive ? "font-medium text-white" : "text-zinc-400 hover:bg-white/8 hover:text-zinc-100"}`}
-                      >
-                        <GroupIcon className="size-[18px]" stroke={1.7} />
-                        {!collapsed && <span>{group.label}</span>}
-                      </SidebarMenuButton>
+                      <div className="relative">
+                        <SidebarMenuButton
+                          render={<Link href={group.href} />}
+                          tooltip={collapsed ? group.label : undefined}
+                          isActive={pathname === group.href}
+                          aria-current={pathname === group.href ? "page" : undefined}
+                          className={`h-10 rounded-lg ${collapsed ? "justify-center px-0" : "gap-3 px-3 pr-9"} ${pathname === group.href ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground" : groupActive ? "font-semibold text-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"}`}
+                        >
+                          <GroupIcon className="size-[18px]" stroke={1.7} />
+                          {!collapsed && <span>{group.label}</span>}
+                        </SidebarMenuButton>
+                        {!collapsed && childLinks.length > 0 && (
+                          <CollapsibleTrigger
+                            className="absolute right-1 top-1 grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                            aria-label={`${groupExpanded ? "Collapse" : "Expand"} ${group.label}`}
+                          >
+                            <IconChevronDown className={`size-3.5 transition-transform ${groupExpanded ? "rotate-180" : ""}`} />
+                          </CollapsibleTrigger>
+                        )}
+                      </div>
                     )}
 
-                    {!collapsed && groupActive && childLinks.length > 0 && (
+                    {!collapsed && childLinks.length > 0 && (
+                      <CollapsibleContent>
                       <SidebarMenuSub className="mx-0 mb-1 mt-0.5 space-y-0.5 border-0 px-0 py-0.5">
                         {childLinks.map(({ label, href }) => {
                           const active = isAdminRouteActive(pathname, href);
@@ -204,7 +257,7 @@ export function StudioSidebar({
                                 render={<Link href={href} />}
                                 isActive={active}
                                 aria-current={active ? "page" : undefined}
-                                className={`min-h-8 rounded-lg py-1 pl-9 pr-2.5 text-[13px] ${active ? "bg-[#303030] font-medium text-white" : "text-zinc-500 hover:bg-white/7 hover:text-zinc-200"}`}
+                                className={`min-h-8 rounded-lg py-1 pl-9 pr-2.5 text-[13px] ${active ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"}`}
                               >
                                 {label}
                               </SidebarMenuSubButton>
@@ -212,8 +265,10 @@ export function StudioSidebar({
                           );
                         })}
                       </SidebarMenuSub>
+                      </CollapsibleContent>
                     )}
                   </SidebarMenuItem>
+                  </Collapsible>
                 );
               })}
             </SidebarMenu>
@@ -221,8 +276,30 @@ export function StudioSidebar({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-white/10 p-3">
+      <SidebarFooter className="border-t border-sidebar-border/70 bg-sidebar/80 p-3">
         <SidebarMenu>
+          {!collapsed && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                render={<Link href="/channels" />}
+                className="h-10 rounded-xl gap-3 px-3 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
+              >
+                <IconWorld className="size-[18px]" />
+                <span>Channels</span>
+                <span className="ml-auto rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Live</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={onToggleNotices}
+              className={`h-10 rounded-xl ${collapsed ? "justify-center px-0" : "gap-3 px-3"} text-muted-foreground hover:bg-sidebar-accent hover:text-foreground`}
+              aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}
+            >
+              <span className="relative"><IconBell className="size-[18px]" />{unread > 0 && <span className="absolute -right-1 -top-1 size-2 rounded-full bg-primary" />}</span>
+              {!collapsed && <span>Notifications</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               render={<Link href="/settings" />}
@@ -231,10 +308,31 @@ export function StudioSidebar({
               aria-current={
                 isAdminRouteActive(pathname, "/settings") ? "page" : undefined
               }
-              className={`h-10 rounded-lg ${collapsed ? "justify-center px-0" : "gap-3 px-3"} ${isAdminRouteActive(pathname, "/settings") ? "bg-[#303030] font-medium text-white" : "text-zinc-400 hover:bg-white/8 hover:text-white"}`}
+              className={`h-10 rounded-xl ${collapsed ? "justify-center px-0" : "gap-3 px-3"} ${isAdminRouteActive(pathname, "/settings") ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"}`}
             >
               <IconSettings className="size-[18px]" />
               {!collapsed && <span>Settings</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={<a href="mailto:hello@zerocraft.in?subject=CMS%20support" />}
+              tooltip="Help & support"
+              className={`h-10 rounded-xl ${collapsed ? "justify-center px-0" : "gap-3 px-3"} text-muted-foreground hover:bg-sidebar-accent hover:text-foreground`}
+            >
+              <IconHelpCircle className="size-[18px]" />
+              {!collapsed && <span>Help & support</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              disabled={isSigningOut}
+              onClick={onSignOut}
+              tooltip="Log out"
+              className={`h-10 rounded-xl ${collapsed ? "justify-center px-0" : "gap-3 px-3"} text-muted-foreground hover:bg-destructive/10 hover:text-destructive`}
+            >
+              <IconLogout className="size-[18px]" />
+              {!collapsed && <span>{isSigningOut ? "Logging out…" : "Log out"}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

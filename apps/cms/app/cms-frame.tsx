@@ -1,12 +1,27 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import StudioShell from "./studio-shell";
 
 export function CmsFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
+  const [profileRole, setProfileRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!user) {
+      setProfileRole(null);
+      return () => { active = false; };
+    }
+    void fetch("/api/studio/me", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => { if (active) setProfileRole(payload?.role || null); })
+      .catch(() => { if (active) setProfileRole(null); });
+    return () => { active = false; };
+  }, [user?.id]);
 
   if (pathname === "/login") return children;
 
@@ -21,7 +36,7 @@ export function CmsFrame({ children }: { children: React.ReactNode }) {
       user={{
         name: displayName,
         email: user?.email || "Studio workspace",
-        role: user?.user_metadata?.role || "operator",
+        role: profileRole || user?.user_metadata?.role || "operator",
       }}
     >
       {children}

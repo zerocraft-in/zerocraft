@@ -1,21 +1,19 @@
 "use client";
 
-import { type CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import gsap from "gsap";
 import {
   IconArrowUpRight,
-  IconBell,
   IconBriefcase,
   IconCalendar,
   IconFileText,
+  IconHelpCircle,
   IconLogout,
   IconMenu2,
   IconPlus,
   IconSearch,
   IconSettings,
-  IconX,
 } from "@tabler/icons-react";
 import { StudioMotion } from "@/components/studio/studio-motion";
 import { Badge } from "@/components/ui/badge";
@@ -35,17 +33,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  CommandShortcut,
-} from "@/components/ui/command";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -53,9 +40,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { StudioSidebar } from "@/components/layout/studio-sidebar";
-import { StudioHeader } from "@/components/layout/studio-header";
 import {
   supabase,
   type StudioNotification,
@@ -64,8 +51,7 @@ import {
   markNotificationAsReadInSupabase,
 } from "@/lib/supabase-client";
 import {
-  ADMIN_NAVIGATION,
-  ADMIN_NAVIGATION_LINKS,
+  getAdminNavigationForRole,
   getAdminBreadcrumbs,
   isAdminNavigationGroupActive,
   isAdminRouteActive,
@@ -90,20 +76,21 @@ export default function StudioShell({ children, user }: Props) {
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
   const [noticesOpen, setNoticesOpen] = useState(false);
   const [notices, setNotices] = useState<StudioNotification[]>([]);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const mobileMenuTimeline = useRef<gsap.core.Timeline | null>(null);
-  const mobileMenuClosing = useRef(false);
+  const navigation = useMemo(() => getAdminNavigationForRole(user.role), [user.role]);
+  const navigationLinks = useMemo(() => navigation.flatMap((group) => group.links), [navigation]);
   const results = useMemo(
     () =>
-      ADMIN_NAVIGATION_LINKS.filter((item) =>
+      navigationLinks.filter((item) =>
         item.label.toLowerCase().includes(query.trim().toLowerCase()),
       ),
-    [query],
+    [navigationLinks, query],
   );
   const actionResults = useMemo(
     () =>
@@ -112,42 +99,15 @@ export default function StudioShell({ children, user }: Props) {
       ),
     [query],
   );
+  const searchResults = useMemo(
+    () => [
+      ...actionResults.map((item) => ({ ...item, section: "Create" as const })),
+      ...results.map((item) => ({ ...item, section: "Navigation" as const })),
+    ],
+    [actionResults, results],
+  );
   const unread = notices.filter((item) => !item.read).length;
   const breadcrumbs = getAdminBreadcrumbs(pathname);
-  const pageTitle = pathname === "/products/new"
-    ? "Add product"
-    : pathname.startsWith("/products/")
-      ? "Edit product"
-      : breadcrumbs.at(-1)?.label || "Dashboard";
-
-  useLayoutEffect(() => {
-    if (!mobileMenuOpen) return;
-    const panel = document.querySelector<HTMLElement>(
-      "[data-mobile-menu-panel]",
-    );
-    if (!panel) return;
-    const items = panel.querySelectorAll<HTMLElement>(
-      "[data-mobile-menu-item]",
-    );
-    const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
-    mobileMenuTimeline.current = timeline;
-    timeline
-      .fromTo(panel, { xPercent: -100 }, { xPercent: 0, duration: 0.34 })
-      .fromTo(
-        items,
-        { opacity: 0, x: -16 },
-        { opacity: 1, x: 0, duration: 0.24, stagger: 0.025 },
-        "-=0.16",
-      );
-
-    return () => {
-      timeline.kill();
-      if (mobileMenuTimeline.current === timeline) {
-        mobileMenuTimeline.current = null;
-      }
-    };
-  }, [mobileMenuOpen]);
-
   useEffect(() => {
     let current = true;
     const load = async () => {
@@ -174,11 +134,45 @@ export default function StudioShell({ children, user }: Props) {
     };
   }, []);
 
+  function openSearch() {
+    setQuery("");
+    setActiveSearchIndex(0);
+    setSearchOpen(true);
+  }
+
+  function goToSearchResult(href: string) {
+    router.push(href);
+    setSearchOpen(false);
+    setQuery("");
+  }
+
+  function handleSearchKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!searchResults.length) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveSearchIndex((index) => (index + 1) % searchResults.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveSearchIndex((index) =>
+        index === 0 ? searchResults.length - 1 : index - 1,
+      );
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      goToSearchResult(searchResults[activeSearchIndex].href);
+    }
+  }
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setSearchOpen((open) => !open);
+        setSearchOpen((open) => {
+          if (!open) {
+            setQuery("");
+            setActiveSearchIndex(0);
+          }
+          return !open;
+        });
       }
       if (event.key === "Escape") {
         setSearchOpen(false);
@@ -221,118 +215,83 @@ export default function StudioShell({ children, user }: Props) {
     }
   }
 
-  function closeMobileMenu() {
-    if (!mobileMenuOpen || mobileMenuClosing.current) return;
-    const panel = document.querySelector<HTMLElement>(
-      "[data-mobile-menu-panel]",
-    );
-    if (!panel) {
-      setMobileMenuOpen(false);
-      return;
-    }
-
-    mobileMenuClosing.current = true;
-    mobileMenuTimeline.current?.kill();
-    const items = panel.querySelectorAll<HTMLElement>(
-      "[data-mobile-menu-item]",
-    );
-    mobileMenuTimeline.current = gsap
-      .timeline({
-        defaults: { ease: "power3.in" },
-        onComplete: () => {
-          mobileMenuClosing.current = false;
-          mobileMenuTimeline.current = null;
-          setMobileMenuOpen(false);
-        },
-      })
-      .to(items, { opacity: 0, x: -16, duration: 0.16, stagger: 0.02 })
-      .to(panel, { xPercent: -100, duration: 0.28 }, "-=0.04");
-  }
-
-  function handleMobileMenuChange(open: boolean) {
-    if (open) {
-      mobileMenuClosing.current = false;
-      setMobileMenuOpen(true);
-      return;
-    }
-    closeMobileMenu();
-  }
-
   return (
     <SidebarProvider
       open={!sidebarCollapsed}
       onOpenChange={(open) => setSidebarCollapsed(!open)}
-      style={{ "--sidebar-width": "17rem", "--sidebar-width-icon": "4.5rem" } as CSSProperties}
+      style={{ "--sidebar-width": "17.5rem", "--sidebar-width-icon": "4.5rem" } as CSSProperties}
     >
-    <div className="relative isolate h-dvh w-full overflow-hidden bg-[#f1f1f1] text-foreground selection:bg-primary/20 dark:bg-background">
-      <StudioHeader
-        title={pageTitle}
-        sidebarCollapsed={sidebarCollapsed}
-        unread={unread}
-        noticesOpen={noticesOpen}
-        isSigningOut={isSigningOut}
-        user={user}
-        onOpenMobileMenu={() => handleMobileMenuChange(true)}
-        onOpenSearch={() => setSearchOpen(true)}
-        onToggleNotices={() => setNoticesOpen((open) => !open)}
-        onSignOut={() => void signOut()}
-      />
+    <div className="relative isolate h-dvh w-full overflow-hidden bg-background text-foreground selection:bg-primary/20">
+      <button
+        type="button"
+        onClick={() => setMobileMenuOpen(true)}
+        className="fixed left-4 top-4 z-40 grid size-10 place-items-center rounded-lg border border-border bg-background text-foreground shadow-sm lg:hidden"
+        aria-label="Open navigation"
+      >
+        <IconMenu2 className="size-4" />
+      </button>
 
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden" role="presentation">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
-            aria-label="Close navigation"
-            onClick={closeMobileMenu}
-          />
-          <aside
-            data-mobile-menu-panel
-            aria-label="Studio navigation"
-            className="absolute inset-y-0 left-0 w-[min(18rem,88vw)] overflow-y-auto bg-[#151515] p-3 pt-16 text-zinc-300 shadow-2xl"
-          >
-            <button type="button" onClick={closeMobileMenu} className="absolute right-3 top-3 grid size-8 place-items-center rounded-md bg-white/10" aria-label="Close navigation"><IconX className="size-4" /></button>
-            <nav className="space-y-0.5">
-              {ADMIN_NAVIGATION.map((group) => {
-                const groupActive = isAdminNavigationGroupActive(pathname, group);
-                const childLinks = group.links.filter((link) => link.href !== group.href);
-                const GroupIcon = group.icon;
-
-                return (
-                  <div key={group.label} data-mobile-menu-item>
-                    <Link href={group.href} onClick={closeMobileMenu} className={`flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${pathname === group.href ? "bg-[#303030] font-medium text-white" : groupActive ? "font-medium text-white" : "text-zinc-400 hover:bg-white/8 hover:text-white"}`}>
-                      <GroupIcon className="size-[18px]" stroke={1.7} />
-                      {group.label}
-                    </Link>
-                    {groupActive && childLinks.length > 0 && (
-                      <div className="mb-1 mt-0.5 space-y-0.5 py-0.5">
-                        {childLinks.map(({ label, href }) => {
-                          const childActive = isAdminRouteActive(pathname, href);
-                          return (
-                            <Link key={href} href={href} onClick={closeMobileMenu} aria-current={childActive ? "page" : undefined} className={`flex min-h-8 items-center rounded-lg py-1 pl-9 pr-2.5 text-[13px] transition-colors ${childActive ? "bg-[#303030] font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]" : "text-zinc-500 hover:bg-white/7 hover:text-zinc-200"}`}>
-                              {label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </nav>
-          </aside>
-        </div>
-      )}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="left" className="w-[min(18rem,88vw)] gap-0 p-3 lg:hidden">
+          <SheetHeader className="border-b px-1 pb-4 pt-1 text-left">
+            <SheetTitle className="flex items-center gap-3">
+              <span className="grid size-9 place-items-center rounded-xl bg-[#151515]"><img src="/icon.svg" alt="" className="size-6" /></span>
+              ZeroCraft CMS
+            </SheetTitle>
+            <SheetDescription>Workspace navigation</SheetDescription>
+          </SheetHeader>
+          <nav className="mt-3 space-y-0.5 overflow-y-auto" aria-label="Mobile CMS navigation">
+            {navigation.map((group) => {
+              const groupActive = isAdminNavigationGroupActive(pathname, group);
+              const childLinks = group.links.filter((link) => link.href !== group.href);
+              const GroupIcon = group.icon;
+              return (
+                <div key={group.label}>
+                  <Link href={group.href} onClick={() => setMobileMenuOpen(false)} className={`flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${pathname === group.href ? "bg-muted font-medium text-foreground" : groupActive ? "font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                    <GroupIcon className="size-[18px]" stroke={1.7} />
+                    {group.label}
+                  </Link>
+                  {groupActive && childLinks.length > 0 && (
+                    <div className="mb-1 mt-0.5 space-y-0.5 py-0.5">
+                      {childLinks.map(({ label, href }) => {
+                        const childActive = isAdminRouteActive(pathname, href);
+                        return <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)} aria-current={childActive ? "page" : undefined} className={`flex min-h-8 items-center rounded-lg py-1 pl-9 pr-2.5 text-[13px] transition-colors ${childActive ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>{label}</Link>;
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+          <div className="mt-4 border-t pt-3">
+            <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+              <IconSettings className="size-[18px]" /> Settings
+            </Link>
+            <a href="mailto:hello@zerocraft.in?subject=CMS%20support" onClick={() => setMobileMenuOpen(false)} className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+              <IconHelpCircle className="size-[18px]" /> Help &amp; support
+            </a>
+            <button type="button" onClick={() => void signOut()} disabled={isSigningOut} className="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50">
+              <IconLogout className="size-[18px]" /> {isSigningOut ? "Logging out…" : "Log out"}
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <StudioSidebar
         pathname={pathname}
+        user={user}
+        navigation={navigation}
         collapsed={sidebarCollapsed}
         onCollapsedChange={setSidebarCollapsed}
-        onSearch={() => setSearchOpen(true)}
+        onOpenSearch={openSearch}
+        unread={unread}
+        onToggleNotices={() => setNoticesOpen((open) => !open)}
+        isSigningOut={isSigningOut}
+        onSignOut={() => void signOut()}
       />
 
       {/* Main content */}
-      <div className={`absolute inset-y-0 right-0 min-h-0 overflow-hidden pt-16 transition-[left] duration-200 ${sidebarCollapsed ? "lg:left-[72px]" : "lg:left-[272px]"}`}>
+      <div className={`absolute inset-y-0 right-0 min-h-0 overflow-hidden transition-[left] duration-200 ${sidebarCollapsed ? "lg:left-[72px]" : "lg:left-[280px]"}`}>
         <div
           role="main"
           tabIndex={0}
@@ -351,7 +310,7 @@ export default function StudioShell({ children, user }: Props) {
         >
           <div
             data-studio-content
-            className="mx-auto flex min-h-full w-full max-w-[1680px] flex-col p-4 sm:p-6 lg:p-8"
+            className="mx-auto flex min-h-full w-full max-w-[1240px] flex-col p-4 sm:p-6 lg:px-10 lg:py-8 xl:px-12"
           >
             {breadcrumbs.length > 1 && (
               <nav
@@ -459,63 +418,105 @@ export default function StudioShell({ children, user }: Props) {
         </DialogContent>
       </Dialog>
 
-      <CommandDialog
+      <Dialog
         open={searchOpen}
-        onOpenChange={setSearchOpen}
-        title="Search studio pages"
-        description="Jump to a page in your studio workspace."
+        onOpenChange={(open) => {
+          setSearchOpen(open);
+          if (!open) setQuery("");
+        }}
       >
-        <Command>
-          <CommandInput
-            value={query}
-            onValueChange={setQuery}
-            placeholder="Jump to a studio page..."
-          />
-          <CommandList className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
-            <CommandEmpty>No matching pages.</CommandEmpty>
-            {actionResults.length > 0 && (
-              <CommandGroup heading="Create" className="mb-2 space-y-4 flex">
-                {actionResults.map(({ label, href, icon: Icon }) => (
-                  <CommandItem
-                    key={href}
-                    value={`create ${label}`}
-                    onSelect={() => {
-                      router.push(href);
-                      setSearchOpen(false);
-                      setQuery("");
-                    }}
-                    className="py-2"
-                  >
-                    <IconPlus className="size-4 text-primary" />
-                    <span>{label}</span>
-                    <Icon className="ml-auto size-4 text-muted-foreground" />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+        <DialogContent
+          showCloseButton={false}
+          onKeyDown={handleSearchKeyDown}
+          className="top-[18vh] max-h-[min(39rem,76vh)] w-[min(42rem,calc(100vw-1.5rem))] translate-y-0 gap-0 overflow-hidden rounded-2xl border border-border/80 bg-popover p-0 shadow-[0_24px_80px_rgba(0,0,0,0.32)] sm:max-w-2xl"
+        >
+          <DialogHeader className="sr-only">
+            <DialogTitle>Search studio</DialogTitle>
+            <DialogDescription>
+              Search pages and create new studio content.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center gap-3 border-b border-border px-4 sm:px-5">
+            <IconSearch className="size-5 shrink-0 text-muted-foreground" />
+            <input
+              autoFocus
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setActiveSearchIndex(0);
+              }}
+              placeholder="Search pages and actions..."
+              aria-label="Search studio pages and actions"
+              aria-controls="studio-search-results"
+              aria-activedescendant={searchResults.length ? `studio-search-result-${activeSearchIndex}` : undefined}
+              className="h-14 min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted-foreground/75 sm:h-16"
+            />
+            <kbd className="hidden rounded-md border border-border bg-muted px-2 py-1 text-[10px] font-medium text-muted-foreground sm:inline-flex">
+              ESC
+            </kbd>
+          </div>
+
+          <div id="studio-search-results" role="listbox" aria-label="Search results" className="no-scrollbar max-h-[min(30rem,62vh)] overflow-y-auto p-2.5 sm:p-3">
+            {!searchResults.length && (
+              <div className="grid min-h-44 place-items-center px-6 text-center">
+                <div>
+                  <span className="mx-auto mb-3 grid size-10 place-items-center rounded-full bg-muted text-muted-foreground">
+                    <IconSearch className="size-4" />
+                  </span>
+                  <p className="text-sm font-medium">No results found</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Try a page name such as products, orders, or settings.</p>
+                </div>
+              </div>
             )}
-            <CommandGroup
-              heading="Navigation"
-              className="mb-2 space-y-4 gap-2 flex flex-col"
-            >
-              {results.map(({ label, href, icon: Icon }) => (
-                <CommandItem
-                  key={href}
-                  value={label}
-                  onSelect={() => {
-                    router.push(href);
-                    setSearchOpen(false);
-                    setQuery("");
-                  }}
-                >
-                  <Icon className="size-4 text-muted-foreground" />
-                  <span>{label}</span>
-                  <IconArrowUpRight className="ml-auto size-4 text-muted-foreground" />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </CommandDialog>
+
+            {(["Create", "Navigation"] as const).map((section) => {
+              const sectionItems = searchResults.filter((item) => item.section === section);
+              if (!sectionItems.length) return null;
+              return (
+                <section key={section} aria-labelledby={`studio-search-${section.toLowerCase()}`} className="mb-3 last:mb-0">
+                  <p id={`studio-search-${section.toLowerCase()}`} className="px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {section}
+                  </p>
+                  <div className="space-y-1">
+                    {sectionItems.map(({ label, href, icon: Icon, section: itemSection }) => {
+                      const index = searchResults.findIndex((item) => item.href === href && item.section === itemSection);
+                      const active = index === activeSearchIndex;
+                      return (
+                        <button
+                          id={`studio-search-result-${index}`}
+                          key={`${itemSection}-${href}`}
+                          type="button"
+                          role="option"
+                          aria-selected={active}
+                          onMouseMove={() => setActiveSearchIndex(index)}
+                          onFocus={() => setActiveSearchIndex(index)}
+                          onClick={() => goToSearchResult(href)}
+                          className={`group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm outline-none transition-colors ${active ? "bg-foreground text-background" : "text-foreground hover:bg-muted"}`}
+                        >
+                          <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${active ? "bg-background/15 text-background" : "bg-muted text-muted-foreground"}`}>
+                            {itemSection === "Create" ? <IconPlus className="size-4" /> : <Icon className="size-4" />}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate font-medium">{label}</span>
+                          <span className={`flex items-center gap-2 text-xs ${active ? "text-background/65" : "text-muted-foreground"}`}>
+                            {itemSection === "Create" && <Icon className="size-4" />}
+                            <IconArrowUpRight className="size-4" />
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border bg-muted/35 px-4 py-2.5 text-[11px] text-muted-foreground sm:px-5">
+            <span>{searchResults.length} {searchResults.length === 1 ? "result" : "results"}</span>
+            <span className="hidden items-center gap-3 sm:flex"><span><kbd className="font-sans">↑↓</kbd> navigate</span><span><kbd className="font-sans">↵</kbd> open</span></span>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
     </SidebarProvider>
   );
