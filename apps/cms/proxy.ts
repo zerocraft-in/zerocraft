@@ -37,8 +37,21 @@ function copyCookies(from: NextResponse, to: NextResponse) {
   return to;
 }
 
+/**
+ * The CMS is mounted at the domain root. Keep the former `/studio` URLs as
+ * permanent compatibility redirects so links from the public site and old
+ * bookmarks continue to land on the canonical CMS route.
+ */
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const isLegacyStudioRoute =
+    pathname === "/studio" || pathname.startsWith("/studio/");
+
+  if (isLegacyStudioRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.replace(/^\/studio(?=\/|$)/, "") || "/";
+    return NextResponse.redirect(url, 308);
+  }
 
   const { response, user } = await sessionFor(request);
   if (PUBLIC_PATHS.has(pathname)) return response;
