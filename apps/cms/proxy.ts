@@ -2,7 +2,12 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabasePublicConfig } from "@zerocraft/supabase/config";
 
-const PUBLIC_PATHS = new Set(["/login", "/auth/callback"]);
+const PUBLIC_PATHS = new Set([
+  "/login",
+  "/auth/callback",
+  // Vercel Cron authenticates this endpoint with its bearer secret at the route level.
+  "/api/studio/notifications/reports/worker",
+]);
 
 async function sessionFor(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -32,21 +37,8 @@ function copyCookies(from: NextResponse, to: NextResponse) {
   return to;
 }
 
-/**
- * The CMS is mounted at the domain root. Keep the former `/studio` URLs as
- * permanent compatibility redirects so links from the public site and old
- * bookmarks continue to land on the canonical CMS route.
- */
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const isLegacyStudioRoute =
-    pathname === "/studio" || pathname.startsWith("/studio/");
-
-  if (isLegacyStudioRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = pathname.replace(/^\/studio(?=\/|$)/, "") || "/";
-    return NextResponse.redirect(url, 308);
-  }
 
   const { response, user } = await sessionFor(request);
   if (PUBLIC_PATHS.has(pathname)) return response;
