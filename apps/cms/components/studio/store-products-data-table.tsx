@@ -97,6 +97,7 @@ export type StoreProduct = {
 type Category = { id: string; name: string };
 type TableMeta = {
   categories: Category[];
+  canManageCatalog: boolean;
   onEdit: (product: StoreProduct) => void;
   onDelete: (product: StoreProduct) => void;
   onBulkStatus?: (
@@ -199,6 +200,7 @@ const productColumns = column.columns([
     header: "Category",
     cell: ({ row, table }) => {
       const meta = table.options.meta as TableMeta;
+      if (!meta.canManageCatalog) return null;
       return (
         <span className="text-muted-foreground">
           {meta.categories.find((item) => item.id === row.original.category_id)
@@ -277,6 +279,7 @@ const productColumns = column.columns([
     header: "",
     cell: ({ row, table }) => {
       const meta = table.options.meta as TableMeta;
+      if (!meta.canManageCatalog) return null;
       return (
         <div className="flex justify-end gap-1">
           <Button
@@ -332,6 +335,7 @@ function SortHeader({
 export function StoreProductsDataTable({
   data,
   categories,
+  canManageCatalog,
   loading,
   configured,
   onEdit,
@@ -340,6 +344,7 @@ export function StoreProductsDataTable({
 }: {
   data: StoreProduct[];
   categories: Category[];
+  canManageCatalog: boolean;
   loading: boolean;
   configured: boolean;
   onEdit: (product: StoreProduct) => void;
@@ -367,7 +372,7 @@ export function StoreProductsDataTable({
     data: visibleData,
     columns: productColumns,
     getRowId: (product: StoreProduct) => product.id,
-    meta: { categories, onEdit, onDelete, onBulkStatus },
+    meta: { categories, canManageCatalog, onEdit, onDelete, onBulkStatus },
     initialState: { columnVisibility: { search: false } },
     state: { pagination },
     onPaginationChange: setPagination,
@@ -566,7 +571,7 @@ export function StoreProductsDataTable({
         </div>
       </div>
 
-      {selectedCount > 0 && (
+      {canManageCatalog && selectedCount > 0 && (
         <div
           ref={bulkBarRef}
           role="toolbar"

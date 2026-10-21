@@ -232,6 +232,7 @@ export default function StudioStore({
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [permissions, setPermissions] = useState<string[] | null>(null);
   const [view, setView] = useState<"overview" | "products" | "categories">(
     initialView,
   );
@@ -300,6 +301,16 @@ export default function StudioStore({
     };
   }, [requestStore]);
   useEffect(() => {
+    let current = true;
+    void fetch("/api/studio/me", { cache: "no-store" })
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((result) => {
+        if (current && Array.isArray(result?.permissions)) setPermissions(result.permissions);
+      })
+      .catch(() => undefined);
+    return () => { current = false; };
+  }, []);
+  useEffect(() => {
     const syncViewFromHash = () => {
       const section = window.location.hash.slice(1);
       setView(
@@ -315,6 +326,7 @@ export default function StudioStore({
 
   const products = data?.products ?? noProducts;
   const categories = data?.categories ?? noCategories;
+  const canManageCatalog = permissions?.includes("catalog.manage") === true;
   const physicalCount = products.filter(
     (item) => item.product_type === "physical",
   ).length;
@@ -634,6 +646,7 @@ export default function StudioStore({
           periodOrders={periodOrders}
           lowStockProducts={lowStockProducts}
           outOfStockProducts={outOfStockProducts}
+          canManageCatalog={canManageCatalog}
           editProduct={editProduct}
         />
       )}
@@ -680,14 +693,14 @@ export default function StudioStore({
                 <IconShoppingBag />
                 View orders
               </Button>
-              <Button
+              {canManageCatalog && <Button
                 size="sm"
                 disabled={!data?.configured || loading || busy}
                 onClick={() => editProduct()}
               >
                 <IconPlus />
                 Add product
-              </Button>
+              </Button>}
             </div>
           </section>
           <section
@@ -952,18 +965,19 @@ export default function StudioStore({
                 <small>{data?.configured ? products.length : "—"}</small>
               </h2>
             </div>
-            <button
+            {canManageCatalog && <button
               className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
               type="button"
               disabled={!data?.configured}
               onClick={() => editProduct()}
             >
               <IconPlus size={16} /> New product
-            </button>
+            </button>}
           </div>
           <StoreProductsDataTable
             data={products}
             categories={categories}
+            canManageCatalog={canManageCatalog}
             loading={loading}
             configured={Boolean(data?.configured)}
             onEdit={(product) => editProduct(product)}
@@ -988,14 +1002,14 @@ export default function StudioStore({
                 <small>{data?.configured ? categories.length : "—"}</small>
               </h2>
             </div>
-            <button
+            {canManageCatalog && <button
               className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
               type="button"
               disabled={!data?.configured}
               onClick={() => editCategory()}
             >
               <IconPlus size={16} /> New category
-            </button>
+            </button>}
           </div>
           {loading ? (
             <StoreSkeleton />
@@ -1026,7 +1040,7 @@ export default function StudioStore({
                   <Badge variant={category.is_active ? "default" : "secondary"}>
                     {category.is_active ? "Active" : "Hidden"}
                   </Badge>
-                  <span className="flex items-center gap-1">
+                  {canManageCatalog && <span className="flex items-center gap-1">
                     <button
                       type="button"
                       disabled={busy}
@@ -1054,13 +1068,15 @@ export default function StudioStore({
                     >
                       <IconTrash size={16} />
                     </button>
-                  </span>
+                  </span>}
                   {(category.store_subcategories || []).length > 0 && (
                     <div className="ml-12 mt-2 flex flex-wrap gap-2">
                       {(category.store_subcategories || []).map((subcategory) => (
-                        <button key={subcategory.id} type="button" onClick={() => editSubcategory(subcategory)} className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:border-foreground hover:text-foreground">
+                        canManageCatalog ? <button key={subcategory.id} type="button" onClick={() => editSubcategory(subcategory)} className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:border-foreground hover:text-foreground">
                           {subcategory.name} · {subcategory.is_active ? "Active" : "Hidden"}
-                        </button>
+                        </button> : <span key={subcategory.id} className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
+                          {subcategory.name} · {subcategory.is_active ? "Active" : "Hidden"}
+                        </span>
                       ))}
                     </div>
                   )}
@@ -1706,6 +1722,7 @@ type StoreOverviewProps = {
   periodOrders: Payload["orders"]["recent"];
   lowStockProducts: Product[];
   outOfStockProducts: Product[];
+  canManageCatalog: boolean;
   editProduct: (product?: Product) => void;
 };
 
@@ -1722,6 +1739,7 @@ function StoreOverview({
   periodOrders,
   lowStockProducts,
   outOfStockProducts,
+  canManageCatalog,
   editProduct,
 }: StoreOverviewProps) {
   const currency = data?.orders.currency || "USD";
@@ -1896,14 +1914,14 @@ function StoreOverview({
                 </div>
               </PopoverContent>
             </Popover>
-            <button
+            {canManageCatalog && <button
               type="button"
               onClick={() => editProduct()}
               disabled={!data?.configured || loading}
               className="inline-flex items-center gap-2 rounded-xl bg-[#121411] px-4 py-3 text-xs font-semibold text-[#d3ff00] transition hover:-translate-y-0.5 hover:bg-black disabled:opacity-50"
             >
               <IconPlus size={15} /> Add product
-            </button>
+            </button>}
           </div>
         </header>
 
