@@ -22,8 +22,25 @@
       }
     ],
     "paths": {
+      "@/components/ui/*": [
+        "./components/ui/*",
+        "../cms/components/ui/*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/apps/studio/utils/supabase/*": [
+        "../cms/utils/supabase/*"
+      ],
+      "@/store/*": [
+        "../cms/store/*"
+      ],
+      "@/lib/*": [
+        "./lib/*",
+        "../cms/lib/*"
+      ],
       "@/*": [
-        "../../*"
+        "./*"
       ],
       "@zerocraft/supabase/*": [
         "../../packages/supabase/src/*"

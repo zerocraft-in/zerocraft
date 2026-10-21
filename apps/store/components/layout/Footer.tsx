@@ -133,7 +133,7 @@ export default function Footer() {
             aria-label="Back to top"
             title="Back to top"
           >
-            <ArrowIcon direction="up" size={16} />
+            <ArrowIcon direction="up-right" size={16} />
           </button>
         </div>
       </Container>

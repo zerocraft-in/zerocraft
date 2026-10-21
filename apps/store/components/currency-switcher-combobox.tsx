@@ -29,7 +29,9 @@ export function CurrencySwitcherCombobox({
       <Combobox
         items={currencyItems}
         value={activeItem}
-        onValueChange={(item: CurrencyConfig) => setCurrency(item.code)}
+        onValueChange={(item: CurrencyConfig | null) => {
+          if (item) setCurrency(item.code);
+        }}
         itemToStringValue={(item: CurrencyConfig) =>
           `${item.name} ${item.code} ${item.symbol}`
         }
