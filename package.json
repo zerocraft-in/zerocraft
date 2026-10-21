@@ -1,6 +1,6 @@
 {
   "name": "zerocraft",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "private": true,
   "packageManager": "npm@11.17.0",
   "workspaces": [
@@ -26,6 +26,8 @@
     "verify:transactional-checkout": "node scripts/verify-transactional-checkout.mjs",
     "test:security": "npm run test:rbac",
     "test:rbac": "node scripts/security/rbac-static-tests.mjs",
+    "verify:release": "node scripts/release/check-migrations.mjs && npm run test:rbac && npm run typecheck --workspace=@zerocraft/cms",
+    "smoke:cms": "node scripts/release/smoke-cms.mjs",
     "verify:seed": "node scripts/verify-seed-commerce.mjs",
     "seed": "npm run seed:commerce",
     "seed:commerce": "node scripts/seed-commerce.mjs",

@@ -1,5 +1,14 @@
 # CMS changelog
 
+## 0.0.23 — 2026-10-21
+
+### Added
+
+- Automated release preflight for migration naming, RBAC, and CMS type safety.
+- Production smoke checks for login, protected routes, APIs, and worker secret boundaries.
+- GitHub Actions CMS quality gate for pull requests and `main` pushes.
+- Release checklist and operations runbook covering backups, monitoring, incident response, and rollback.
+
 ## 0.0.22 — 2026-10-21
 
 - Added the complete `v0.0.21` release notes and deployment references to the CMS changelog.
