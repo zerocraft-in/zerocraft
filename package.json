@@ -25,6 +25,7 @@
     "verify:checkout-correctness": "node --experimental-strip-types --experimental-loader ./scripts/ts-loader.mjs scripts/verify-checkout-correctness.mjs",
     "verify:transactional-checkout": "node scripts/verify-transactional-checkout.mjs",
     "test:security": "node --experimental-strip-types scripts/security/phase4b-security-tests.mjs",
+    "test:rbac": "node scripts/security/rbac-static-tests.mjs",
     "test:phase4e": "node scripts/security/phase4e-checkout-lifecycle-tests.mjs",
     "verify:phase4e-d": "node scripts/security/phase4e-d-static-checks.mjs",
     "verify:seed": "node scripts/verify-seed-commerce.mjs",
