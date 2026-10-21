@@ -140,7 +140,7 @@ export default function StudioShell({ children, user }: Props) {
   }, []);
 
   useEffect(() => {
-    void loadNotifications();
+    const initialLoad = window.setTimeout(() => void loadNotifications(), 0);
     const channel = supabase.channel?.("studio-notices");
     if (channel) {
       channel.on?.(
@@ -152,6 +152,7 @@ export default function StudioShell({ children, user }: Props) {
     }
     const refreshTimer = window.setInterval(() => void loadNotifications(), 60_000);
     return () => {
+      window.clearTimeout(initialLoad);
       window.clearInterval(refreshTimer);
       if (channel) void supabase.removeChannel(channel);
     };
