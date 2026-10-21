@@ -56,6 +56,20 @@
 
 - Category image selection now supports both new uploads and existing Storage assets.
 
+## 0.0.33 — 2026-10-21
+
+### Security and reliability
+
+- Enforced granular `catalog.read` and `catalog.manage` permissions on catalog APIs.
+- Enforced granular `inventory.read` and `inventory.manage` permissions on inventory APIs.
+- Preserved server-side session, origin, audit, and RBAC checks for all catalog and inventory mutations.
+- Verified production Admin catalog, inventory, team access, system health, and mobile responsive flows.
+
+### Release
+
+- Git commit: `5d454ba`
+- Production branch: `main`
+
 ## 0.0.24 — 2026-10-21
 
 ### Added

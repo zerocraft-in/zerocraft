@@ -16,6 +16,8 @@
 - Verify dashboard, team access, audit log, system health, automation health, notifications, and email delivery.
 - Confirm protected APIs return `401` without a session and worker routes reject missing secrets.
 - Confirm a team suspension and reactivation produce audit events.
+- Confirm catalog and inventory APIs enforce `read` versus `manage` permissions for Manager and Staff roles.
+- Confirm the Admin role can access team management and all protected catalog/inventory actions.
 
 ## Release evidence
 
