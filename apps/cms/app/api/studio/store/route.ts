@@ -1,4 +1,5 @@
 import { createClient } from "@zerocraft/supabase/server";
+import { createServiceClient } from "@/lib/supabase-service";
 import { isSameOrigin } from "@/lib/request-origin";
 import { revalidatePath } from "next/cache";
 
@@ -35,7 +36,9 @@ async function recordCatalogAudit(
   supabase: Awaited<ReturnType<typeof createClient>>,
   entry: { actor_id: string; action: string; entity_type: string; entity_id: string | null; metadata: Record<string, unknown> },
 ) {
-  const { error } = await supabase.from("store_audit_logs").insert(entry);
+  let auditClient = supabase;
+  try { auditClient = createServiceClient() as typeof supabase; } catch { /* fall back to the authenticated client when service credentials are unavailable */ }
+  const { error } = await auditClient.from("store_audit_logs").insert(entry);
   if (error) console.error("Catalog audit log write failed", { action: entry.action, entityId: entry.entity_id, error });
 }
 

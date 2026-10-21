@@ -1,5 +1,11 @@
 # CMS changelog
 
+## 0.0.28 — 2026-10-21
+
+### Fixed
+
+- Catalog audit events now use the server service client when configured, avoiding authenticated-session RLS gaps while preserving the actor id.
+
 ## 0.0.27 — 2026-10-21
 
 ### Fixed
