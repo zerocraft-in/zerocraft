@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -12,6 +12,7 @@ import {
   IconLogout,
   IconMenu2,
   IconPlus,
+  IconRefresh,
   IconSearch,
   IconSettings,
 } from "@tabler/icons-react";
@@ -80,6 +81,7 @@ export default function StudioShell({ children, user }: Props) {
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
   const [noticesOpen, setNoticesOpen] = useState(false);
   const [notices, setNotices] = useState<StudioNotification[]>([]);
+  const [noticesLoading, setNoticesLoading] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -109,6 +111,7 @@ export default function StudioShell({ children, user }: Props) {
     [actionResults, results],
   );
   const unread = notices.filter((item) => !item.read).length;
+  const latestNotices = notices.slice(0, 6);
   const breadcrumbs = getAdminBreadcrumbs(pathname);
   useEffect(() => {
     let current = true;
@@ -124,31 +127,35 @@ export default function StudioShell({ children, user }: Props) {
     const required = getAdminRoutePermission(pathname);
     if (required && !permissions.includes(required)) router.replace("/");
   }, [pathname, permissions, router]);
+  const loadNotifications = useCallback(async () => {
+    setNoticesLoading(true);
+    try {
+      const data = await fetchNotificationsFromSupabase();
+      setNotices(data);
+    } catch (error) {
+      console.error("Could not load notifications", error);
+    } finally {
+      setNoticesLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    let current = true;
-    const load = async () => {
-      try {
-        const data = await fetchNotificationsFromSupabase();
-        if (current) setNotices(data);
-      } catch (error) {
-        console.error("Could not load notifications", error);
-      }
-    };
-    void load();
+    void loadNotifications();
     const channel = supabase.channel?.("studio-notices");
     if (channel) {
       channel.on?.(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
-        () => void load(),
+        () => void loadNotifications(),
       );
       channel.subscribe?.();
     }
+    const refreshTimer = window.setInterval(() => void loadNotifications(), 60_000);
     return () => {
-      current = false;
+      window.clearInterval(refreshTimer);
       if (channel) void supabase.removeChannel(channel);
     };
-  }, []);
+  }, [loadNotifications]);
 
   function openSearch() {
     setQuery("");
@@ -385,7 +392,16 @@ export default function StudioShell({ children, user }: Props) {
               Updates and activity from your studio workspace.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-end border-b pb-3">
+          <div className="flex items-center justify-between border-b pb-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void loadNotifications()}
+              disabled={noticesLoading}
+            >
+              <IconRefresh className={noticesLoading ? "animate-spin" : ""} />
+              Refresh
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -406,21 +422,30 @@ export default function StudioShell({ children, user }: Props) {
           </div>
           <ScrollArea className="h-80 max-h-[40vh]">
             <div className="mt-3 space-y-2 pr-3">
-              {notices.length ? (
-                notices.map((item) => (
+              {latestNotices.length ? (
+                latestNotices.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => void readNotice(item)}
-                    className="w-full rounded-lg border p-3 text-left hover:bg-muted"
+                    className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted ${!item.read ? "border-primary/30 bg-primary/[0.03]" : ""}`}
                   >
-                    <span className="flex items-center gap-2 text-sm font-medium">
+                    <span className="flex items-center justify-between gap-2 text-sm font-medium">
+                      <span className="flex min-w-0 items-center gap-2">
                       {!item.read && (
                         <span className="size-2 rounded-full bg-primary" />
                       )}
-                      {item.title}
+                        <span className="truncate">{item.title}</span>
+                      </span>
+                      <Badge variant="outline" className="shrink-0 text-[10px] capitalize">
+                        {item.type}
+                      </Badge>
                     </span>
                     <span className="mt-1 block text-xs text-muted-foreground">
                       {item.message}
+                    </span>
+                    <span className="mt-2 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                      <span className="capitalize">{item.category}</span>
+                      <span>{new Date(item.created_at).toLocaleString()}</span>
                     </span>
                   </button>
                 ))
@@ -431,6 +456,14 @@ export default function StudioShell({ children, user }: Props) {
               )}
             </div>
           </ScrollArea>
+          <div className="mt-3 flex items-center justify-between border-t pt-3">
+            <span className="text-xs text-muted-foreground">
+              Showing the latest {Math.min(latestNotices.length, 6)} alerts
+            </span>
+            <Button variant="outline" size="sm" render={<Link href="/notifications" onClick={() => setNoticesOpen(false)} />}>
+              View all
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

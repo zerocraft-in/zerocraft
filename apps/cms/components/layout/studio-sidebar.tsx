@@ -296,8 +296,18 @@ export function StudioSidebar({
               className={`h-10 rounded-xl ${collapsed ? "justify-center px-0" : "gap-3 px-3"} text-muted-foreground hover:bg-sidebar-accent hover:text-foreground`}
               aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}
             >
-              <span className="relative"><IconBell className="size-[18px]" />{unread > 0 && <span className="absolute -right-1 -top-1 size-2 rounded-full bg-primary" />}</span>
+              <span className="relative">
+                <IconBell className="size-[18px]" />
+                {unread > 0 && (
+                  <span className="absolute -right-2 -top-2 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-primary-foreground">
+                    {unread > 99 ? "99+" : unread}
+                  </span>
+                )}
+              </span>
               {!collapsed && <span>Notifications</span>}
+              {!collapsed && unread > 0 && (
+                <span className="ml-auto text-xs font-semibold text-primary">{unread > 99 ? "99+" : unread}</span>
+              )}
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
