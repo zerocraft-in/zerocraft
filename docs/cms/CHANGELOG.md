@@ -1,5 +1,17 @@
 # CMS changelog
 
+## 0.0.25 — 2026-10-21
+
+### Added
+
+- Supabase Storage media-library API for authenticated Studio members.
+- Category image picker with searchable thumbnails from the shared `product-media` bucket.
+- Reusable category-image selection with preview, while preserving the existing upload flow.
+
+### Changed
+
+- Category image selection now supports both new uploads and existing Storage assets.
+
 ## 0.0.24 — 2026-10-21
 
 ### Added

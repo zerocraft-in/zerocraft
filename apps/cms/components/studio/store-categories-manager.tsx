@@ -60,6 +60,7 @@ type Category = {
 
 type Product = { id: string; title: string; image_url: string; status: string; category_id: string | null; subcategory_id: string | null };
 type StorePayload = { configured: boolean; categories: Category[]; products: Product[] };
+type MediaAsset = { path: string; name: string; folder: string; url: string; mimeType: string; size: number; createdAt: string | null; updatedAt: string | null };
 type CategoryDraft = {
   name: string;
   slug: string;
@@ -110,6 +111,10 @@ export default function StoreCategoriesManager() {
   const [bulkArchiveOpen, setBulkArchiveOpen] = useState(false);
   const [pendingImage, setPendingImage] = useState<{ file: File; preview: string } | null>(null);
   const [imageCandidate, setImageCandidate] = useState<{ file: File; preview: string } | null>(null);
+  const [selectedLibraryAsset, setSelectedLibraryAsset] = useState<MediaAsset | null>(null);
+  const [mediaLibrary, setMediaLibrary] = useState<MediaAsset[]>([]);
+  const [mediaLibraryLoading, setMediaLibraryLoading] = useState(false);
+  const [mediaLibraryQuery, setMediaLibraryQuery] = useState("");
   const [toast, setToast] = useState("");
 
   const load = useCallback(async () => {
@@ -364,12 +369,40 @@ export default function StoreCategoriesManager() {
       return;
     }
     setImageCandidate({ file, preview: URL.createObjectURL(file) });
+    setSelectedLibraryAsset(null);
+  }
+
+  const loadMediaLibrary = useCallback(async () => {
+    setMediaLibraryLoading(true);
+    try {
+      const response = await fetch("/api/studio/store/media-library", { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "The image library could not be loaded.");
+      setMediaLibrary((result.assets || []) as MediaAsset[]);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "The image library could not be loaded.");
+    } finally {
+      setMediaLibraryLoading(false);
+    }
+  }, []);
+
+  function openImageLibrary() {
+    setImageDialogOpen(true);
+    setImageCandidate(null);
+    setSelectedLibraryAsset(null);
+    setMediaLibraryQuery("");
+    void loadMediaLibrary();
   }
 
   function applyImage() {
-    if (!imageCandidate) return;
-    setPendingImage(imageCandidate);
+    if (selectedLibraryAsset) {
+      if (editor) setEditor({ ...editor, draft: { ...editor.draft, image_url: selectedLibraryAsset.url } });
+      setPendingImage(null);
+    } else if (imageCandidate) {
+      setPendingImage(imageCandidate);
+    } else return;
     setImageCandidate(null);
+    setSelectedLibraryAsset(null);
     setImageDialogOpen(false);
   }
 
@@ -479,7 +512,7 @@ export default function StoreCategoriesManager() {
             </label>
 
             <div className="mt-4 rounded-lg border border-dashed border-[#cfcfcf] p-4">
-              <button type="button" onClick={() => setImageDialogOpen(true)} className="flex min-h-16 w-full items-center justify-center gap-2 text-sm">
+              <button type="button" onClick={openImageLibrary} className="flex min-h-16 w-full items-center justify-center gap-2 text-sm">
                 <IconPhoto size={21} />
                 <span>Drag an image here, <span className="font-semibold underline">upload</span> or <span className="font-semibold underline">browse image library</span>{(pendingImage || editor.draft.image_url) ? " to replace the image" : ""}.</span>
               </button>
@@ -522,14 +555,21 @@ export default function StoreCategoriesManager() {
           {imageDialogOpen && (
             <div className="fixed inset-0 z-20 grid place-items-center bg-black/80 p-4" role="dialog" aria-modal="true" aria-labelledby="image-library-title">
               <section className="w-full max-w-[750px] overflow-hidden rounded-xl bg-white shadow-2xl">
-                <header className="relative border-b border-[#e5e5e5] px-6 py-6 text-center"><button type="button" aria-label="Close image library" onClick={() => { setImageDialogOpen(false); setImageCandidate(null); }} className="absolute left-4 top-3 grid size-12 place-items-center rounded-full bg-[#f3f3f3] hover:bg-[#e7e7e7]"><IconX size={22} /></button><h2 id="image-library-title" className="text-2xl font-semibold">Image library</h2></header>
-                <div className="p-8">
-                  <label onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); chooseImage(event.dataTransfer.files?.[0]); }} className="grid min-h-[310px] cursor-pointer place-items-center border border-dashed border-[#cfcfcf] text-center">
+                <header className="relative border-b border-[#e5e5e5] px-6 py-6 text-center"><button type="button" aria-label="Close image library" onClick={() => { setImageDialogOpen(false); setImageCandidate(null); setSelectedLibraryAsset(null); }} className="absolute left-4 top-3 grid size-12 place-items-center rounded-full bg-[#f3f3f3] hover:bg-[#e7e7e7]"><IconX size={22} /></button><h2 id="image-library-title" className="text-2xl font-semibold">Image library</h2></header>
+                <div className="space-y-6 p-6 sm:p-8">
+                  <label onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); chooseImage(event.dataTransfer.files?.[0]); }} className="grid min-h-[220px] cursor-pointer place-items-center border border-dashed border-[#cfcfcf] text-center">
                     <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => chooseImage(event.target.files?.[0])} />
                     {imageCandidate ? <div><img src={imageCandidate.preview} alt="Selected upload" className="mx-auto max-h-56 max-w-full rounded-lg object-contain" />{/* eslint-disable-line @next/next/no-img-element */}<p className="mt-3 text-sm font-medium">{imageCandidate.file.name}</p></div> : <div><IconPhoto size={26} className="mx-auto mb-8 text-[#aaa]" /><p className="text-lg font-semibold">Drag and drop images here, or</p><span className="mt-4 inline-flex h-12 items-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white"><IconUpload size={18} className="mr-2" />Upload</span><p className="mt-3 text-xs text-[#777]">JPEG, PNG, or WebP · up to 10 MB</p></div>}
                   </label>
+                  <section aria-labelledby="storage-library-title">
+                    <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                      <div><h3 id="storage-library-title" className="text-sm font-semibold">Supabase Storage library</h3><p className="mt-1 text-xs text-[#777]">Reuse an existing product-media asset without uploading it again.</p></div>
+                      <label className="flex h-10 min-w-48 items-center gap-2 rounded-full border border-[#d5d5d5] px-3"><IconSearch size={16} className="shrink-0 text-[#777]" /><span className="sr-only">Search media library</span><input value={mediaLibraryQuery} onChange={(event) => setMediaLibraryQuery(event.target.value)} placeholder="Search assets" className="min-w-0 flex-1 bg-transparent text-xs outline-none" /></label>
+                    </div>
+                    {mediaLibraryLoading ? <p className="rounded-lg bg-[#f6f6f6] px-4 py-8 text-center text-sm text-[#666]">Loading Storage assets…</p> : mediaLibrary.filter((asset) => `${asset.name} ${asset.path}`.toLowerCase().includes(mediaLibraryQuery.trim().toLowerCase())).length ? <div className="grid max-h-64 grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">{mediaLibrary.filter((asset) => `${asset.name} ${asset.path}`.toLowerCase().includes(mediaLibraryQuery.trim().toLowerCase())).map((asset) => { const selected = selectedLibraryAsset?.path === asset.path; return <button key={asset.path} type="button" aria-label={`Select ${asset.name}`} aria-pressed={selected} onClick={() => { setSelectedLibraryAsset(asset); setImageCandidate(null); }} className={`overflow-hidden rounded-lg border text-left transition ${selected ? "border-[#111] ring-2 ring-[#111]" : "border-[#e2e2e2] hover:border-[#999]"}`}><img src={asset.url} alt="" className="aspect-square w-full bg-[#f3f3f3] object-cover" />{/* eslint-disable-line @next/next/no-img-element */}<span className="block truncate px-2 py-2 text-[11px] font-medium">{asset.name}</span><span className="block truncate px-2 pb-2 text-[10px] text-[#777]">{asset.folder}</span></button>; })}</div> : <p className="rounded-lg bg-[#f6f6f6] px-4 py-8 text-center text-sm text-[#666]">No reusable Storage images found.</p>}
+                  </section>
                 </div>
-                <footer className="flex justify-end border-t border-[#e5e5e5] px-5 py-4"><button type="button" onClick={applyImage} disabled={!imageCandidate} className="h-12 rounded-full bg-[#111] px-6 text-sm font-semibold text-white disabled:bg-[#ddd] disabled:text-[#888]">Update image</button></footer>
+                <footer className="flex justify-end border-t border-[#e5e5e5] px-5 py-4"><button type="button" onClick={applyImage} disabled={!imageCandidate && !selectedLibraryAsset} className="h-12 rounded-full bg-[#111] px-6 text-sm font-semibold text-white disabled:bg-[#ddd] disabled:text-[#888]">Use selected image</button></footer>
               </section>
             </div>
           )}
