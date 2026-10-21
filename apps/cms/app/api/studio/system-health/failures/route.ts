@@ -17,19 +17,20 @@ export async function GET(request: Request) {
   const kind = url.searchParams.get("kind");
   const selectedStatus = url.searchParams.get("status");
   const search = (url.searchParams.get("q") || "").trim().toLowerCase();
+  const includeTestData = url.searchParams.get("includeTestData") === "true";
   const daysValue = Number(url.searchParams.get("days") || 1);
   const days = Number.isFinite(daysValue) ? Math.min(Math.max(daysValue, 1), 90) : 1;
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const [{ data: runs, error: runsError }, { data: emails, error: emailsError }, { data: acknowledgements, error: acknowledgementsError }] = await Promise.all([
-    access.supabase.from("studio_automation_runs").select("id,job_name,trigger,status,started_at,finished_at,error_message,created_at").eq("status", "failed").gte("created_at", since).order("created_at", { ascending: false }).limit(100),
-    access.supabase.from("studio_email_events").select("id,kind,recipient,subject,status,attempts,last_error,next_attempt_at,created_at").in("status", ["failed", "dead_letter"]).gte("created_at", since).order("created_at", { ascending: false }).limit(100),
+    (includeTestData ? access.supabase.from("studio_automation_runs").select("id,job_name,trigger,status,started_at,finished_at,error_message,created_at,is_test").eq("status", "failed") : access.supabase.from("studio_automation_runs").select("id,job_name,trigger,status,started_at,finished_at,error_message,created_at,is_test").eq("status", "failed").eq("is_test", false)).gte("created_at", since).order("created_at", { ascending: false }).limit(100),
+    (includeTestData ? access.supabase.from("studio_email_events").select("id,kind,recipient,subject,status,attempts,last_error,next_attempt_at,created_at,is_test").in("status", ["failed", "dead_letter"]) : access.supabase.from("studio_email_events").select("id,kind,recipient,subject,status,attempts,last_error,next_attempt_at,created_at,is_test").in("status", ["failed", "dead_letter"]).eq("is_test", false)).gte("created_at", since).order("created_at", { ascending: false }).limit(100),
     access.supabase.from("studio_system_health_failure_acknowledgements").select("failure_type,failure_id,status,notes,acknowledged_at,resolved_at,updated_at").order("updated_at", { ascending: false }).limit(200),
   ]);
   if (runsError || emailsError || acknowledgementsError) return errorResponse("Recent failure details are unavailable. Apply the system-health acknowledgement migration first.", 503);
   const statusByKey = new Map((acknowledgements || []).map((item) => [`${item.failure_type}:${item.failure_id}`, item]));
   const failures = [
-    ...(kind !== "email" ? (runs || []).map((run) => ({ id: run.id, kind: "automation" as const, title: run.job_name, detail: `${run.trigger} run`, status: statusByKey.get(`automation:${run.id}`)?.status || "open", error: run.error_message || "Automation failed without an error message.", createdAt: run.created_at, startedAt: run.started_at, finishedAt: run.finished_at, retryable: true, metadata: { jobName: run.job_name, trigger: run.trigger } })) : []),
-    ...(kind !== "automation" ? (emails || []).map((event) => ({ id: event.id, kind: "email" as const, title: event.kind, detail: event.recipient, status: statusByKey.get(`email:${event.id}`)?.status || "open", error: event.last_error || "Email delivery failed.", createdAt: event.created_at, startedAt: event.created_at, finishedAt: null, retryable: event.status === "failed", metadata: { subject: event.subject, attempts: event.attempts, nextAttemptAt: event.next_attempt_at } })) : []),
+    ...(kind !== "email" ? (runs || []).map((run) => ({ id: run.id, kind: "automation" as const, title: run.job_name, detail: `${run.trigger} run`, status: statusByKey.get(`automation:${run.id}`)?.status || "open", error: run.error_message || "Automation failed without an error message.", createdAt: run.created_at, startedAt: run.started_at, finishedAt: run.finished_at, retryable: true, isTest: Boolean(run.is_test), metadata: { jobName: run.job_name, trigger: run.trigger } })) : []),
+    ...(kind !== "automation" ? (emails || []).map((event) => ({ id: event.id, kind: "email" as const, title: event.kind, detail: event.recipient, status: statusByKey.get(`email:${event.id}`)?.status || "open", error: event.last_error || "Email delivery failed.", createdAt: event.created_at, startedAt: event.created_at, finishedAt: null, retryable: event.status === "failed", isTest: Boolean(event.is_test), metadata: { subject: event.subject, attempts: event.attempts, nextAttemptAt: event.next_attempt_at } })) : []),
   ].filter((failure) => {
     const matchesStatus = !selectedStatus || selectedStatus === "all" || failure.status === selectedStatus;
     const searchable = `${failure.title} ${failure.detail} ${failure.error}`.toLowerCase();

@@ -14,8 +14,8 @@ export async function evaluateSystemHealthSla(input: { supabase: Client; actorId
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const [{ data: runs }, { data: failedRuns }, { data: failedEmails }, { data: incidents }] = await Promise.all([
     supabase.from("studio_system_health_runs").select("overall,created_at").gte("created_at", since),
-    supabase.from("studio_automation_runs").select("id").eq("status", "failed").gte("created_at", since),
-    supabase.from("studio_email_events").select("id").in("status", ["failed", "dead_letter"]).gte("created_at", since),
+    supabase.from("studio_automation_runs").select("id").eq("status", "failed").eq("is_test", false).gte("created_at", since),
+    supabase.from("studio_email_events").select("id").in("status", ["failed", "dead_letter"]).eq("is_test", false).gte("created_at", since),
     supabase.from("studio_system_health_incidents").select("first_seen_at,resolved_at,status").gte("created_at", since),
   ]);
   const healthRuns = (runs || []) as HealthRunRow[];

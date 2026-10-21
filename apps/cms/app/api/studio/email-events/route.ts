@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   if (!access.ok) return access.response;
   const url = new URL(request.url);
   const status = url.searchParams.get("status")?.trim() || "";
-  let query = access.supabase.from("studio_email_events").select("id,provider,kind,recipient,subject,status,attempts,message_id,last_error,next_attempt_at,sent_at,metadata,created_at,updated_at").order("created_at", { ascending: false }).limit(100);
+  let query = access.supabase.from("studio_email_events").select("id,provider,kind,recipient,subject,status,attempts,message_id,last_error,next_attempt_at,sent_at,metadata,is_test,created_at,updated_at").order("created_at", { ascending: false }).limit(100);
   if (status && ["queued", "sending", "sent", "failed", "dead_letter"].includes(status)) query = query.eq("status", status);
   const { data, error } = await query;
   if (error) return errorResponse("Email delivery logs are unavailable. Apply the observability migration first.", 503);

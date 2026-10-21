@@ -21,6 +21,7 @@ export async function sendTrackedEmail(input: {
     status: "queued",
     attempts: 0,
     metadata,
+    is_test: metadata.test === true,
     created_by: actorId,
   }).select("id").maybeSingle();
   const eventId = event?.id;

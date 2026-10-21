@@ -73,15 +73,18 @@ export async function buildHealth(supabase: any, verifySmtpNow: boolean) {
       : check("storage", "Supabase Storage", "healthy", `${buckets?.length || 0} storage bucket${buckets?.length === 1 ? "" : "s"} available.`, storageStarted, { bucketCount: buckets?.length || 0 }));
   }
 
-  const [failedRuns, failedEmails] = await Promise.all([
-    supabase.from("studio_automation_runs").select("id", { count: "exact", head: true }).eq("status", "failed").gte("created_at", dayAgo),
-    supabase.from("studio_email_events").select("id", { count: "exact", head: true }).eq("status", "failed").gte("created_at", dayAgo),
+  const [failedRuns, failedEmails, testRuns, testEmails] = await Promise.all([
+    supabase.from("studio_automation_runs").select("id", { count: "exact", head: true }).eq("status", "failed").eq("is_test", false).gte("created_at", dayAgo),
+    supabase.from("studio_email_events").select("id", { count: "exact", head: true }).eq("status", "failed").eq("is_test", false).gte("created_at", dayAgo),
+    supabase.from("studio_automation_runs").select("id", { count: "exact", head: true }).eq("status", "failed").eq("is_test", true).gte("created_at", dayAgo),
+    supabase.from("studio_email_events").select("id", { count: "exact", head: true }).eq("status", "failed").eq("is_test", true).gte("created_at", dayAgo),
   ]);
   const failures = (failedRuns.count || 0) + (failedEmails.count || 0);
+  const testFailures = (testRuns.count || 0) + (testEmails.count || 0);
   const errorsStarted = performance.now();
-  checks.push((failedRuns.error || failedEmails.error)
+  checks.push((failedRuns.error || failedEmails.error || testRuns.error || testEmails.error)
     ? check("errors", "Recent failures", "unavailable", "Recent failure counts could not be loaded.", errorsStarted)
-    : check("errors", "Recent failures", failures ? "warning" : "healthy", failures ? `${failures} failed automation/email event${failures === 1 ? "" : "s"} in the last 24 hours.` : "No failed automation or email events in the last 24 hours.", errorsStarted, { failedAutomations: failedRuns.count || 0, failedEmails: failedEmails.count || 0 }));
+    : check("errors", "Recent failures", failures ? "warning" : "healthy", failures ? `${failures} failed automation/email event${failures === 1 ? "" : "s"} in the last 24 hours.` : "No failed automation or email events in the last 24 hours.", errorsStarted, { failedAutomations: failedRuns.count || 0, failedEmails: failedEmails.count || 0, excludedTestFailures: testFailures }));
 
   const deploymentStarted = performance.now();
   const deploymentMeta = { environment: process.env.VERCEL_ENV || "local", commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) || null, url: process.env.VERCEL_URL || null };
@@ -90,7 +93,7 @@ export async function buildHealth(supabase: any, verifySmtpNow: boolean) {
     : check("deployment", "Vercel deployment", "warning", "Vercel deployment metadata is not present in this environment.", deploymentStarted, deploymentMeta));
 
   const overall: "healthy" | "degraded" | "critical" = checks.some((item) => item.status === "failed") ? "critical" : checks.some((item) => item.status === "warning" || item.status === "unavailable") ? "degraded" : "healthy";
-  return { overall, checks, summary: { checkedAt: new Date().toISOString(), failureCount24h: failures, automation: automationRow || null } };
+  return { overall, checks, summary: { checkedAt: new Date().toISOString(), failureCount24h: failures, excludedTestFailureCount24h: testFailures, automation: automationRow || null } };
 }
 
 export async function GET() {

@@ -14,8 +14,8 @@ export async function GET(request: Request) {
   const [{ data: runs, error: runsError }, { data: incidents, error: incidentsError }, { data: failedRuns, error: failedRunsError }, { data: failedEmails, error: failedEmailsError }] = await Promise.all([
     access.supabase.from("studio_system_health_runs").select("overall,created_at").gte("created_at", since).order("created_at", { ascending: true }).limit(2000),
     access.supabase.from("studio_system_health_incidents").select("severity,status,component,first_seen_at,last_seen_at,resolved_at").gte("created_at", since).order("created_at", { ascending: true }).limit(500),
-    access.supabase.from("studio_automation_runs").select("job_name,status,created_at").eq("status", "failed").gte("created_at", since).limit(1000),
-    access.supabase.from("studio_email_events").select("kind,status,created_at").in("status", ["failed", "dead_letter"]).gte("created_at", since).limit(1000),
+    access.supabase.from("studio_automation_runs").select("job_name,status,created_at").eq("status", "failed").eq("is_test", false).gte("created_at", since).limit(1000),
+    access.supabase.from("studio_email_events").select("kind,status,created_at").in("status", ["failed", "dead_letter"]).eq("is_test", false).gte("created_at", since).limit(1000),
   ]);
   if (runsError || incidentsError || failedRunsError || failedEmailsError) return Response.json({ error: "System health analytics are unavailable." }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
 
