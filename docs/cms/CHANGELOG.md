@@ -1,5 +1,12 @@
 # CMS changelog
 
+## 0.0.27 — 2026-10-21
+
+### Fixed
+
+- Catalog audit writes are awaited before mutation responses complete, preventing serverless runtimes from dropping audit events.
+- Catalog audit failures are logged with the action and entity id for production diagnosis.
+
 ## 0.0.26 — 2026-10-21
 
 ### Fixed

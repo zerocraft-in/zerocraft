@@ -31,6 +31,14 @@ function revalidateStoreCatalog(slug?: string) {
   if (slug) revalidatePath(`/store/product/${slug}`);
 }
 
+async function recordCatalogAudit(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  entry: { actor_id: string; action: string; entity_type: string; entity_id: string | null; metadata: Record<string, unknown> },
+) {
+  const { error } = await supabase.from("store_audit_logs").insert(entry);
+  if (error) console.error("Catalog audit log write failed", { action: entry.action, entityId: entry.entity_id, error });
+}
+
 function buildCatalogHealth(categories: any[], products: any[]) {
   const activeCategories = categories.filter((category) => category.is_active);
   const activeSubcategories = activeCategories.flatMap((category) => (category.store_subcategories || []).filter((subcategory: any) => subcategory.is_active));
@@ -189,7 +197,7 @@ export async function POST(request: Request) {
     const { data: created, error } = await supabase.from("store_subcategories").insert({ category_id: subcategory.category_id, name: subcategory.name.trim(), slug: subcategory.slug, description: subcategory.description || "", image_url: subcategory.image_url || "", sort_order: subcategory.sort_order ?? 0, is_active: subcategory.is_active ?? true }).select("id").single();
     if (!error) {
       revalidateStoreCatalog();
-      void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "catalog.subcategory_created", entity_type: "store_subcategory", entity_id: created.id, metadata: { name: subcategory.name.trim(), slug: subcategory.slug, category_id: subcategory.category_id } });
+      await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.subcategory_created", entity_type: "store_subcategory", entity_id: created.id, metadata: { name: subcategory.name.trim(), slug: subcategory.slug, category_id: subcategory.category_id } });
     }
     return error ? jsonError(error.code === "23505" ? "That subcategory slug already exists under this category." : "Subcategory could not be created.", 400) : Response.json({ id: created.id }, { status: 201 });
   }
@@ -199,7 +207,7 @@ export async function POST(request: Request) {
     const { data: created, error } = await supabase.from("store_categories").insert({ name: category.name.trim(), slug: category.slug, description: category.description || "", image_url: category.image_url || "", is_active: category.is_active ?? true }).select("id").single();
     if (!error) {
       revalidateStoreCatalog();
-      void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "catalog.category_created", entity_type: "store_category", entity_id: created.id, metadata: { name: category.name.trim(), slug: category.slug, is_active: category.is_active ?? true } });
+      await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.category_created", entity_type: "store_category", entity_id: created.id, metadata: { name: category.name.trim(), slug: category.slug, is_active: category.is_active ?? true } });
     }
     return error ? jsonError(error.code === "23505" ? "That category slug already exists." : "Category could not be created.", 400) : Response.json({ id: created.id }, { status: 201 });
   }
@@ -244,7 +252,7 @@ export async function PATCH(request: Request) {
       return jsonError("Category items could not be updated atomically.", 503);
     }
     revalidateStoreCatalog();
-    void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "catalog.items_assigned", entity_type: "store_category", entity_id: body.id, metadata: { subcategory_id: subcategoryId, product_count: body.product_ids.length } });
+    await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.items_assigned", entity_type: "store_category", entity_id: body.id, metadata: { subcategory_id: subcategoryId, product_count: body.product_ids.length } });
     return Response.json({ ok: true });
   }
   if (!body.id || !body.data || typeof body.data !== "object") return jsonError("A record and its changes are required.");
@@ -255,7 +263,7 @@ export async function PATCH(request: Request) {
     const { error } = await supabase.from("store_subcategories").update({ category_id: subcategory.category_id, name: subcategory.name.trim(), slug: subcategory.slug, description: subcategory.description || "", image_url: subcategory.image_url || "", sort_order: subcategory.sort_order ?? 0, is_active: subcategory.is_active ?? true, updated_at: new Date().toISOString() }).eq("id", body.id);
     if (!error) {
       revalidateStoreCatalog();
-      void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "catalog.subcategory_updated", entity_type: "store_subcategory", entity_id: body.id, metadata: { name: subcategory.name.trim(), slug: subcategory.slug, category_id: subcategory.category_id, is_active: subcategory.is_active ?? true } });
+      await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.subcategory_updated", entity_type: "store_subcategory", entity_id: body.id, metadata: { name: subcategory.name.trim(), slug: subcategory.slug, category_id: subcategory.category_id, is_active: subcategory.is_active ?? true } });
     }
     return error ? jsonError(error.code === "23505" ? "That subcategory slug already exists under this category." : "Subcategory could not be updated.") : Response.json({ ok: true });
   }
@@ -265,7 +273,7 @@ export async function PATCH(request: Request) {
     const { error } = await supabase.from("store_categories").update({ name: category.name.trim(), slug: category.slug, description: category.description || "", image_url: category.image_url || "", is_active: category.is_active ?? true, updated_at: new Date().toISOString() }).eq("id", body.id);
     if (!error) {
       revalidateStoreCatalog(category.slug);
-      void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "catalog.category_updated", entity_type: "store_category", entity_id: body.id, metadata: { name: category.name.trim(), slug: category.slug, is_active: category.is_active ?? true } });
+      await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.category_updated", entity_type: "store_category", entity_id: body.id, metadata: { name: category.name.trim(), slug: category.slug, is_active: category.is_active ?? true } });
     }
     return error ? jsonError(error.code === "23505" ? "That category slug already exists." : "Category could not be updated.") : Response.json({ ok: true });
   }
@@ -293,7 +301,7 @@ export async function DELETE(request: Request) {
   const { error } = await supabase.from(table).update(changes).eq("id", body.id);
   if (!error) {
     revalidateStoreCatalog();
-    void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: `catalog.${body.entity}_archived`, entity_type: body.entity === "category" ? "store_category" : body.entity === "subcategory" ? "store_subcategory" : "store_product", entity_id: body.id, metadata: { archived: true } });
+    await recordCatalogAudit(supabase, { actor_id: user.id, action: `catalog.${body.entity}_archived`, entity_type: body.entity === "category" ? "store_category" : body.entity === "subcategory" ? "store_subcategory" : "store_product", entity_id: body.id, metadata: { archived: true } });
   }
   return error ? jsonError("The record could not be archived.") : Response.json({ ok: true, archived: true });
 }
