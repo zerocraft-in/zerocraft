@@ -9,6 +9,10 @@
 
 - Remove `subcategory_id` from the atomic product RPC payload; taxonomy persistence already handles it separately and the live RPC allowlist correctly rejects it.
 
+## 0.0.32 — 2026-10-21
+
+- Align the atomic product payload with the live RPC allowlist by persisting design-origin and rights metadata through the existing taxonomy update step.
+
 ## 0.0.29 — 2026-10-21
 
 ### Added

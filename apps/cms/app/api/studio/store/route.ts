@@ -152,8 +152,6 @@ async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createC
   const currency = (product.currency_code || product.currency || "INR").toUpperCase();
   const atomicProduct: Record<string, unknown> = {
     category_id: product.category_id || null,
-    design_origin: product.design_origin || "original_zerocraft",
-    rights_status: product.rights_status || "not_applicable",
     title: product.title!.trim(),
     slug: product.slug,
     description: product.description || "",
