@@ -20,3 +20,27 @@ export async function renderSystemHealthPdf(runs: any[], incidents: any[], label
   document.end();
   return finished;
 }
+
+export async function renderWeeklyReliabilityReportPdf(input: { notifications: any[]; runs: any[]; incidents: any[]; sla: any }) {
+  const document = new PDFDocument({ size: "A4", margin: 48, info: { Title: "ZeroCraft weekly reliability report", Author: "ZeroCraft CMS" } });
+  const chunks: Buffer[] = [];
+  document.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+  const finished = new Promise<Buffer>((resolve) => document.on("end", () => resolve(Buffer.concat(chunks))));
+  const metrics = input.sla?.metrics || {};
+  document.fontSize(10).fillColor("#666").text("ZEROCRAFT CMS · WEEKLY RELIABILITY");
+  document.moveDown(.7).fontSize(24).fillColor("#171717").text("Weekly reliability report");
+  document.moveDown(.3).fontSize(10).fillColor("#666").text(`Generated ${new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" }).format(new Date())}`);
+  document.moveDown().fontSize(12).fillColor("#171717").text(`Reliability score: ${metrics.reliabilityScore ?? "—"}%    Uptime: ${Number(metrics.uptime || 0).toFixed(2)}%    Failure rate: ${Number(metrics.failureRate || 0).toFixed(2)}%    MTTR: ${Number(metrics.mttrMinutes || 0).toFixed(1)} min`);
+  document.moveDown().fontSize(15).text("SLA status");
+  const breaches = input.sla?.breaches || [];
+  document.moveDown(.3).fontSize(10).fillColor(breaches.length ? "#b45309" : "#15803d").text(breaches.length ? `${breaches.length} active SLA breach${breaches.length === 1 ? "" : "es"}` : "No active SLA breaches");
+  for (const breach of breaches) document.moveDown(.2).fontSize(9).fillColor("#444").text(`• ${breach.label}: ${breach.detail}`);
+  document.moveDown().fontSize(15).fillColor("#171717").text("Operational summary");
+  document.moveDown(.3).fontSize(10).fillColor("#444").text(`Health runs: ${input.runs.length}    Incidents: ${input.incidents.length}    Notifications: ${input.notifications.length}`);
+  document.moveDown().fontSize(15).fillColor("#171717").text("Recent incidents");
+  for (const incident of input.incidents.slice(0, 20)) document.moveDown(.25).fontSize(9).fillColor("#444").text(`${String(incident.status).toUpperCase()} · ${incident.component} · ${new Date(incident.last_seen_at).toLocaleString("en-IN")}\n${incident.latest_message || ""}`);
+  if (!input.incidents.length) document.moveDown(.3).fontSize(10).fillColor("#666").text("No incidents recorded during this report period.");
+  document.fontSize(8).fillColor("#888").text("ZeroCraft CMS · Internal operational report", 48, 790, { align: "center", width: 499 });
+  document.end();
+  return finished;
+}

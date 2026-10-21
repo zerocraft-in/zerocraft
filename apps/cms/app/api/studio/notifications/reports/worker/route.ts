@@ -1,6 +1,7 @@
-import { renderNotificationReportPdf } from "@/lib/notifications/report-pdf";
 import { sendTrackedEmail } from "@/lib/email/delivery";
 import { createServiceClient } from "@/lib/supabase-service";
+import { evaluateSystemHealthSla } from "@/lib/system-health-sla";
+import { renderWeeklyReliabilityReportPdf } from "@/lib/system-health-report-pdf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,15 +20,18 @@ export async function POST(request: Request) {
   const { data: claimed } = await supabase.from("studio_notification_report_runs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", queued.id).eq("status", "queued").select("id,period_start,period_end").maybeSingle();
   if (!claimed) return Response.json({ ok: true, status: "already-claimed" });
   try {
-    const [{ data: settings }, { data: rows }] = await Promise.all([
+    const [{ data: settings }, { data: rows }, { data: healthRuns }, { data: healthIncidents }] = await Promise.all([
       supabase.from("studio_notification_report_settings").select("recipient_roles").eq("job_name", JOB_NAME).maybeSingle(),
       supabase.from("notifications").select("created_at,title,message,type,read").gte("created_at", claimed.period_start).lte("created_at", claimed.period_end).order("created_at", { ascending: false }).limit(500),
+      supabase.from("studio_system_health_runs").select("overall,created_at").gte("created_at", claimed.period_start).lte("created_at", claimed.period_end).order("created_at", { ascending: false }).limit(500),
+      supabase.from("studio_system_health_incidents").select("status,severity,component,last_seen_at,latest_message").gte("created_at", claimed.period_start).lte("created_at", claimed.period_end).order("last_seen_at", { ascending: false }).limit(200),
     ]);
     const { data: recipients } = await supabase.from("profiles").select("email").in("role", settings?.recipient_roles?.length ? settings.recipient_roles : ["admin"]);
     const validRecipients = (recipients || []).filter((item): item is { email: string } => Boolean(item.email));
-    const pdf = await renderNotificationReportPdf(rows || [], "Last 7 days · Scheduled report");
+    const sla = await evaluateSystemHealthSla({ supabase, notify: true });
+    const pdf = await renderWeeklyReliabilityReportPdf({ notifications: rows || [], runs: healthRuns || [], incidents: healthIncidents || [], sla });
     for (const recipient of validRecipients) {
-      await sendTrackedEmail({ supabase, actorId: null, kind: "weekly_notification_report", message: { to: recipient.email, subject: "ZeroCraft weekly notification report", text: "Attached is the scheduled ZeroCraft notification report for the last 7 days.", html: "<div style=\"font-family:Arial,sans-serif;line-height:1.6;color:#18181b\"><h2>ZeroCraft weekly notification report</h2><p>The last 7 days of notification activity are attached as a PDF.</p></div>", attachments: [{ filename: "zerocraft-weekly-notifications.pdf", content: pdf, contentType: "application/pdf" }] }, metadata: { runId: claimed.id, trigger: "supabase-pg-net" } });
+      await sendTrackedEmail({ supabase, actorId: null, kind: "weekly_reliability_report", message: { to: recipient.email, subject: "ZeroCraft weekly reliability report", text: "Attached is the scheduled ZeroCraft weekly notification and reliability report.", html: "<div style=\"font-family:Arial,sans-serif;line-height:1.6;color:#18181b\"><h2>ZeroCraft weekly reliability report</h2><p>Attached are the last 7 days of notification activity, health history, SLA metrics, and incident status.</p></div>", attachments: [{ filename: "zerocraft-weekly-reliability.pdf", content: pdf, contentType: "application/pdf" }] }, metadata: { runId: claimed.id, trigger: "supabase-pg-net", report: "reliability" } });
     }
     await supabase.from("studio_notification_report_runs").update({ status: "succeeded", finished_at: new Date().toISOString(), recipient_count: validRecipients.length, notification_count: rows?.length || 0 }).eq("id", claimed.id);
     return Response.json({ ok: true, status: "succeeded", runId: claimed.id, recipientCount: validRecipients.length });

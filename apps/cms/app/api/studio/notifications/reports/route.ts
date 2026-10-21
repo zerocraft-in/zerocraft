@@ -1,6 +1,7 @@
 import { requireStudioPermission } from "@/lib/studio-auth";
-import { renderNotificationReportPdf } from "@/lib/notifications/report-pdf";
 import { sendTrackedEmail } from "@/lib/email/delivery";
+import { evaluateSystemHealthSla } from "@/lib/system-health-sla";
+import { renderWeeklyReliabilityReportPdf } from "@/lib/system-health-report-pdf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,18 +39,21 @@ export async function POST(request: Request) {
   if (access.role !== "admin") return Response.json({ error: "Only admins can send weekly reports." }, { status: 403 });
   const now = new Date();
   const periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const [{ data: rows }, { data: settings }] = await Promise.all([
+  const [{ data: rows }, { data: settings }, { data: healthRuns }, { data: healthIncidents }] = await Promise.all([
     access.supabase.from("notifications").select("created_at,title,message,type,read").eq("recipient_id", access.user.id).gte("created_at", periodStart.toISOString()).lte("created_at", now.toISOString()).order("created_at", { ascending: false }).limit(500),
     access.supabase.from("studio_notification_report_settings").select("recipient_roles").eq("job_name", JOB_NAME).maybeSingle(),
+    access.supabase.from("studio_system_health_runs").select("overall,created_at").gte("created_at", periodStart.toISOString()).lte("created_at", now.toISOString()).order("created_at", { ascending: false }).limit(500),
+    access.supabase.from("studio_system_health_incidents").select("status,severity,component,last_seen_at,latest_message").gte("created_at", periodStart.toISOString()).lte("created_at", now.toISOString()).order("last_seen_at", { ascending: false }).limit(200),
   ]);
   const { data: recipients } = await access.supabase.from("profiles").select("id,email,role").in("role", settings?.recipient_roles?.length ? settings.recipient_roles : ["admin"]);
   const validRecipients = (recipients || []).filter((item): item is { id: string; email: string; role: string } => Boolean(item.email));
   const { data: run, error: runError } = await access.supabase.from("studio_notification_report_runs").insert({ job_name: JOB_NAME, status: "running", scheduled_for: now.toISOString(), period_start: periodStart.toISOString(), period_end: now.toISOString(), started_at: now.toISOString(), triggered_by: access.user.id, recipient_count: validRecipients.length, notification_count: rows?.length || 0 }).select("id").single();
   if (runError || !run) return Response.json({ error: "Could not create report run." }, { status: 500 });
   try {
-    const pdf = await renderNotificationReportPdf(rows || [], "Last 7 days · Manual report");
+    const sla = await evaluateSystemHealthSla({ supabase: access.supabase, actorId: access.user.id, notify: true });
+    const pdf = await renderWeeklyReliabilityReportPdf({ notifications: rows || [], runs: healthRuns || [], incidents: healthIncidents || [], sla });
     for (const recipient of validRecipients) {
-      await sendTrackedEmail({ supabase: access.supabase, actorId: access.user.id, kind: "weekly_notification_report", message: { to: recipient.email, subject: "ZeroCraft weekly notification report", text: `Attached is the ZeroCraft notification report for ${periodStart.toISOString().slice(0, 10)} to ${now.toISOString().slice(0, 10)}.`, html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b"><h2>ZeroCraft weekly notification report</h2><p>The last 7 days of notification activity are attached as a PDF.</p></div>`, attachments: [{ filename: "zerocraft-weekly-notifications.pdf", content: pdf, contentType: "application/pdf" }] }, metadata: { runId: run.id } });
+      await sendTrackedEmail({ supabase: access.supabase, actorId: access.user.id, kind: "weekly_reliability_report", message: { to: recipient.email, subject: "ZeroCraft weekly reliability report", text: `Attached is the ZeroCraft reliability report for ${periodStart.toISOString().slice(0, 10)} to ${now.toISOString().slice(0, 10)}.`, html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b"><h2>ZeroCraft weekly reliability report</h2><p>The last 7 days of notification activity, health history, SLA metrics, and incidents are attached as a PDF.</p></div>`, attachments: [{ filename: "zerocraft-weekly-reliability.pdf", content: pdf, contentType: "application/pdf" }] }, metadata: { runId: run.id, report: "reliability" } });
     }
     await access.supabase.from("studio_notification_report_runs").update({ status: "succeeded", finished_at: new Date().toISOString() }).eq("id", run.id);
     return Response.json({ ok: true, runId: run.id, recipientCount: validRecipients.length, notificationCount: rows?.length || 0 });
