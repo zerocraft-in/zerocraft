@@ -1,5 +1,10 @@
 # CMS changelog
 
+## 0.0.30 — 2026-10-21
+
+- Expose safe product validation details in the CMS editor while retaining generic handling for unknown database errors.
+- Add server-side diagnostics for failed atomic product saves to speed up production QA without logging product payloads.
+
 ## 0.0.29 — 2026-10-21
 
 ### Added

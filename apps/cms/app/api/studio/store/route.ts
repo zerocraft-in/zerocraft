@@ -107,12 +107,43 @@ function validateProductInput(product: ProductInput) {
 
 function atomicError(error: { code?: string; message?: string } | null) {
   const message = error?.message || "Product could not be saved.";
+  console.error("Atomic product save failed", { code: error?.code, message });
   if (message.includes("STALE_VERSION") || error?.code === "40001") return jsonError("This product changed in another session. Reload it and try again.", 409);
   if (message.includes("INVENTORY_RESERVED")) return jsonError("A variant with active fulfillment cannot be archived.", 409);
   if (message.includes("DUPLICATE_SKU") || message.includes("CONFLICT") || error?.code === "23505") return jsonError("A product, variant SKU, option, or combination already exists.", 409);
   if (message.includes("NOT_FOUND") || error?.code === "P0002") return jsonError("The product no longer exists. Refresh the catalog.", 404);
   if (message.includes("FORBIDDEN") || error?.code === "42501") return jsonError("Studio access required.", 403);
-  if (message.includes("VALIDATION_ERROR") || error?.code === "22023") return jsonError("Check the product, currency, price, variants, and inventory values.", 400);
+  if (message.includes("VALIDATION_ERROR") || error?.code === "22023") {
+    const detail = message.split("VALIDATION_ERROR:")[1]?.trim();
+    const safeDetails = new Set([
+      "action must be create or edit.",
+      "invalid JSON payload.",
+      "payload exceeds limits.",
+      "unsupported product field.",
+      "unsupported or malformed variant field.",
+      "unsupported option field.",
+      "create identity/version must be null.",
+      "edit requires expected_version.",
+      "invalid product payload.",
+      "invalid INR price.",
+      "invalid INR compare-at price.",
+      "invalid INR compare-at relationship.",
+      "INR compare-at paise is required.",
+      "invalid variant payload.",
+      "invalid INR variant paise.",
+      "variant price exceeds supported range.",
+      "option arrays must contain strings.",
+      "option values must be strings or arrays.",
+      "digital variants cannot receive inventory.",
+      "new physical variants require inventory.",
+      "existing inventory cannot be changed here.",
+      "invalid inventory initialization.",
+      "invalid collection.",
+      "category is invalid.",
+      "inventory location is unavailable.",
+    ]);
+    return jsonError(detail && safeDetails.has(detail) ? detail : "Check the product, currency, price, variants, and inventory values.", 400);
+  }
   return jsonError("Product could not be saved.", 400);
 }
 
