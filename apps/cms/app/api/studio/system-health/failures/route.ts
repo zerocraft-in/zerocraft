@@ -10,10 +10,16 @@ function errorResponse(message: string, status = 400) {
   return Response.json({ error: message }, { status, headers: { "Cache-Control": "private, no-store" } });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const access = await requireStudioPermission("system_health.read");
   if (!access.ok) return access.response;
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const url = new URL(request.url);
+  const kind = url.searchParams.get("kind");
+  const selectedStatus = url.searchParams.get("status");
+  const search = (url.searchParams.get("q") || "").trim().toLowerCase();
+  const daysValue = Number(url.searchParams.get("days") || 1);
+  const days = Number.isFinite(daysValue) ? Math.min(Math.max(daysValue, 1), 90) : 1;
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const [{ data: runs, error: runsError }, { data: emails, error: emailsError }, { data: acknowledgements, error: acknowledgementsError }] = await Promise.all([
     access.supabase.from("studio_automation_runs").select("id,job_name,trigger,status,started_at,finished_at,error_message,created_at").eq("status", "failed").gte("created_at", since).order("created_at", { ascending: false }).limit(100),
     access.supabase.from("studio_email_events").select("id,kind,recipient,subject,status,attempts,last_error,next_attempt_at,created_at").in("status", ["failed", "dead_letter"]).gte("created_at", since).order("created_at", { ascending: false }).limit(100),
@@ -22,9 +28,13 @@ export async function GET() {
   if (runsError || emailsError || acknowledgementsError) return errorResponse("Recent failure details are unavailable. Apply the system-health acknowledgement migration first.", 503);
   const statusByKey = new Map((acknowledgements || []).map((item) => [`${item.failure_type}:${item.failure_id}`, item]));
   const failures = [
-    ...(runs || []).map((run) => ({ id: run.id, kind: "automation" as const, title: run.job_name, detail: `${run.trigger} run`, status: statusByKey.get(`automation:${run.id}`)?.status || "open", error: run.error_message || "Automation failed without an error message.", createdAt: run.created_at, startedAt: run.started_at, finishedAt: run.finished_at, retryable: true, metadata: { jobName: run.job_name, trigger: run.trigger } })),
-    ...(emails || []).map((event) => ({ id: event.id, kind: "email" as const, title: event.kind, detail: event.recipient, status: statusByKey.get(`email:${event.id}`)?.status || "open", error: event.last_error || "Email delivery failed.", createdAt: event.created_at, startedAt: event.created_at, finishedAt: null, retryable: event.status === "failed", metadata: { subject: event.subject, attempts: event.attempts, nextAttemptAt: event.next_attempt_at } })),
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    ...(kind !== "email" ? (runs || []).map((run) => ({ id: run.id, kind: "automation" as const, title: run.job_name, detail: `${run.trigger} run`, status: statusByKey.get(`automation:${run.id}`)?.status || "open", error: run.error_message || "Automation failed without an error message.", createdAt: run.created_at, startedAt: run.started_at, finishedAt: run.finished_at, retryable: true, metadata: { jobName: run.job_name, trigger: run.trigger } })) : []),
+    ...(kind !== "automation" ? (emails || []).map((event) => ({ id: event.id, kind: "email" as const, title: event.kind, detail: event.recipient, status: statusByKey.get(`email:${event.id}`)?.status || "open", error: event.last_error || "Email delivery failed.", createdAt: event.created_at, startedAt: event.created_at, finishedAt: null, retryable: event.status === "failed", metadata: { subject: event.subject, attempts: event.attempts, nextAttemptAt: event.next_attempt_at } })) : []),
+  ].filter((failure) => {
+    const matchesStatus = !selectedStatus || selectedStatus === "all" || failure.status === selectedStatus;
+    const searchable = `${failure.title} ${failure.detail} ${failure.error}`.toLowerCase();
+    return matchesStatus && (!search || searchable.includes(search));
+  }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   return Response.json({ failures }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
