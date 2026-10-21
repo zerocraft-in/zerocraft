@@ -1,5 +1,11 @@
 # CMS changelog
 
+## 0.0.26 — 2026-10-21
+
+### Fixed
+
+- Catalog category, subcategory, assignment, and archive mutations now write actor-scoped audit-log entries.
+
 ## 0.0.25 — 2026-10-21
 
 ### Added
