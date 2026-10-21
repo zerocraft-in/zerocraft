@@ -173,6 +173,9 @@ button, input, select, textarea { font: inherit; }
 .zeropop-page-panel { padding: clamp(22px, 4vw, 48px); border: 1px solid rgb(243 234 211 / 18%); background: rgb(22 16 12 / 82%); box-shadow: 8px 8px 0 rgb(179 18 27 / 45%); }
 .zeropop-page-panel h2 { margin: 0 0 16px; color: var(--zeropop-paper); font: 400 clamp(28px, 4vw, 52px)/.95 Anton, Impact, sans-serif; text-transform: uppercase; }
 .zeropop-page-panel p { color: rgb(243 234 211 / 70%); line-height: 1.7; }
+.zeropop-product-detail { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(16px, 3vw, 32px); align-items: stretch; }
+.zeropop-product-detail__media { position: relative; min-height: 420px; overflow: hidden; border: 1px solid rgb(243 234 211 / 18%); background: #17110d; }
+.zeropop-product-detail__media img { object-fit: cover; }
 .zeropop-page-link { display: inline-flex; margin-top: 20px; padding: 12px 18px; background: var(--zeropop-red); color: #fff; text-decoration: none; font: 700 11px/1 "Space Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
 .zeropop-page-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .zeropop-page-card { padding: 22px; border: 1px solid rgb(243 234 211 / 16%); background: #17110d; }
@@ -358,6 +361,8 @@ button, input, select, textarea { font: inherit; }
   .zeropop-page-brand img, .zeropop-page-brand svg { width: 112px; }
   .zeropop-page-actions a { width: 32px; height: 32px; }
   .zeropop-page-grid { grid-template-columns: 1fr; }
+  .zeropop-product-detail { grid-template-columns: 1fr; }
+  .zeropop-product-detail__media { min-height: min(82vw, 520px); }
   .zeropop-page-footer { flex-direction: column; }
   .zeropop-shop-meta { flex-direction: column; gap: 8px; }
 }
