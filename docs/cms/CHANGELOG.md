@@ -1,5 +1,27 @@
 # CMS changelog
 
+## 0.0.34 — 2026-10-21
+
+### Catalog and operations
+
+- Added live catalog readiness remediation with missing-media, variant, taxonomy, rights, duplicate-slug, and duplicate-SKU issue counts.
+- Corrected duplicate SKU and slug issue mapping so remediation filters open the affected products.
+- Completed product variant and inventory-location integration with durable inventory audit events.
+- Enforced catalog and inventory permission boundaries in the CMS UI and APIs.
+
+### Release verification
+
+- Production QA completed for catalog, inventory, permissions, notifications, audit logging, and system health.
+- `npm run verify:release` passed: 33 migration files, RBAC static checks, and CMS typecheck.
+- Production smoke checks passed for public login, protected redirects/APIs, and worker secret boundary.
+- QA product and temporary subcategory were restored/archived after controlled testing.
+
+### Release
+
+- Release candidate: `0.0.34`
+- Release commit: `4ede961`
+- Production URL: https://admin.zerocraft.in
+
 ## 0.0.30 — 2026-10-21
 
 - Expose safe product validation details in the CMS editor while retaining generic handling for unknown database errors.
