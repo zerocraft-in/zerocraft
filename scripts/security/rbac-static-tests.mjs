@@ -37,6 +37,7 @@ for (const [relative, permission] of [
   ["apps/cms/app/api/studio/automations/health/route.ts", "automations.read"],
   ["apps/cms/app/api/studio/alerts/low-stock/route.ts", "inventory.read"],
   ["apps/cms/app/api/studio/notifications/history/route.ts", "notifications.read"],
+  ["apps/cms/app/api/studio/system-health/route.ts", "system_health.read"],
 ]) {
   const source = read(relative);
   expect(source.includes("requireStudioPermission"), `${relative} is not permission guarded`);
@@ -49,5 +50,6 @@ expect(shell.includes("/api/studio/me"), "Studio shell does not load effective p
 expect(shell.includes("router.replace(\"/\")"), "Studio shell does not guard direct unauthorized routes");
 expect(team.includes("/api/studio/team/permissions"), "Team permission editor API is not connected");
 expect(team.includes("Reset to role defaults"), "Team permission reset action is missing");
+expect(read("apps/cms/app/system-health/page.tsx").includes("Run diagnostics"), "System Health diagnostics UI is missing");
 
 console.log("RBAC static security tests passed: schema, RLS, API guards, navigation, and admin UI.");

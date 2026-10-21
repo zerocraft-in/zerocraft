@@ -175,7 +175,7 @@ export function getAdminRoutePermission(pathname: string) {
 export function getAdminNavigationForRole(role: string, permissions?: readonly string[] | null): readonly AdminNavigationGroup[] {
   if (role === "admin" && permissions == null) return ADMIN_NAVIGATION;
   const allowedSystemLinks: AdminRoute[] = role === "manager"
-    ? [ADMIN_ROUTES.system.emailEvents, ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications]
+    ? [ADMIN_ROUTES.system.emailEvents, ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications, ADMIN_ROUTES.system.systemHealth]
     : [ADMIN_ROUTES.system.automations, ADMIN_ROUTES.system.notifications];
   const roleNavigation = role === "admin" ? ADMIN_NAVIGATION : ADMIN_NAVIGATION.flatMap((group) => {
     if (group.label !== "System") {
