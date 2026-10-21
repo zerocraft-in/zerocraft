@@ -1,0 +1,24 @@
+import { buildHealth } from "@/app/api/studio/system-health/route";
+import { createServiceClient } from "@/lib/supabase-service";
+import { recordHealthSnapshot } from "@/lib/system-health-history";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function authorized(request: Request) {
+  const configured = [process.env.CRON_SECRET, process.env.WEEKLY_REPORT_WORKER_SECRET].filter(Boolean);
+  const header = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || request.headers.get("x-cron-secret") || "";
+  return configured.length > 0 && configured.some((secret) => secret === header);
+}
+
+export async function GET(request: Request) {
+  if (!authorized(request)) return Response.json({ error: "Unauthorized worker request" }, { status: 401 });
+  try {
+    const service = createServiceClient();
+    const health = await buildHealth(service, true);
+    await recordHealthSnapshot({ supabase: service, health, trigger: "scheduled" });
+    return Response.json({ ok: true, overall: health.overall, checkedAt: health.summary.checkedAt });
+  } catch (error) {
+    return Response.json({ error: error instanceof Error ? error.message : "System health worker failed" }, { status: 500 });
+  }
+}

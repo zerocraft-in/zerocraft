@@ -3,6 +3,10 @@
     {
       "path": "/api/studio/notifications/reports/worker",
       "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/studio/system-health/worker",
+      "schedule": "0 * * * *"
     }
   ]
 }

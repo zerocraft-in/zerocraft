@@ -69,6 +69,13 @@ export function automationFailureEmail(input: {
   return { to: input.recipient, subject, text, html };
 }
 
+export function systemHealthIncidentEmail(input: { recipient: string; severity: string; component: string; message: string; openedAt: string }) {
+  const subject = `ZeroCraft system health ${input.severity}: ${input.component}`;
+  const text = `ZeroCraft CMS system health alert\n\nSeverity: ${input.severity}\nComponent: ${input.component}\nDetected: ${dateLabel(input.openedAt)}\nDetails: ${input.message}\n\nOpen CMS → System → System health to review the incident.`;
+  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b;max-width:620px;margin:0 auto;padding:28px"><p style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#666">ZeroCraft CMS · Reliability alert</p><h2 style="margin:18px 0 8px">System health ${escapeHtml(input.severity)}</h2><p><strong>Component:</strong> ${escapeHtml(input.component)}<br/><strong>Detected:</strong> ${escapeHtml(dateLabel(input.openedAt))}</p><p style="padding:14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px"><strong>Details:</strong> ${escapeHtml(input.message)}</p><p>Open <strong>System → System health</strong> in ZeroCraft CMS to review the incident timeline.</p></div>`;
+  return { to: input.recipient, subject, text, html };
+}
+
 export function teamInvitationEmail(input: { recipient: string; role: string; inviteUrl: string; inviterName: string; expiresAt: string }) {
   const role = input.role || "staff";
   const inviter = input.inviterName || "A ZeroCraft administrator";

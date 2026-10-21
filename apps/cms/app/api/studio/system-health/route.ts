@@ -2,12 +2,13 @@ import { requireStudioPermission } from "@/lib/studio-auth";
 import { createServiceClient } from "@/lib/supabase-service";
 import { smtpConfigured, verifySmtpConnection } from "@/lib/email/smtp";
 import { isSameOrigin } from "@/lib/request-origin";
+import { loadHealthHistory, recordHealthSnapshot } from "@/lib/system-health-history";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type CheckStatus = "healthy" | "warning" | "failed" | "unavailable";
-type HealthCheck = { key: string; label: string; status: CheckStatus; message: string; latencyMs?: number; checkedAt: string; meta?: Record<string, unknown> };
+export type CheckStatus = "healthy" | "warning" | "failed" | "unavailable";
+export type HealthCheck = { key: string; label: string; status: CheckStatus; message: string; latencyMs?: number; checkedAt: string; meta?: Record<string, unknown> };
 
 function denied(message: string, status = 400) {
   return Response.json({ error: message }, { status, headers: { "Cache-Control": "private, no-store" } });
@@ -21,25 +22,25 @@ function check(key: string, label: string, status: CheckStatus, message: string,
   return { key, label, status, message, latencyMs: Math.round(performance.now() - started), checkedAt: new Date().toISOString(), ...(meta ? { meta } : {}) };
 }
 
-async function buildHealth(access: Extract<Awaited<ReturnType<typeof requireStudioPermission>>, { ok: true }>, verifySmtpNow: boolean) {
+export async function buildHealth(supabase: any, verifySmtpNow: boolean) {
   const checks: HealthCheck[] = [];
   const now = new Date();
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
 
   const dbStarted = performance.now();
-  const { data: permissionCheck, error: dbError } = await access.supabase.rpc("studio_has_permission", { p_permission: "system_health.read" });
-  checks.push(dbError || permissionCheck !== true
+  const { data: permissionCheck, error: dbError } = await supabase.from("studio_permissions").select("key").eq("key", "system_health.read").maybeSingle();
+  checks.push(dbError || !permissionCheck
     ? check("database", "Supabase database", "failed", "Database permission/RPC check failed.", dbStarted)
     : check("database", "Supabase database", "healthy", "Authenticated database and permission RPC are responding.", dbStarted));
 
   const schemaStarted = performance.now();
-  const { data: healthPermission, error: schemaError } = await access.supabase.from("studio_permissions").select("key").eq("key", "system_health.read").maybeSingle();
+  const { data: healthPermission, error: schemaError } = await supabase.from("studio_permissions").select("key").eq("key", "system_health.read").maybeSingle();
   checks.push(schemaError || !healthPermission
     ? check("schema", "Schema readiness", "failed", "Required RBAC/health schema is not available.", schemaStarted)
     : check("schema", "Schema readiness", "healthy", "RBAC and system-health schema are available.", schemaStarted));
 
   const automationStarted = performance.now();
-  const { data: automation, error: automationError } = await access.supabase.rpc("studio_get_automation_health");
+  const { data: automation, error: automationError } = await supabase.rpc("studio_get_automation_health");
   const automationRow = automation?.[0];
   checks.push(automationError
     ? check("cron", "Scheduled automations", "failed", "Automation health RPC failed.", automationStarted)
@@ -73,8 +74,8 @@ async function buildHealth(access: Extract<Awaited<ReturnType<typeof requireStud
   }
 
   const [failedRuns, failedEmails] = await Promise.all([
-    access.supabase.from("studio_automation_runs").select("id", { count: "exact", head: true }).eq("status", "failed").gte("created_at", dayAgo),
-    access.supabase.from("studio_email_events").select("id", { count: "exact", head: true }).eq("status", "failed").gte("created_at", dayAgo),
+    supabase.from("studio_automation_runs").select("id", { count: "exact", head: true }).eq("status", "failed").gte("created_at", dayAgo),
+    supabase.from("studio_email_events").select("id", { count: "exact", head: true }).eq("status", "failed").gte("created_at", dayAgo),
   ]);
   const failures = (failedRuns.count || 0) + (failedEmails.count || 0);
   const errorsStarted = performance.now();
@@ -88,22 +89,25 @@ async function buildHealth(access: Extract<Awaited<ReturnType<typeof requireStud
     ? check("deployment", "Vercel deployment", "healthy", `Running in ${process.env.VERCEL_ENV} on the current deployment.`, deploymentStarted, deploymentMeta)
     : check("deployment", "Vercel deployment", "warning", "Vercel deployment metadata is not present in this environment.", deploymentStarted, deploymentMeta));
 
-  const overall = checks.some((item) => item.status === "failed") ? "critical" : checks.some((item) => item.status === "warning" || item.status === "unavailable") ? "degraded" : "healthy";
+  const overall: "healthy" | "degraded" | "critical" = checks.some((item) => item.status === "failed") ? "critical" : checks.some((item) => item.status === "warning" || item.status === "unavailable") ? "degraded" : "healthy";
   return { overall, checks, summary: { checkedAt: new Date().toISOString(), failureCount24h: failures, automation: automationRow || null } };
 }
 
 export async function GET() {
   const access = await requireStudioPermission("system_health.read");
   if (!access.ok) return access.response;
-  const health = await buildHealth(access, false);
-  return Response.json(health, { headers: { "Cache-Control": "private, no-store" } });
+  const health = await buildHealth(access.supabase, false);
+  await recordHealthSnapshot({ supabase: serviceClient() || access.supabase, health, trigger: "dashboard", actorId: access.user.id });
+  const history = await loadHealthHistory(access.supabase);
+  return Response.json({ ...health, history }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return denied("Invalid request origin.", 403);
   const access = await requireStudioPermission("system_health.manage");
   if (!access.ok) return access.response;
-  const health = await buildHealth(access, true);
+  const health = await buildHealth(access.supabase, true);
+  await recordHealthSnapshot({ supabase: serviceClient() || access.supabase, health, trigger: "diagnostic", actorId: access.user.id });
   await access.supabase.from("store_audit_logs").insert({ actor_id: access.user.id, action: "system.health_diagnostics_run", entity_type: "system_health", entity_id: null, metadata: { overall: health.overall, checks: health.checks.map((item) => ({ key: item.key, status: item.status })) } });
   return Response.json({ ...health, diagnostics: true }, { headers: { "Cache-Control": "private, no-store" } });
 }
