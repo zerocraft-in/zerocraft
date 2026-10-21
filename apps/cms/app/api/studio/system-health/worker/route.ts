@@ -1,6 +1,7 @@
 import { buildHealth } from "@/app/api/studio/system-health/route";
 import { createServiceClient } from "@/lib/supabase-service";
 import { recordHealthSnapshot } from "@/lib/system-health-history";
+import { evaluateSystemHealthSla } from "@/lib/system-health-sla";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +18,8 @@ export async function GET(request: Request) {
     const service = createServiceClient();
     const health = await buildHealth(service, true);
     await recordHealthSnapshot({ supabase: service, health, trigger: "scheduled" });
-    return Response.json({ ok: true, overall: health.overall, checkedAt: health.summary.checkedAt });
+    const sla = await evaluateSystemHealthSla({ supabase: service });
+    return Response.json({ ok: true, overall: health.overall, checkedAt: health.summary.checkedAt, sla });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "System health worker failed" }, { status: 500 });
   }

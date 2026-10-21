@@ -76,6 +76,13 @@ export function systemHealthIncidentEmail(input: { recipient: string; severity: 
   return { to: input.recipient, subject, text, html };
 }
 
+export function systemHealthSlaEmail(input: { recipient: string; label: string; detail: string }) {
+  const subject = `ZeroCraft SLA breached: ${input.label}`;
+  const text = `ZeroCraft CMS SLA alert\n\n${input.label}\n${input.detail}\n\nOpen CMS → System → System health to review reliability analytics.`;
+  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b;max-width:620px;margin:0 auto;padding:28px"><p style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#666">ZeroCraft CMS · SLA alert</p><h2 style="margin:18px 0 8px">SLA threshold breached</h2><p><strong>${escapeHtml(input.label)}</strong></p><p style="padding:14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px">${escapeHtml(input.detail)}</p><p>Open <strong>System → System health</strong> in ZeroCraft CMS to review reliability analytics.</p></div>`;
+  return { to: input.recipient, subject, text, html };
+}
+
 export function teamInvitationEmail(input: { recipient: string; role: string; inviteUrl: string; inviterName: string; expiresAt: string }) {
   const role = input.role || "staff";
   const inviter = input.inviterName || "A ZeroCraft administrator";
