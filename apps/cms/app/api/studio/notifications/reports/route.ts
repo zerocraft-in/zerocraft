@@ -11,12 +11,13 @@ const JOB_NAME = "studio-weekly-notification-report";
 export async function GET() {
   const access = await requireStudioPermission("notifications.read");
   if (!access.ok) return access.response;
-  const [{ data: settings }, { data: runs, error }] = await Promise.all([
+  const [{ data: settings }, { data: runs, error }, { data: deliveryEvents }] = await Promise.all([
     access.supabase.from("studio_notification_report_settings").select("job_name,enabled,weekday,send_hour_utc,recipient_roles,updated_at").eq("job_name", JOB_NAME).maybeSingle(),
     access.supabase.from("studio_notification_report_runs").select("id,status,scheduled_for,period_start,period_end,started_at,finished_at,recipient_count,notification_count,error_message,created_at").eq("job_name", JOB_NAME).order("created_at", { ascending: false }).limit(20),
+    access.supabase.from("studio_email_events").select("id,recipient,status,attempts,last_error,sent_at,created_at,metadata").in("kind", ["weekly_reliability_report", "weekly_notification_report"]).order("created_at", { ascending: false }).limit(100),
   ]);
   if (error) return Response.json({ error: "Weekly report history is unavailable." }, { status: 503 });
-  return Response.json({ role: access.role, settings, runs: runs || [] }, { headers: { "Cache-Control": "private, no-store" } });
+  return Response.json({ role: access.role, settings, runs: runs || [], deliveryEvents: deliveryEvents || [] }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function PUT(request: Request) {
