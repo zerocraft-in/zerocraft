@@ -39,6 +39,8 @@ function buildCatalogHealth(categories: any[], products: any[]) {
   const activeSubcategories = activeCategories.flatMap((category) => (category.store_subcategories || []).filter((subcategory: any) => subcategory.is_active));
   const activeProducts = products.filter((product) => product.status === "active");
   const duplicateValues = (values: unknown[]) => [...new Set(values.filter(Boolean).map(String).filter((value, index, list) => list.indexOf(value) !== index))];
+  const duplicateSlugs = new Set(duplicateValues(products.map((product) => product.slug)));
+  const duplicateSkus = new Set(duplicateValues(products.map((product) => product.sku)));
   const categoryIds = new Set(activeCategories.map((category) => category.id));
   const subcategoryIds = new Map(activeSubcategories.map((subcategory: any) => [subcategory.id, subcategory.category_id]));
   return {
@@ -50,8 +52,8 @@ function buildCatalogHealth(categories: any[], products: any[]) {
     rightsReviewProducts: activeProducts.filter((product) => product.rights_status === "review_required").map((product) => product.slug),
     orphanedTaxonomy: activeProducts.filter((product) => !product.category_id || !product.subcategory_id || !categoryIds.has(product.category_id) || !subcategoryIds.has(product.subcategory_id) || subcategoryIds.get(product.subcategory_id) !== product.category_id).map((product) => product.slug),
     duplicateCategorySlugs: duplicateValues(categories.map((category) => category.slug)),
-    duplicateProductSlugs: duplicateValues(products.map((product) => product.slug)),
-    duplicateProductSkus: duplicateValues(products.map((product) => product.sku)),
+    duplicateProductSlugs: products.filter((product) => duplicateSlugs.has(String(product.slug))).map((product) => product.slug),
+    duplicateProductSkus: products.filter((product) => duplicateSkus.has(String(product.sku))).map((product) => product.slug),
   };
 }
 

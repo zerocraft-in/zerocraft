@@ -74,6 +74,7 @@ expect(inventory.includes("View stock locations and their current status."), "In
 expect(storeHealth.includes("qualityScore"), "Catalog quality score is missing");
 expect(storeHealth.includes("openHealthFilter"), "Catalog readiness drill-down is missing");
 expect(catalogApi.includes("validateProductIdentity"), "Duplicate product identity validation is missing");
+expect(catalogApi.includes("duplicateSkus.has(String(product.sku))") && catalogApi.includes(".map((product) => product.slug)"), "Duplicate SKU health results must map back to product slugs");
 expect(systemHealth.includes("Retry"), "System health failure retry action is missing");
 expect(systemHealth.includes("Resolve"), "System health failure resolve action is missing");
 
