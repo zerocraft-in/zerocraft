@@ -1,19 +1,11 @@
 import { createClient } from "@zerocraft/supabase/server";
 import { createServiceClient } from "@/lib/supabase-service";
 import { isSameOrigin } from "@/lib/request-origin";
+import { requireStudioPermission } from "@/lib/studio-auth";
 import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-async function studioClient() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { supabase: null, user: null, denied: Response.json({ error: "Studio access required." }, { status: 403 }) };
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!["admin", "manager", "staff"].includes(profile?.role || "")) return { supabase: null, user: null, denied: Response.json({ error: "Studio access required." }, { status: 403 }) };
-  return { supabase, user, denied: null };
-}
 
 function jsonError(message: string, status = 400) {
   return Response.json({ error: message }, { status, headers: { "Cache-Control": "private, no-store" } });
@@ -64,8 +56,9 @@ function buildCatalogHealth(categories: any[], products: any[]) {
 }
 
 export async function GET() {
-  const { supabase, user, denied } = await studioClient();
-  if (denied || !supabase) return denied;
+  const access = await requireStudioPermission("catalog.read");
+  if (!access.ok) return access.response;
+  const { supabase, user } = access;
   const [categories, products, recentOrders, orderSummary, inventoryLocations] = await Promise.all([
     supabase.from("store_categories").select("id,name,slug,description,image_url,is_active,created_at,updated_at,store_subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,created_at,updated_at)").order("name"),
     supabase.from("store_products").select("id,category_id,subcategory_id,design_origin,rights_status,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,write_version,created_at,updated_at,store_product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,store_inventory_levels(location_id,on_hand,reserved,reorder_point)),store_collection_products(collection:store_collections(id,name,slug,status))").order("updated_at", { ascending: false }),
@@ -223,8 +216,9 @@ async function saveProductTaxonomy(supabase: Awaited<ReturnType<typeof createCli
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, user, denied } = await studioClient();
-  if (denied || !supabase) return denied;
+  const access = await requireStudioPermission("catalog.manage");
+  if (!access.ok) return access.response;
+  const { supabase, user } = access;
   let body: { entity?: string; data?: CategoryInput | ProductInput };
   try { body = await request.json(); } catch { return jsonError("Invalid request body."); }
   const data = body.data || {};
@@ -265,8 +259,9 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, user, denied } = await studioClient();
-  if (denied || !supabase) return denied;
+  const access = await requireStudioPermission("catalog.manage");
+  if (!access.ok) return access.response;
+  const { supabase, user } = access;
   let body: { entity?: string; id?: string; data?: CategoryInput | ProductInput; product_ids?: unknown; subcategory_id?: unknown };
   try { body = await request.json(); } catch { return jsonError("Invalid request body."); }
   if (body.entity === "category_items") {
@@ -330,8 +325,9 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, user, denied } = await studioClient();
-  if (denied || !supabase) return denied;
+  const access = await requireStudioPermission("catalog.manage");
+  if (!access.ok) return access.response;
+  const { supabase, user } = access;
   let body: { entity?: string; id?: string };
   try { body = await request.json(); } catch { return jsonError("Invalid request body."); }
   if (!body.id || !["product", "category", "subcategory"].includes(body.entity || "")) return jsonError("Choose a valid store record.");

@@ -1,6 +1,7 @@
 import { createClient } from "@zerocraft/supabase/server";
 import { createServiceClient } from "@/lib/supabase-service";
 import { isSameOrigin } from "@/lib/request-origin";
+import { requireStudioPermission } from "@/lib/studio-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,18 +20,10 @@ async function recordInventoryAudit(
   if (error) console.error("Inventory audit log write failed", { action: entry.action, entityId: entry.entity_id, error });
 }
 
-async function studioClient() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { supabase: null, user: null, denied: jsonError("Studio access required.", 403) };
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!["admin", "manager", "staff"].includes(profile?.role || "")) return { supabase: null, user: null, denied: jsonError("Studio access required.", 403) };
-  return { supabase, user, denied: null };
-}
-
 export async function GET() {
-  const { supabase, user, denied } = await studioClient();
-  if (denied || !supabase) return denied;
+  const access = await requireStudioPermission("inventory.read");
+  if (!access.ok) return access.response;
+  const { supabase } = access;
   const [locations, levels] = await Promise.all([
     supabase.from("store_inventory_locations").select("id,name,code,is_active,created_at").order("name"),
     supabase.from("store_inventory_levels").select("location_id,variant_id,on_hand,reserved,reorder_point,updated_at,location:store_inventory_locations(id,name,code),variant:store_product_variants(id,label,sku,price,price_paise,currency_code,product:store_products(id,title,status,product_type))").order("updated_at", { ascending: false }),
@@ -41,8 +34,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, user, denied } = await studioClient();
-  if (denied || !supabase) return denied;
+  const access = await requireStudioPermission("inventory.manage");
+  if (!access.ok) return access.response;
+  const { supabase, user } = access;
   let body: { name?: unknown; code?: unknown };
   try { body = await request.json(); } catch { return jsonError("Invalid inventory location request."); }
   const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -56,8 +50,9 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, user, denied } = await studioClient();
-  if (denied || !supabase) return denied;
+  const access = await requireStudioPermission("inventory.manage");
+  if (!access.ok) return access.response;
+  const { supabase, user } = access;
   let body: { locationId?: unknown; variantId?: unknown; onHand?: unknown; reorderPoint?: unknown; isActive?: unknown };
   try { body = await request.json(); } catch { return jsonError("Invalid inventory update request."); }
   if (typeof body.locationId !== "string") return jsonError("An inventory location is required.");
@@ -85,8 +80,9 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, user, denied } = await studioClient();
-  if (denied || !supabase) return denied;
+  const access = await requireStudioPermission("inventory.manage");
+  if (!access.ok) return access.response;
+  const { supabase, user } = access;
   let body: { locationId?: unknown };
   try { body = await request.json(); } catch { return jsonError("Invalid inventory location request."); }
   if (typeof body.locationId !== "string") return jsonError("An inventory location is required.");
