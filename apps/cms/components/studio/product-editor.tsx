@@ -26,7 +26,11 @@ type Variant = {
   price: number;
   stock: number | null;
   is_active: boolean;
+  inventory?: { location_id: string; on_hand: number; reorder_point: number }[];
+  store_inventory_levels?: { location_id: string; on_hand: number; reserved: number; reorder_point: number }[];
 };
+
+type InventoryLocation = { id: string; name: string; code: string; is_active: boolean };
 
 type ProductDraft = {
   id?: string;
@@ -59,6 +63,7 @@ type StorePayload = {
   configured: boolean;
   catalogError: string | null;
   categories: Category[];
+  inventoryLocations?: InventoryLocation[];
   products: Array<ProductDraft & { id: string; store_product_variants?: Variant[] }>;
 };
 
@@ -103,6 +108,7 @@ export function ProductEditor({
   const router = useRouter();
   const [product, setProduct] = useState<ProductDraft>(emptyProduct);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [inventoryLocations, setInventoryLocations] = useState<InventoryLocation[]>([]);
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -118,6 +124,7 @@ export function ProductEditor({
         if (!response.ok) throw new Error(result.error || "Products could not be loaded.");
         if (!active) return;
         setCategories(result.categories || []);
+        setInventoryLocations(result.inventoryLocations || []);
         if (mode === "edit") {
           const current = result.products.find((item) => item.id === productId);
           if (!current) throw new Error("Product not found.");
@@ -159,6 +166,24 @@ export function ProductEditor({
       ...current,
       variants: current.variants.map((variant, row) => row === index ? { ...variant, ...changes } : variant),
     }));
+  }
+
+  function addVariant() {
+    setProduct((current) => {
+      const location = inventoryLocations.find((item) => item.is_active);
+      return {
+        ...current,
+        variants: [...current.variants, {
+          label: "",
+          sku: `${current.sku || "ZC-PRODUCT"}-${current.variants.length + 1}`,
+          options: {},
+          price: current.price,
+          stock: current.product_type === "physical" ? 0 : null,
+          is_active: true,
+          inventory: current.product_type === "physical" && location ? [{ location_id: location.id, on_hand: 0, reorder_point: 0 }] : [],
+        }],
+      };
+    });
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -253,9 +278,27 @@ export function ProductEditor({
           <section className={`${cardClass} p-6 lg:p-7`}>
             <div className="mb-4 flex items-center justify-between">
               <div><h2 className="font-semibold">Variants</h2><p className="text-sm text-muted-foreground">Add options such as size, color, or format.</p></div>
-              <Button type="button" variant="outline" size="sm" onClick={() => setProduct((current) => ({ ...current, variants: [...current.variants, { label: "", sku: `${current.sku || "ZC-PRODUCT"}-${current.variants.length + 1}`, options: {}, price: current.price, stock: current.product_type === "physical" ? 0 : null, is_active: true }] }))}><IconPlus /> Add variant</Button>
+              <Button type="button" variant="outline" size="sm" onClick={addVariant}><IconPlus /> Add variant</Button>
             </div>
-            {product.variants.length === 0 ? <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">This product has no variants.</div> : <div className="grid gap-3">{product.variants.map((variant, index) => <div key={variant.id || index} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_110px_90px_auto] sm:items-end"><label className={fieldClass}>Option name<Input value={variant.label} onChange={(event) => updateVariant(index, { label: event.target.value, options: { title: event.target.value } })} placeholder="Black / Large" /></label><label className={fieldClass}>SKU<Input value={variant.sku} onChange={(event) => updateVariant(index, { sku: event.target.value.toUpperCase() })} /></label><label className={fieldClass}>Price<Input type="number" min="0" step="0.01" value={variant.price} onChange={(event) => updateVariant(index, { price: Number(event.target.value) })} /></label>{product.product_type === "physical" && <label className={fieldClass}>Stock<Input type="number" min="0" step="1" value={variant.stock ?? 0} onChange={(event) => updateVariant(index, { stock: Number(event.target.value) })} /></label>}<Button type="button" variant="ghost" size="icon" aria-label={`Remove variant ${index + 1}`} onClick={() => setProduct((current) => ({ ...current, variants: current.variants.filter((_, row) => row !== index) }))}><IconTrash /></Button></div>)}</div>}
+            {product.variants.length === 0 ? <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">This product has no variants.</div> : <div className="grid gap-3">{product.variants.map((variant, index) => {
+              const existingLevels = variant.store_inventory_levels || [];
+              const draftLevel = variant.inventory?.[0] || (existingLevels[0] ? { location_id: existingLevels[0].location_id, on_hand: existingLevels[0].on_hand, reorder_point: existingLevels[0].reorder_point } : undefined);
+              return <div key={variant.id || index} className="grid gap-3 rounded-lg border p-3">
+                <div className="grid gap-3 sm:grid-cols-[1fr_1fr_110px_90px_auto] sm:items-end">
+                  <label className={fieldClass}>Option value<Input value={variant.label} onChange={(event) => updateVariant(index, { label: event.target.value, options: { title: event.target.value } })} placeholder="Black / Large" /></label>
+                  <label className={fieldClass}>SKU<Input value={variant.sku} onChange={(event) => updateVariant(index, { sku: event.target.value.toUpperCase() })} /></label>
+                  <label className={fieldClass}>Price<Input type="number" min="0" step="0.01" value={variant.price} onChange={(event) => updateVariant(index, { price: Number(event.target.value) })} /></label>
+                  {product.product_type === "physical" && <label className={fieldClass}>Stock<Input type="number" min="0" step="1" value={variant.stock ?? 0} onChange={(event) => updateVariant(index, { stock: Number(event.target.value) })} /></label>}
+                  <Button type="button" variant="ghost" size="icon" aria-label={`Remove variant ${index + 1}`} onClick={() => setProduct((current) => ({ ...current, variants: current.variants.filter((_, row) => row !== index) }))}><IconTrash /></Button>
+                </div>
+                {product.product_type === "physical" && <div className="grid gap-3 rounded-lg bg-muted/40 p-3 sm:grid-cols-[1fr_120px_120px] sm:items-end">
+                  <label className={fieldClass}>Initial location<select className={selectClass} value={draftLevel?.location_id || ""} disabled={Boolean(variant.id)} onChange={(event) => updateVariant(index, { inventory: [{ location_id: event.target.value, on_hand: draftLevel?.on_hand || 0, reorder_point: draftLevel?.reorder_point || 0 }] })}><option value="">Select location</option>{inventoryLocations.filter((location) => location.is_active).map((location) => <option key={location.id} value={location.id}>{location.name} ({location.code})</option>)}</select></label>
+                  <label className={fieldClass}>On hand<Input type="number" min="0" step="1" value={draftLevel?.on_hand ?? 0} disabled={Boolean(variant.id)} onChange={(event) => updateVariant(index, { inventory: [{ location_id: draftLevel?.location_id || "", on_hand: Number(event.target.value), reorder_point: draftLevel?.reorder_point || 0 }] })} /></label>
+                  <label className={fieldClass}>Reorder point<Input type="number" min="0" step="1" value={draftLevel?.reorder_point ?? 0} disabled={Boolean(variant.id)} onChange={(event) => updateVariant(index, { inventory: [{ location_id: draftLevel?.location_id || "", on_hand: draftLevel?.on_hand || 0, reorder_point: Number(event.target.value) }] })} /></label>
+                  {variant.id && <p className="sm:col-span-3 text-xs text-muted-foreground">Existing inventory is protected from product edits. Use the Inventory workspace to adjust reserved-safe stock levels.</p>}
+                </div>}
+              </div>;
+            })}</div>}
           </section>
 
           <section className={`${cardClass} grid gap-5 p-6 lg:p-7`}>

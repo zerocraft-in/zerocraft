@@ -1,5 +1,17 @@
 # CMS changelog
 
+## 0.0.29 — 2026-10-21
+
+### Added
+
+- Product create/update audit events with actor, SKU, status, and variant-count metadata.
+- Product editor inventory-location setup for new physical variants, including initial on-hand and reorder-point values.
+
+### Fixed
+
+- Product saves now pass explicit inventory initialization to the atomic writer instead of silently forcing every new variant into the first active location.
+- Inventory location and stock adjustments now await durable audit writes using the server service client when available.
+
 ## 0.0.28 — 2026-10-21
 
 ### Fixed

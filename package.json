@@ -1,6 +1,6 @@
 {
   "name": "zerocraft",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "private": true,
   "packageManager": "npm@11.17.0",
   "workspaces": [

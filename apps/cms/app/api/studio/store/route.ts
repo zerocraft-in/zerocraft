@@ -66,11 +66,12 @@ function buildCatalogHealth(categories: any[], products: any[]) {
 export async function GET() {
   const { supabase, user, denied } = await studioClient();
   if (denied || !supabase) return denied;
-  const [categories, products, recentOrders, orderSummary] = await Promise.all([
+  const [categories, products, recentOrders, orderSummary, inventoryLocations] = await Promise.all([
     supabase.from("store_categories").select("id,name,slug,description,image_url,is_active,created_at,updated_at,store_subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,created_at,updated_at)").order("name"),
     supabase.from("store_products").select("id,category_id,subcategory_id,design_origin,rights_status,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,write_version,created_at,updated_at,store_product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,store_inventory_levels(location_id,on_hand,reserved,reorder_point)),store_collection_products(collection:store_collections(id,name,slug,status))").order("updated_at", { ascending: false }),
     supabase.from("store_orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(10),
     supabase.rpc("studio_store_order_summary"),
+    supabase.from("store_inventory_locations").select("id,name,code,is_active").order("name"),
   ]);
   const catalogReady = !categories.error && !products.error;
   const orderReady = !recentOrders.error && !orderSummary.error;
@@ -82,13 +83,14 @@ export async function GET() {
     catalogError: catalogReady ? null : catalogErrorMessage(categories.error || products.error),
     categories: categories.data || [], products: products.data || [],
     catalogHealth: catalogReady ? buildCatalogHealth(categories.data || [], products.data || []) : null,
+    inventoryLocations: inventoryLocations.error ? [] : inventoryLocations.data || [],
     orders: { available: orderReady, count: orderReady ? Number(orderSummary.data.count) : null, pending: orderReady ? Number(orderSummary.data.pending) : null, paidTotal: orderReady && oneCurrency ? Number(paidByCurrency[currencies[0]]) : null, currencyCount: currencies.length, currency: oneCurrency ? currencies[0] : null, paidByCurrency: orderReady ? paidByCurrency : {}, recent: orderReady ? recentOrders.data || [] : [] },
   }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 type CategoryInput = { name?: string; slug?: string; description?: string; image_url?: string; is_active?: boolean };
 type SubcategoryInput = { category_id?: string; name?: string; slug?: string; description?: string; image_url?: string; sort_order?: number; is_active?: boolean };
-type VariantInput = { id?: string; label: string; sku: string; options?: Record<string, string | string[]>; price: number; price_paise?: number | null; stock?: number | null; is_active?: boolean; store_inventory_levels?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[] };
+type VariantInput = { id?: string; label: string; sku: string; options?: Record<string, string | string[]>; price: number; price_paise?: number | null; stock?: number | null; is_active?: boolean; inventory?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[]; store_inventory_levels?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[] };
 type ProductInput = { id?: string; write_version?: number; title?: string; slug?: string; category_id?: string | null; subcategory_id?: string | null; design_origin?: "original_zerocraft" | "licensed" | "fan_inspired"; rights_status?: "not_applicable" | "approved_license" | "review_required"; description?: string; product_type?: "physical" | "digital"; status?: "draft" | "active" | "archived"; sku?: string; price?: number; price_paise?: number | null; compare_at_price?: number | null; compare_at_price_paise?: number | null; currency?: string; currency_code?: string | null; stock?: number | null; image_url?: string; collection_ids?: string[]; variants?: VariantInput[] };
 
 function validSlug(slug: unknown): slug is string { return typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug); }
@@ -162,7 +164,11 @@ async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createC
       stock: variant.stock ?? null,
     };
     if (currency === "INR") item.price_paise = Math.round(Number(variant.price) * 100);
-    if (!variant.id && product.product_type === "physical") item.inventory = [{ location_id: locationId, on_hand: variant.stock ?? 0, reserved: 0, reorder_point: 0 }];
+    if (!variant.id && product.product_type === "physical") {
+      item.inventory = variant.inventory?.length
+        ? variant.inventory.map((level) => ({ location_id: level.location_id, on_hand: level.on_hand, reserved: 0, reorder_point: level.reorder_point ?? 0 }))
+        : [{ location_id: locationId, on_hand: variant.stock ?? 0, reserved: 0, reorder_point: 0 }];
+    }
     return item;
   });
 
@@ -224,6 +230,7 @@ export async function POST(request: Request) {
   if (!savedProduct?.product_id) return jsonError("Product could not be saved.");
   const taxonomy = await saveProductTaxonomy(supabase, savedProduct.product_id, product);
   if (taxonomy.error) return jsonError("The product taxonomy could not be saved.", 400);
+  await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.product_created", entity_type: "store_product", entity_id: savedProduct.product_id, metadata: { title: product.title!.trim(), slug: product.slug, sku: product.sku!.trim(), status: product.status, variant_count: product.variants?.length || 0 } });
   revalidateStoreCatalog(product.slug);
   return Response.json({ id: savedProduct?.product_id }, { status: 201 });
 }
@@ -288,6 +295,7 @@ export async function PATCH(request: Request) {
   if (error) return atomicError(error);
   const taxonomy = await saveProductTaxonomy(supabase, body.id, product);
   if (taxonomy.error) return jsonError("The product taxonomy could not be saved.", 400);
+  await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.product_updated", entity_type: "store_product", entity_id: body.id, metadata: { title: product.title!.trim(), slug: product.slug, sku: product.sku!.trim(), status: product.status, variant_count: product.variants?.length || 0 } });
   revalidateStoreCatalog(product.slug);
   return Response.json({ ok: true });
 }
