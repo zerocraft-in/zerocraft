@@ -156,6 +156,7 @@ type Payload = {
 type ProductDraft = Omit<Product, "id" | "store_product_variants"> & {
   variants: Variant[];
 };
+type HealthFilter = "all" | "missing_media" | "missing_variants" | "rights_review" | "taxonomy" | "duplicate_slug" | "duplicate_sku";
 
 const emptyProduct: ProductDraft = {
   title: "",
@@ -236,6 +237,7 @@ export default function StudioStore({
   const [view, setView] = useState<"overview" | "products" | "categories">(
     initialView,
   );
+  const [healthFilter, setHealthFilter] = useState<HealthFilter>("all");
   const [editor, setEditor] = useState<
     | { kind: "product"; value: ProductDraft; id?: string }
     | { kind: "category"; value: Omit<Category, "id">; id?: string }
@@ -327,6 +329,27 @@ export default function StudioStore({
   const products = data?.products ?? noProducts;
   const categories = data?.categories ?? noCategories;
   const canManageCatalog = permissions?.includes("catalog.manage") === true;
+  const healthSlugs = data?.catalogHealth ? (() => {
+    const health = data.catalogHealth!;
+    if (healthFilter === "missing_media") return health.productsWithoutMedia;
+    if (healthFilter === "missing_variants") return health.productsWithoutVariants;
+    if (healthFilter === "rights_review") return health.rightsReviewProducts;
+    if (healthFilter === "taxonomy") return health.orphanedTaxonomy;
+    if (healthFilter === "duplicate_slug") return health.duplicateProductSlugs;
+    if (healthFilter === "duplicate_sku") return health.duplicateProductSkus;
+    return [];
+  })() : [];
+  const qualityScore = data?.catalogHealth ? (() => {
+    const health = data.catalogHealth!;
+    const issueCount = health.productsWithoutMedia.length + health.productsWithoutVariants.length + health.rightsReviewProducts.length + health.orphanedTaxonomy.length + health.duplicateProductSlugs.length + health.duplicateProductSkus.length;
+    const denominator = Math.max(1, health.activeProducts * 6);
+    return Math.max(0, Math.min(100, Math.round(100 - (issueCount / denominator) * 100)));
+  })() : 0;
+  const openHealthFilter = (filter: Exclude<HealthFilter, "all">) => {
+    setHealthFilter(filter);
+    setView("products");
+    window.location.hash = "products";
+  };
   const physicalCount = products.filter(
     (item) => item.product_type === "physical",
   ).length;
@@ -628,8 +651,13 @@ export default function StudioStore({
               {data.catalogHealth.productsWithoutMedia.length || data.catalogHealth.productsWithoutVariants.length || data.catalogHealth.rightsReviewProducts.length || data.catalogHealth.orphanedTaxonomy.length || data.catalogHealth.duplicateProductSlugs.length || data.catalogHealth.duplicateProductSkus.length ? "Needs review" : "Ready to publish"}
             </span>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeProducts}</strong><span className="text-xs text-muted-foreground">active products</span></div><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeCategories}</strong><span className="text-xs text-muted-foreground">active categories</span></div><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeSubcategories}</strong><span className="text-xs text-muted-foreground">active subcategories</span></div></div>
-          {(data.catalogHealth.productsWithoutMedia.length || data.catalogHealth.productsWithoutVariants.length || data.catalogHealth.rightsReviewProducts.length || data.catalogHealth.orphanedTaxonomy.length || data.catalogHealth.duplicateProductSlugs.length || data.catalogHealth.duplicateProductSkus.length) > 0 && <p className="text-xs leading-5 text-amber-700 dark:text-amber-300">Review missing media ({data.catalogHealth.productsWithoutMedia.length}), variants ({data.catalogHealth.productsWithoutVariants.length}), rights ({data.catalogHealth.rightsReviewProducts.length}), taxonomy ({data.catalogHealth.orphanedTaxonomy.length}) or duplicate slugs/SKUs before publishing.</p>}
+          <div className="grid gap-3 sm:grid-cols-4"><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{qualityScore}%</strong><span className="text-xs text-muted-foreground">quality score</span></div><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeProducts}</strong><span className="text-xs text-muted-foreground">active products</span></div><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeCategories}</strong><span className="text-xs text-muted-foreground">active categories</span></div><div className="rounded-lg bg-muted/40 p-3"><strong className="block text-lg">{data.catalogHealth.activeSubcategories}</strong><span className="text-xs text-muted-foreground">active subcategories</span></div></div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {([[
+              "missing_media", "Missing media", data.catalogHealth.productsWithoutMedia.length,
+            ], ["missing_variants", "Missing variants", data.catalogHealth.productsWithoutVariants.length], ["rights_review", "Rights review", data.catalogHealth.rightsReviewProducts.length], ["taxonomy", "Taxonomy issues", data.catalogHealth.orphanedTaxonomy.length], ["duplicate_slug", "Duplicate slugs", data.catalogHealth.duplicateProductSlugs.length], ["duplicate_sku", "Duplicate SKUs", data.catalogHealth.duplicateProductSkus.length]] as const).map(([filter, label, count]) => <button key={filter} type="button" onClick={() => openHealthFilter(filter)} className="flex items-center justify-between rounded-lg border border-border bg-background/60 px-3 py-2 text-left text-xs transition hover:border-foreground/30 hover:bg-muted/40"><span>{label}</span><strong className={count ? "text-amber-700 dark:text-amber-300" : "text-emerald-700 dark:text-emerald-300"}>{count}</strong></button>)}
+          </div>
+          <p className="text-xs leading-5 text-muted-foreground">Select an issue to open the Products workspace with a focused remediation filter.</p>
         </section>
       )}
       {view === "overview" && (
@@ -978,6 +1006,9 @@ export default function StudioStore({
             data={products}
             categories={categories}
             canManageCatalog={canManageCatalog}
+            healthFilter={healthFilter}
+            healthSlugs={healthSlugs}
+            onClearHealthFilter={() => setHealthFilter("all")}
             loading={loading}
             configured={Boolean(data?.configured)}
             onEdit={(product) => editProduct(product)}

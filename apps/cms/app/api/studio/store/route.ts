@@ -98,6 +98,23 @@ function validateProductInput(product: ProductInput) {
   return null;
 }
 
+async function validateProductIdentity(supabase: Awaited<ReturnType<typeof createClient>>, product: ProductInput, productId: string | null) {
+  const slug = product.slug!.trim();
+  const sku = product.sku!.trim();
+  const variantSkus = (product.variants || []).map((variant) => variant.sku.trim()).filter(Boolean);
+  const [productIdentity, variantIdentity] = await Promise.all([
+    supabase.from("store_products").select("id,slug,sku").or(`slug.eq.${slug},sku.eq.${sku}`),
+    variantSkus.length ? supabase.from("store_product_variants").select("id,product_id,sku").in("sku", variantSkus) : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (productIdentity.error || variantIdentity.error) return "Product identity could not be validated. Try again.";
+  const conflictingProduct = (productIdentity.data || []).find((item) => item.id !== productId && (item.slug === slug || item.sku === sku));
+  if (conflictingProduct) return conflictingProduct.slug === slug ? "A product with this slug already exists." : "A product with this SKU already exists.";
+  const conflictingVariant = (variantIdentity.data || []).find((item) => item.product_id !== productId && variantSkus.includes(item.sku));
+  if (conflictingVariant) return "A variant with this SKU already exists.";
+  const duplicateVariant = variantSkus.find((value, index) => variantSkus.indexOf(value) !== index);
+  return duplicateVariant ? "Variant SKUs must be unique within the product." : null;
+}
+
 function atomicError(error: { code?: string; message?: string } | null) {
   const message = error?.message || "Product could not be saved.";
   console.error("Atomic product save failed", { code: error?.code, message });
@@ -246,6 +263,8 @@ export async function POST(request: Request) {
   const product = data as ProductInput;
   const validationError = validateProductInput(product);
   if (validationError) return jsonError(validationError);
+  const identityError = await validateProductIdentity(supabase, product, null);
+  if (identityError) return jsonError(identityError, 409);
   const { data: saved, error } = await saveProductAtomically(supabase, "create", null, product);
   if (error) return atomicError(error);
   const savedProduct = saved as { product_id?: string } | null;
@@ -314,6 +333,8 @@ export async function PATCH(request: Request) {
   const product = data as ProductInput;
   const validationError = validateProductInput(product);
   if (validationError) return jsonError(validationError);
+  const identityError = await validateProductIdentity(supabase, product, body.id || null);
+  if (identityError) return jsonError(identityError, 409);
   const { error } = await saveProductAtomically(supabase, "edit", body.id, product);
   if (error) return atomicError(error);
   const taxonomy = await saveProductTaxonomy(supabase, body.id, product);

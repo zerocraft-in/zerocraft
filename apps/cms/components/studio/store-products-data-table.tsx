@@ -78,6 +78,15 @@ export type StoreProduct = {
   currency: string;
   stock: number | null;
   image_url: string;
+  store_product_media?: {
+    id: string;
+    storage_path: string;
+    public_url: string;
+    alt_text: string;
+    sort_order: number;
+    media_type: "image" | "video" | "document";
+    is_primary: boolean;
+  }[];
   store_product_variants: {
     id?: string;
     label: string;
@@ -336,6 +345,9 @@ export function StoreProductsDataTable({
   data,
   categories,
   canManageCatalog,
+  healthFilter = "all",
+  healthSlugs = [],
+  onClearHealthFilter,
   loading,
   configured,
   onEdit,
@@ -345,6 +357,9 @@ export function StoreProductsDataTable({
   data: StoreProduct[];
   categories: Category[];
   canManageCatalog: boolean;
+  healthFilter?: string;
+  healthSlugs?: string[];
+  onClearHealthFilter?: () => void;
   loading: boolean;
   configured: boolean;
   onEdit: (product: StoreProduct) => void;
@@ -363,10 +378,13 @@ export function StoreProductsDataTable({
     pageIndex: 0,
     pageSize: 6,
   });
+  const healthFilteredData = healthFilter === "all"
+    ? data
+    : data.filter((product) => healthSlugs.includes(product.slug));
   const visibleData =
     categoryFilter === "all"
-      ? data
-      : data.filter((product) => product.category_id === categoryFilter);
+      ? healthFilteredData
+      : healthFilteredData.filter((product) => product.category_id === categoryFilter);
   const table = useTable({
     features,
     data: visibleData,
@@ -715,7 +733,8 @@ export function StoreProductsDataTable({
           {selectedCount} of {rowCount} row(s) selected
         </p>
         {rowCount > pagination.pageSize && (
-          <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        {healthFilter !== "all" && <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200"><span>Readiness filter: {healthFilter.replaceAll("_", " ")}</span><Button type="button" size="sm" variant="ghost" onClick={onClearHealthFilter}>Clear</Button></div>}
             <span className="text-sm font-medium">
               Page {pagination.pageIndex + 1} of{" "}
               {Math.max(table.getPageCount(), 1)}
