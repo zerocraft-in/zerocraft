@@ -129,7 +129,9 @@ export default function AutomationsPage() {
   }
 
   const healthy = automation?.active && automation.last_run_status !== "failed";
-  const canRun = role === "admin" || role === "manager";
+  // Managers can monitor automation health, but manual runs and settings are
+  // protected by the automations.manage permission and are Admin-only by default.
+  const canRun = role === "admin";
   const isAdmin = role === "admin";
   return <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-6 pb-12">
     <header className="flex flex-wrap items-end justify-between gap-4">
