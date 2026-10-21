@@ -59,7 +59,7 @@ export async function buildHealth(supabase: any, verifySmtpNow: boolean) {
       checks.push(check("smtp", "SMTP email", "failed", error instanceof Error ? error.message : "SMTP connection verification failed.", smtpStarted));
     }
   } else {
-    checks.push(check("smtp", "SMTP email", "warning", "SMTP is configured; run diagnostics to verify the live connection.", smtpStarted));
+    checks.push(check("smtp", "SMTP email", "healthy", "SMTP is configured. Run diagnostics when you need a live connection verification.", smtpStarted, { verified: false }));
   }
 
   const service = serviceClient();
