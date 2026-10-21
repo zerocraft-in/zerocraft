@@ -77,3 +77,9 @@ export function smtpConfigured() {
       (process.env.EMAIL_FROM || process.env.SMTP_USER),
   );
 }
+
+export async function verifySmtpConnection() {
+  const config = readConfig();
+  await getTransporter(config).verify();
+  return { host: config.host, port: config.port, secure: config.secure };
+}

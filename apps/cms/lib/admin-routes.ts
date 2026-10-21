@@ -39,6 +39,7 @@ export const ADMIN_ROUTES = {
     automations: "/automations",
     notifications: "/notifications",
     notificationReports: "/notification-reports",
+    systemHealth: "/system-health",
   },
 } as const;
 

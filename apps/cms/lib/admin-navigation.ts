@@ -16,6 +16,7 @@ import {
   IconShieldCheck,
   IconMail,
   IconActivity,
+  IconHeartbeat,
 } from "@tabler/icons-react";
 import { ADMIN_ROUTES, type AdminRoute } from "@/lib/admin-routes";
 
@@ -136,6 +137,7 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
       { label: "Automation health", href: ADMIN_ROUTES.system.automations, icon: IconActivity },
       { label: "Notification history", href: ADMIN_ROUTES.system.notifications, icon: IconMail },
       { label: "Weekly reports", href: ADMIN_ROUTES.system.notificationReports, icon: IconFileText },
+      { label: "System health", href: ADMIN_ROUTES.system.systemHealth, icon: IconHeartbeat },
     ],
   },
   {
@@ -160,6 +162,7 @@ const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
   "/team": "team.read", "/whats-new": "content.read", "/settings": "settings.manage", "/devices": "settings.manage",
   "/integrations": "settings.manage", "/audit-logs": "audit.read", "/email-events": "notifications.read",
   "/automations": "automations.read", "/notifications": "notifications.read", "/notification-reports": "notifications.read",
+  "/system-health": "system_health.read",
 };
 
 export function getAdminRoutePermission(pathname: string) {
