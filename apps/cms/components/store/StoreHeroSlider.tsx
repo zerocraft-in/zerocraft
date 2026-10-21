@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IconArrowLeft, IconArrowRight } from "@/components/store/StoreIcon";
 import type { CatalogProduct } from "@/lib/commerce/catalog";
 
-const fallbackImage = "/images/products/catalog/poster-frame-of-mind.png";
+const fallbackImage = "/hero-designer.png";
 
 export default function StoreHeroSlider({
   products,

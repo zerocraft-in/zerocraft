@@ -3,7 +3,7 @@
 import { toast } from "sonner";
 import { Checkbox, Dialog, DialogContent, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/studio-controls";
 import React, { useState, useEffect, useMemo } from "react";
-import { IconCalendar, IconPlus, IconSearch, IconSend, IconCircleCheck, IconX, IconSparkles, IconChevronDown, IconColumns, IconDotsVertical, IconChevronsLeft, IconChevronLeft, IconChevronRight, IconChevronsRight, IconClock } from "@tabler/icons-react";
+import { IconCalendar, IconPlus, IconSearch, IconSend, IconMail, IconCircleCheck, IconX, IconSparkles, IconChevronDown, IconColumns, IconDotsVertical, IconChevronsLeft, IconChevronLeft, IconChevronRight, IconChevronsRight, IconClock } from "@tabler/icons-react";
 
 import { sendWhatsAppViaN8n } from "@/lib/n8n";
 import {
@@ -45,6 +45,7 @@ export default function StudioAppointmentsCRUD() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAppt, setEditingAppt] = useState<Appointment | null>(null);
   const [n8nStatusMessage, setN8nStatusMessage] = useState<string | null>(null);
+  const [emailStatusMessage, setEmailStatusMessage] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -113,14 +114,27 @@ export default function StudioAppointmentsCRUD() {
       if (editingAppt) {
         const updated = await updateAppointmentInSupabase(editingAppt.id, payload);
         setAppointments(previous => previous.map(item => item.id === editingAppt.id ? { ...item, ...updated } : item));
+        void sendAppointmentEmail(editingAppt.id);
       } else {
         const created = await createAppointmentInSupabase(payload);
         setAppointments(previous => [created as Appointment, ...previous]);
+        void sendAppointmentEmail((created as Appointment).id);
       }
       setIsModalOpen(false);
       toast.success("Appointment saved");
     } catch { toast.error("Could not save the appointment. Your changes are still here."); }
     finally { setSaving(false); }
+  };
+
+  const sendAppointmentEmail = async (appointmentId: string) => {
+    setEmailStatusMessage("Sending appointment email…");
+    try {
+      const response = await fetch("/api/studio/email/appointment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ appointmentId }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Appointment email could not be sent.");
+      setEmailStatusMessage("Appointment email sent successfully.");
+    } catch (cause) { setEmailStatusMessage(cause instanceof Error ? cause.message : "Appointment email could not be sent."); }
+    setTimeout(() => setEmailStatusMessage(null), 5000);
   };
 
   const handleDelete = async (id: string) => {
@@ -245,6 +259,7 @@ export default function StudioAppointmentsCRUD() {
           </button>
         </div>
       )}
+      {emailStatusMessage && <div className="p-4 rounded-2xl bg-muted border border-primary/30 text-foreground text-xs flex items-center justify-between shadow-xl"><div className="flex items-center gap-2"><IconMail className="w-4 h-4 text-primary" /><span className="font-semibold">{emailStatusMessage}</span></div><button onClick={() => setEmailStatusMessage(null)} className="text-muted-foreground hover:text-accent-foreground">Dismiss</button></div>}
 
       {/* Reference-Styled Table Container */}
       <div className=" py-6 bg-background space-y-6">
@@ -259,7 +274,7 @@ export default function StudioAppointmentsCRUD() {
                 }`}
             >
               <span>All Bookings</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-zinc-700 text-foreground text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
                 {tabCounts.all}
               </span>
             </button>
@@ -272,7 +287,7 @@ export default function StudioAppointmentsCRUD() {
                 }`}
             >
               <span>Confirmed</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-[#22C55E]/20 text-[#4ADE80] text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-700 text-[10px] font-bold">
                 {tabCounts.confirmed}
               </span>
             </button>
@@ -285,7 +300,7 @@ export default function StudioAppointmentsCRUD() {
                 }`}
             >
               <span>Pending</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-700 text-[10px] font-bold">
                 {tabCounts.pending}
               </span>
             </button>
@@ -423,6 +438,7 @@ export default function StudioAppointmentsCRUD() {
                           <div className="studio-row-menu-panel">
                             <button onClick={() => openEditModal(appt)}>Edit booking</button>
                             <button onClick={() => void handleTriggerN8n(appt)}>Trigger WhatsApp</button>
+                            <button onClick={() => void sendAppointmentEmail(appt.id)}>Send email update</button>
                             <button className="is-danger" onClick={() => void handleDelete(appt.id)}>Cancel booking</button>
                           </div>
                         </details>

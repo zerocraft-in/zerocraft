@@ -1,5 +1,5 @@
-import StudioStore from "@/components/studio/studio-store";
+import StoreCategoriesManager from "@/components/studio/store-categories-manager";
 
 export default function StoreCategoriesPage() {
-  return <StudioStore initialView="categories" />;
+  return <StoreCategoriesManager />;
 }

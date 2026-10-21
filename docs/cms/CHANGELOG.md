@@ -1,5 +1,20 @@
 # CMS changelog
 
+## 0.0.24 — 2026-10-21
+
+### Added
+
+- Catalog category/subcategory management workspace with hierarchy, search, archive, duplicate, media, and product-assignment flows.
+- Inventory location and stock-level workspace with reorder-point support and audit events.
+- CMS workspace surfaces for channels, scheduling, transactions, subscriptions, disputes, integrations, devices, time tracking, and release notes.
+- Refined dashboard, settings, sidebar, header, store, product, order, appointment, client, work, and journal layouts.
+
+### Changed
+
+- CMS appearance defaults now use the reviewed light workspace presentation.
+- Legacy unused storefront/demo assets were removed after reference scanning.
+- Email delivery page lint issue was fixed before release.
+
 ## 0.0.23 — 2026-10-21
 
 ### Added

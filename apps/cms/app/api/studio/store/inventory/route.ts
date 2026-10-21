@@ -18,7 +18,7 @@ async function studioClient() {
 }
 
 export async function GET() {
-  const { supabase, denied } = await studioClient();
+  const { supabase, user, denied } = await studioClient();
   if (denied || !supabase) return denied;
   const [locations, levels] = await Promise.all([
     supabase.from("store_inventory_locations").select("id,name,code,is_active,created_at").order("name"),
@@ -30,7 +30,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, denied } = await studioClient();
+  const { supabase, user, denied } = await studioClient();
   if (denied || !supabase) return denied;
   let body: { name?: unknown; code?: unknown };
   try { body = await request.json(); } catch { return jsonError("Invalid inventory location request."); }
@@ -39,12 +39,13 @@ export async function POST(request: Request) {
   if (!name || name.length > 120 || !/^[A-Z0-9][A-Z0-9_-]{1,31}$/.test(code)) return jsonError("Enter a location name and a code using 2–32 letters, numbers, hyphens, or underscores.");
   const { data, error } = await supabase.from("store_inventory_locations").insert({ name, code, is_active: true }).select("id,name,code,is_active,created_at").single();
   if (error) return jsonError(error.code === "23505" ? "That inventory location name or code already exists." : "The inventory location could not be created.", error.code === "23505" ? 409 : 400);
+  void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "inventory.location_created", entity_type: "inventory_location", entity_id: data?.id, metadata: { name, code } });
   return Response.json({ location: data }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function PATCH(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, denied } = await studioClient();
+  const { supabase, user, denied } = await studioClient();
   if (denied || !supabase) return denied;
   let body: { locationId?: unknown; variantId?: unknown; onHand?: unknown; reorderPoint?: unknown; isActive?: unknown };
   try { body = await request.json(); } catch { return jsonError("Invalid inventory update request."); }
@@ -52,22 +53,28 @@ export async function PATCH(request: Request) {
   if (typeof body.isActive === "boolean" && body.variantId == null) {
     const { data, error } = await supabase.from("store_inventory_locations").update({ is_active: body.isActive }).eq("id", body.locationId).select("id,name,code,is_active,created_at").single();
     if (error) return jsonError("The inventory location could not be updated.", 400);
+    void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "inventory.location_status_changed", entity_type: "inventory_location", entity_id: data?.id, metadata: { isActive: body.isActive } });
     return Response.json({ location: data }, { headers: { "Cache-Control": "private, no-store" } });
   }
   if (typeof body.variantId !== "string" || !Number.isInteger(body.onHand) || Number(body.onHand) < 0 || !Number.isInteger(body.reorderPoint) || Number(body.reorderPoint) < 0) return jsonError("Enter valid on-hand and reorder-point quantities.");
-  const { data: current } = await supabase.from("store_inventory_levels").select("on_hand,reserved").eq("location_id", body.locationId).eq("variant_id", body.variantId).maybeSingle();
-  const reserved = Number(current?.reserved || 0);
-  if (Number(body.onHand) < reserved) return jsonError(`On-hand stock cannot be lower than reserved stock (${reserved}).`, 409);
-  const { data, error } = await supabase.from("store_inventory_levels").upsert({ location_id: body.locationId, variant_id: body.variantId, on_hand: body.onHand, reserved, reorder_point: body.reorderPoint, updated_at: new Date().toISOString() }, { onConflict: "location_id,variant_id" }).select("location_id,variant_id,on_hand,reserved,reorder_point,updated_at").single();
-  if (error) return jsonError("The inventory level could not be updated.", 400);
-  const delta = Number(body.onHand) - Number(current?.on_hand || 0);
-  if (delta !== 0) await supabase.from("store_inventory_movements").insert({ location_id: body.locationId, variant_id: body.variantId, quantity_delta: delta, reason: "studio_adjustment" });
+  const { data, error } = await supabase.rpc("studio_adjust_inventory", {
+    p_location_id: body.locationId,
+    p_variant_id: body.variantId,
+    p_on_hand: body.onHand,
+    p_reorder_point: body.reorderPoint,
+  });
+  if (error) {
+    if (error.code === "P0001" && error.message?.includes("INVENTORY_RESERVED")) return jsonError("On-hand stock cannot be lower than reserved stock.", 409);
+    if (error.code === "22023") return jsonError("Enter valid on-hand and reorder-point quantities.");
+    return jsonError("The inventory level could not be updated atomically.", 400);
+  }
+  void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "inventory.level_adjusted", entity_type: "inventory_level", entity_id: body.variantId, metadata: { locationId: body.locationId, onHand: body.onHand, reorderPoint: body.reorderPoint } });
   return Response.json({ level: data }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function DELETE(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const { supabase, denied } = await studioClient();
+  const { supabase, user, denied } = await studioClient();
   if (denied || !supabase) return denied;
   let body: { locationId?: unknown };
   try { body = await request.json(); } catch { return jsonError("Invalid inventory location request."); }
@@ -76,5 +83,6 @@ export async function DELETE(request: Request) {
   if ((count || 0) > 0) return jsonError("This location still has inventory levels. Deactivate it instead of deleting it.", 409);
   const { error } = await supabase.from("store_inventory_locations").delete().eq("id", body.locationId);
   if (error) return jsonError("The inventory location could not be deleted.", 400);
+  void supabase.from("store_audit_logs").insert({ actor_id: user.id, action: "inventory.location_deleted", entity_type: "inventory_location", entity_id: body.locationId, metadata: {} });
   return Response.json({ ok: true }, { headers: { "Cache-Control": "private, no-store" } });
 }

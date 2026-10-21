@@ -7,7 +7,7 @@ import { IconChevronDown, IconArrowUpRight } from "@/components/store/StoreIcon"
 import type { CatalogCategory, CatalogCollection, CatalogProduct } from "@/lib/commerce/catalog";
 
 type CatalogHomeProps = { products: CatalogProduct[]; categories: CatalogCategory[]; collections: CatalogCollection[] };
-const fallbackImage = "/og-image.jpg";
+const fallbackImage = "/hero-designer.png";
 const faqs = [
   ["Are the designs original?", "Zerocraft Originals are developed in-house. Licensed or fan-inspired work is labelled wherever it appears."],
   ["How long does dispatch take?", "Most studio-reviewed orders are packed within 2–4 working days. Made-to-order pieces may take a little longer."],
@@ -21,8 +21,8 @@ function categoryImage(category: CatalogCategory, products: CatalogProduct[]) {
 
 export default function CatalogHome({ products, categories, collections }: CatalogHomeProps) {
   const posterImage = products.find((product) => product.categorySlug === "posters")?.images[0] || fallbackImage;
-  const apparelImage = products.find((product) => product.categorySlug === "t-shirts")?.images[0] || "/images/products/catalog/tee-cut-to-feeling.png";
-  const frameImage = products.find((product) => product.categorySlug === "photo-frames")?.images[0] || "/images/products/catalog/photo-frame-quiet.png";
+  const apparelImage = products.find((product) => product.categorySlug === "t-shirts")?.images[0] || fallbackImage;
+  const frameImage = products.find((product) => product.categorySlug === "photo-frames")?.images[0] || fallbackImage;
   const collectionCards = collections.length ? collections : categories.slice(0, 6).map((category) => ({ id: category.id, name: category.name, slug: category.slug, tagline: category.description, description: category.description, image: category.image }));
 
   return (

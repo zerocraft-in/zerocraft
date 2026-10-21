@@ -1,30 +1,30 @@
 "use client";
 
 import { useEffect } from "react";
-import { IconMoon } from "@tabler/icons-react";
+import { IconSun } from "@tabler/icons-react";
 
-function applyDarkTheme() {
+function applyLightTheme() {
   const root = document.getElementById("zerocraft-cms");
-  document.documentElement.classList.add("dark");
-  document.documentElement.dataset.theme = "dark";
+  document.documentElement.classList.remove("dark");
+  document.documentElement.dataset.theme = "light";
   if (root) {
-    root.classList.add("dark");
-    root.dataset.appearance = "dark";
-    root.dataset.theme = "dark";
+    root.classList.remove("dark");
+    root.dataset.appearance = "light";
+    root.dataset.theme = "light";
     root.dataset.font = "inter";
   }
 }
 
 export function StudioAppearance({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    applyDarkTheme();
+    applyLightTheme();
     try {
       localStorage.setItem(
         "zerocraft-cms-appearance-v2",
-        JSON.stringify({ mode: "dark" }),
+        JSON.stringify({ mode: "light" }),
       );
     } catch {
-      // The dark theme still applies when storage is unavailable.
+      // The light theme still applies when storage is unavailable.
     }
   }, []);
   return children;
@@ -35,12 +35,12 @@ export function AppearanceSettings() {
     <div className="space-y-4">
       <div className="flex items-start gap-4 rounded-xl border bg-card p-5 text-card-foreground">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
-          <IconMoon className="size-5" />
+          <IconSun className="size-5" />
         </span>
         <div>
-          <h3 className="text-base font-semibold">Dark workspace</h3>
+          <h3 className="text-base font-semibold">Light workspace</h3>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            ZeroCraft CMS uses a consistent dark theme across navigation,
+            ZeroCraft CMS uses a calm, high-contrast light theme across navigation,
             forms, data tables, dialogs, and reports.
           </p>
         </div>

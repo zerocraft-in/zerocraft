@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   IconArrowLeft,
   IconBox,
@@ -90,7 +91,7 @@ const skuFromTitle = (value: string) => {
 
 const fieldClass = "grid gap-2 text-[15px] font-medium";
 const selectClass = "h-10 w-full rounded-lg border border-input bg-background px-3 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/20";
-const cardClass = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.03)]";
+const cardClass = "rounded-xl border border-border bg-card shadow-none";
 
 export function ProductEditor({
   mode,
@@ -191,7 +192,7 @@ export function ProductEditor({
   }
 
   return (
-    <form onSubmit={save} className="mx-auto w-full max-w-[1380px] pb-32">
+    <form onSubmit={save} className="mx-auto w-full max-w-[1120px] pb-32">
       <header className="mb-8 flex flex-wrap items-center justify-between gap-5">
         <div className="flex min-w-0 items-center gap-3">
           <Button type="button" variant="outline" size="icon" aria-label="Back to products" onClick={() => router.push("/store/products")}>
@@ -215,7 +216,7 @@ export function ProductEditor({
 
       {error && <Alert variant="destructive" className="mb-5"><AlertTitle>Couldn’t save product</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-6">
           <section className={`${cardClass} grid gap-5 p-6 lg:p-7`}>
             <label className={fieldClass}>Title<Input autoFocus value={product.title} onChange={(event) => updateTitle(event.target.value)} placeholder="Short sleeve t-shirt" /></label>
@@ -225,8 +226,8 @@ export function ProductEditor({
           <section className={`${cardClass} p-6 lg:p-7`}>
             <div className="mb-4 flex items-center justify-between"><div><h2 className="font-semibold">Media</h2><p className="text-sm text-muted-foreground">Add a product image URL. File uploads become available after creation.</p></div><IconPhoto className="size-5 text-muted-foreground" /></div>
             <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
-              <div className="grid aspect-square place-items-center overflow-hidden rounded-xl border border-dashed bg-muted/40">
-                {product.image_url ? <img src={product.image_url} alt="Product preview" className="size-full object-cover" /> : <IconPhoto className="size-8 text-muted-foreground" />}
+              <div className="relative grid aspect-square place-items-center overflow-hidden rounded-xl border border-dashed bg-muted/40">
+                {product.image_url ? <Image unoptimized fill sizes="120px" src={product.image_url} alt="Product preview" className="object-cover" /> : <IconPhoto className="size-8 text-muted-foreground" />}
               </div>
               <label className={fieldClass}>Image URL<Input type="url" value={product.image_url} onChange={(event) => update("image_url", event.target.value)} placeholder="https://…" /></label>
             </div>
@@ -287,7 +288,7 @@ export function ProductEditor({
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/90 px-4 py-3 backdrop-blur lg:pl-28">
-        <div className="mx-auto flex max-w-[1380px] items-center justify-between gap-4"><p className="text-[15px] text-muted-foreground">{mode === "create" ? "Unsaved product" : `Editing ${product.title}`}</p><div className="flex gap-3"><Button type="button" variant="outline" onClick={() => router.push("/store/products")}>Discard</Button><Button type="submit" disabled={saving || !product.title || !product.slug || !product.sku}><IconDeviceFloppy /> {saving ? "Saving…" : "Save"}</Button></div></div>
+        <div className="mx-auto flex max-w-[1120px] items-center justify-between gap-4"><p className="text-[15px] text-muted-foreground">{mode === "create" ? "Unsaved product" : `Editing ${product.title}`}</p><div className="flex gap-3"><Button type="button" variant="outline" onClick={() => router.push("/store/products")}>Discard</Button><Button type="submit" disabled={saving || !product.title || !product.slug || !product.sku}><IconDeviceFloppy /> {saving ? "Saving…" : "Save"}</Button></div></div>
       </div>
     </form>
   );

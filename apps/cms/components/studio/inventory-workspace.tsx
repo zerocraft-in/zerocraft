@@ -116,7 +116,13 @@ export default function InventoryWorkspace() {
     const key = `${level.location_id}:${level.variant_id}`;
     const draft = drafts[key] || { onHand: String(level.on_hand), reorderPoint: String(level.reorder_point) };
     setBusy(true); setError("");
-    try { await request("PATCH", { locationId: level.location_id, variantId: level.variant_id, onHand: Number(draft.onHand), reorderPoint: Number(draft.reorderPoint) }); await load(false); }
+    try {
+      await request("PATCH", { locationId: level.location_id, variantId: level.variant_id, onHand: Number(draft.onHand), reorderPoint: Number(draft.reorderPoint) });
+      const alertResponse = await fetch("/api/studio/alerts/low-stock", { method: "POST" });
+      const alertResult = await alertResponse.json();
+      if (!alertResponse.ok) throw new Error(alertResult.error || "Low-stock alerts could not be synchronized.");
+      await load(false);
+    }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Stock could not be updated."); }
     finally { setBusy(false); }
   }

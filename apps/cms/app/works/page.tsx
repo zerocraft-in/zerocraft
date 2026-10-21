@@ -230,7 +230,7 @@ export default function StudioWorksCRUD() {
                 }`}
             >
               <span>All Works</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-zinc-700 text-foreground text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
                 {tabCounts.all}
               </span>
             </button>
@@ -243,7 +243,7 @@ export default function StudioWorksCRUD() {
                 }`}
             >
               <span>Featured</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-700 text-[10px] font-bold">
                 {tabCounts.featured}
               </span>
             </button>
@@ -256,7 +256,7 @@ export default function StudioWorksCRUD() {
                 }`}
             >
               <span>Standard</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-zinc-700 text-foreground text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
                 {tabCounts.standard}
               </span>
             </button>
@@ -349,7 +349,7 @@ export default function StudioWorksCRUD() {
                 <TableHead className="w-12 text-right text-muted-foreground"></TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-zinc-800/50">
+            <TableBody className="divide-y divide-border">
               {filteredWorks.length === 0 ? (
                 <TableRow className="hover:bg-transparent border-none">
                   <TableCell colSpan={6} className="h-32 text-center text-xs text-muted-foreground">

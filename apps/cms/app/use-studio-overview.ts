@@ -41,6 +41,10 @@ export type StudioOverview = {
     date: string;
   }[];
   checkedAt: string;
+  workspaceProfile: { id: string; email: string; full_name: string; avatar_url: string | null; role: string } | null;
+  lowStock: number | null;
+  unreadNotifications: number | null;
+  notifications: { id: string; title: string; message: string; type: string; category: string; read: boolean; link: string | null; created_at: string }[];
 };
 
 export function useStudioOverview() {

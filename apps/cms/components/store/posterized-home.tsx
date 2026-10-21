@@ -23,9 +23,9 @@ const packs = [
 
 const categories = ["Music", "Aesthetic", "Anime", "Cars", "Superheroes", "Gaming", "Sports & F1", "Hollywood"];
 const heroSlides = [
-  { eyebrow: "Posterized / Print studio", title: <>Make your wall <span className="text-[#e34d2e]">loud.</span></>, copy: "Build a poster wall that feels like you. Pick a layout, choose your art, and we'll print it beautifully.", image: "/images/products/posterized-art-print-mockup.png", label: "The colour study" },
-  { eyebrow: "Posterized / Wearable drops", title: <>Wear your <span className="text-[#e34d2e]">point of view.</span></>, copy: "Graphic tees, matching sets, and screen-printed pieces made for everyday rotation.", image: "/images/products/posterized-tee-drop.png", label: "The tee drop" },
-  { eyebrow: "Posterized / Custom studio", title: <>Your idea, <span className="text-[#e34d2e]">printed.</span></>, copy: "Upload your artwork, arrange the composition, and turn a blank surface into something personal.", image: "/images/products/posterized-merch-collection.png", label: "Custom studio" },
+  { eyebrow: "Posterized / Print studio", title: <>Make your wall <span className="text-[#e34d2e]">loud.</span></>, copy: "Build a poster wall that feels like you. Pick a layout, choose your art, and we'll print it beautifully.", image: "/hero-designer.png", label: "The colour study" },
+  { eyebrow: "Posterized / Wearable drops", title: <>Wear your <span className="text-[#e34d2e]">point of view.</span></>, copy: "Graphic tees, matching sets, and screen-printed pieces made for everyday rotation.", image: "/hero-designer.png", label: "The tee drop" },
+  { eyebrow: "Posterized / Custom studio", title: <>Your idea, <span className="text-[#e34d2e]">printed.</span></>, copy: "Upload your artwork, arrange the composition, and turn a blank surface into something personal.", image: "/hero-designer.png", label: "Custom studio" },
 ];
 const faqs = [
   ["How it works", "Choose a product, select your variant, and add it to cart. Custom products can be edited before you submit the order request."],
@@ -95,7 +95,7 @@ export default function PosterizedHome({ products }: Props) {
         <div data-reveal className="mb-10 flex flex-wrap items-end justify-between gap-5"><div><p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#e34d2e]">01 / Start here</p><h2 className="text-4xl font-black tracking-[-0.06em] sm:text-6xl">Build your wall.</h2></div><p className="max-w-sm text-sm leading-6 text-[#151515]/60">Choose a layout first. You can swap every poster later, so there&apos;s no wrong way to start.</p></div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {packs.map((pack, index) => <Link data-reveal href="/store/shop?category=posters" key={pack.name} className={`group relative min-h-[300px] overflow-hidden rounded-3xl ${pack.className} p-5 transition-transform duration-500 hover:-translate-y-2`}>
-            <div className="absolute inset-0 opacity-20 mix-blend-multiply"><Image src="/images/products/posterized-art-print-mockup.png" alt="" fill className="object-cover grayscale" /></div>
+            <div className="absolute inset-0 opacity-20 mix-blend-multiply"><Image src="/hero-designer.png" alt="" fill className="object-cover grayscale" /></div>
             <div className="relative flex h-full flex-col justify-between"><span className="w-fit rounded-full bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{index === 2 ? "Most popular" : pack.tag}</span><div><div className="mb-5 grid grid-cols-3 gap-1.5 opacity-90">{Array.from({ length: index + 3 }).map((_, i) => <span key={i} className="aspect-[3/4] rounded-sm border-2 border-white/80 bg-white/70 shadow-sm" />)}</div><h3 className="text-2xl font-black tracking-tight">{pack.name}</h3><p className="mt-1 text-xs font-bold uppercase tracking-wider text-[#151515]/55">{pack.count} · {pack.price}</p><span className="mt-5 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider underline decoration-2 underline-offset-4">Choose layout <IconArrowUpRight size={14} /></span></div></div>
           </Link>)}
         </div>
@@ -112,7 +112,7 @@ export default function PosterizedHome({ products }: Props) {
             </div>
             <Link href="/store/shop?category=customized-gifts" className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#e34d2e] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:-translate-y-1">Make a custom piece <IconArrowUpRight size={17} /></Link>
           </div>
-          <div className="relative mt-8 aspect-[1.25] overflow-hidden rounded-2xl bg-[#c9c2b8] lg:mt-0"><Image src="/images/products/posterized-merch-collection.png" alt="Posterized merch and print collection" fill sizes="(max-width: 1024px) 100vw, 55vw" className="object-cover" /><div className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-[10px] font-black uppercase tracking-wider shadow-lg">Upload → arrange → print</div></div>
+          <div className="relative mt-8 aspect-[1.25] overflow-hidden rounded-2xl bg-[#c9c2b8] lg:mt-0"><Image src="/hero-designer.png" alt="Posterized merch and print collection" fill sizes="(max-width: 1024px) 100vw, 55vw" className="object-cover" /><div className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-[10px] font-black uppercase tracking-wider shadow-lg">Upload → arrange → print</div></div>
         </div>
       </section>
 

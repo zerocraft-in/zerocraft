@@ -215,8 +215,31 @@ export async function PATCH(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
   const { supabase, denied } = await studioClient();
   if (denied || !supabase) return denied;
-  let body: { entity?: string; id?: string; data?: CategoryInput | ProductInput };
+  let body: { entity?: string; id?: string; data?: CategoryInput | ProductInput; product_ids?: unknown; subcategory_id?: unknown };
   try { body = await request.json(); } catch { return jsonError("Invalid request body."); }
+  if (body.entity === "category_items") {
+    if (!body.id || !Array.isArray(body.product_ids) || body.product_ids.length > 1000 || !body.product_ids.every((id) => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id))) return jsonError("Choose valid category items.");
+    const subcategoryId = typeof body.subcategory_id === "string" ? body.subcategory_id : null;
+    if (subcategoryId) {
+      const { data: subcategory, error } = await supabase.from("store_subcategories").select("id,category_id").eq("id", subcategoryId).eq("category_id", body.id).maybeSingle();
+      if (error || !subcategory) return jsonError("The selected subcategory is unavailable.", 404);
+    } else {
+      const { data: category, error } = await supabase.from("store_categories").select("id").eq("id", body.id).maybeSingle();
+      if (error || !category) return jsonError("The selected category is unavailable.", 404);
+    }
+    const { error: assignmentError } = await supabase.rpc("studio_assign_products_to_category", {
+      p_category_id: body.id,
+      p_subcategory_id: subcategoryId,
+      p_product_ids: body.product_ids,
+    });
+    if (assignmentError) {
+      if (assignmentError.code === "P0002") return jsonError("One or more selected products no longer exist.", 404);
+      if (assignmentError.code === "42501") return jsonError("Studio access required.", 403);
+      return jsonError("Category items could not be updated atomically.", 503);
+    }
+    revalidateStoreCatalog();
+    return Response.json({ ok: true });
+  }
   if (!body.id || !body.data || typeof body.data !== "object") return jsonError("A record and its changes are required.");
   const data = body.data;
   if (body.entity === "subcategory") {

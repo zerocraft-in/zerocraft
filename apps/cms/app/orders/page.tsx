@@ -35,6 +35,8 @@ export default function OrdersPage() {
     else {
       setError(null);
       setOrders((current) => current.map((order) => ids.includes(order.id) ? { ...order, ...values } : order));
+      const emailResults = await Promise.all(ids.map(async (id) => { const response = await fetch("/api/studio/email/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId: id }) }); return response.ok; }));
+      if (emailResults.some((sent) => !sent)) setError("Order status saved, but one or more customer emails could not be sent.");
     }
     setBusy(false);
   }
@@ -77,7 +79,7 @@ export default function OrdersPage() {
             <TabsTrigger value="completed" className="flex-none rounded-md px-3">Completed <span className="ml-1 text-xs text-muted-foreground">{counts.completed}</span></TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="flex min-h-0 flex-1 flex-col"><OrdersDataTable data={filtered} loading={loading} onStatusChange={(order, status) => void updateOrders([order.id], { status })} onBulkStatusChange={(ids, status: OrderStatus) => void updateOrders(ids, { status })} /></div>
+        <div className="flex min-h-0 flex-1 flex-col"><OrdersDataTable data={filtered} loading={loading} onStatusChange={(order, status) => void updateOrders([order.id], { status })} onBulkStatusChange={(ids, status: OrderStatus) => void updateOrders(ids, { status })} onEmailOrder={async (order) => { const response = await fetch("/api/studio/email/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId: order.id }) }); if (!response.ok) setError("Order email could not be sent."); }} /></div>
         {busy && <p className="sr-only" role="status">Saving order changes…</p>}
       </CardContent>
     </Card>

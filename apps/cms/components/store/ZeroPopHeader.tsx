@@ -11,7 +11,7 @@ export default function ZeroPopHeader() {
         <Link href="/store/contact">Contact</Link>
       </nav>
       <Link className="zeropop-page-brand" href="/" aria-label="ZEROPOP home">
-        <Image src="/brand/zeropop-logo-header.svg" alt="ZEROPOP" width={158} height={50} priority />
+        <Image src="/icon.svg" alt="ZeroCraft" width={42} height={42} priority />
         <span>BY ZEROCRAFT STUDIO</span>
       </Link>
       <div className="zeropop-page-actions">

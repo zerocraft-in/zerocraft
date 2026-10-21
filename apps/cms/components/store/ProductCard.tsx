@@ -26,7 +26,7 @@ export default function ProductCard({
     useStore();
   const [isHovered, setIsHovered] = useState(false);
   const images = product.images?.filter(Boolean) ?? [];
-  const primaryImage = images[0] || "/og-image.jpg";
+  const primaryImage = images[0] || "/hero-designer.png";
   const secondaryImage = images[1] || primaryImage;
   const isMerch = /t-?shirt|hoodie|merch|apparel/i.test(
     `${product.title} ${product.category}`,
@@ -107,7 +107,7 @@ export default function ProductCard({
             >
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-[url('/patterns/craft-pattern.svg')] bg-[length:240px_240px] bg-repeat opacity-[0.3] mix-blend-screen transition-all duration-500 group-hover/cta:scale-105 group-hover/cta:opacity-[0.62]"
+                className="pointer-events-none absolute inset-0 bg-[#f3f0e8] opacity-[0.3] mix-blend-screen transition-all duration-500 group-hover/cta:scale-105 group-hover/cta:opacity-[0.62]"
               />
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <IconShoppingBag size={16} />

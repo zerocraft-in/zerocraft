@@ -9,6 +9,7 @@ import {
   IconBriefcase,
   IconCalendar,
   IconChartBar,
+  IconCircleCheck,
   IconFileText,
   IconPlus,
   IconRefresh,
@@ -28,6 +29,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { useStudioOverview } from "./use-studio-overview";
 
 const metricConfig = [
@@ -126,19 +128,24 @@ export default function StudioDashboard() {
         minute: "2-digit",
       }).format(new Date(data.checkedAt))
     : null;
+  const setupTasks = [
+    { title: "Create a portfolio project", description: "Add the first piece of work visitors should see.", href: "/works?create=1", complete: (table("works")?.count ?? 0) > 0, icon: IconBriefcase },
+    { title: "Publish a journal story", description: "Share an update from your studio.", href: "/blogs?create=1", complete: published > 0, icon: IconFileText },
+    { title: "Add a client", description: "Build your client directory for studio operations.", href: "/clients", complete: (table("clients")?.count ?? 0) > 0, icon: IconUsers },
+    { title: "Set up commerce", description: "Review products, orders, and inventory tools.", href: "/store", complete: (table("store_orders")?.count ?? 0) > 0, icon: IconShoppingBag },
+  ];
+  const completedSetupTasks = setupTasks.filter((task) => task.complete).length;
+  const setupProgress = loading ? 0 : Math.round((completedSetupTasks / setupTasks.length) * 100);
 
   return (
-    <main className="space-y-5 pb-10">
+    <main className="space-y-8 pb-10">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-[10px] font-semibold tracking-[0.2em] text-muted-foreground">
-            ZEROCRAFT / CONTROL CENTER
-          </p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-[-0.07em] sm:text-5xl">
-            Overview<span className="text-muted-foreground">.</span>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Welcome to ZeroCraft
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            A live snapshot of the content, customers, and commerce behind your studio.
+            Manage your content, customers, and commerce operations from one place.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -197,18 +204,43 @@ export default function StudioDashboard() {
         </div>
       )}
 
+      <section className="space-y-4" aria-labelledby="setup-heading">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 id="setup-heading" className="text-lg font-semibold">Set up your workspace</h2>
+            <p className="mt-1 text-sm text-muted-foreground">A few useful steps to get ZeroCraft ready for daily work.</p>
+          </div>
+          <div className="w-full sm:w-52">
+            <div className="mb-2 flex justify-between text-xs"><span className="text-muted-foreground">{completedSetupTasks} of {setupTasks.length} complete</span><span className="font-medium">{setupProgress}%</span></div>
+            <Progress value={setupProgress} />
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {setupTasks.map(({ title, description, href, complete, icon: Icon }, index) => (
+            <Card key={title} className="min-h-52 border-border shadow-none">
+              <CardHeader>
+                <span className="mb-3 grid size-9 place-items-center rounded-lg bg-muted text-muted-foreground">{complete ? <IconCircleCheck className="size-4 text-emerald-600" /> : <Icon className="size-4" />}</span>
+                <CardTitle className="text-sm">{title}</CardTitle>
+                <CardDescription className="leading-5">{description}</CardDescription>
+                <CardAction>{!complete && index === completedSetupTasks && <Badge variant="secondary">Up next</Badge>}</CardAction>
+              </CardHeader>
+              <CardContent className="mt-auto"><Button variant={complete ? "outline" : "default"} size="sm" className="w-full" render={<Link href={href} />} nativeButton={false}>{complete ? "Review" : "Get started"}<IconArrowUpRight /></Button></CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       <section
         className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]"
         aria-label="Workspace highlights"
       >
-        <Card className="relative min-h-[318px] overflow-hidden border-transparent bg-gradient-to-br from-fuchsia-700 via-pink-600 to-rose-500 text-white shadow-lg shadow-pink-500/10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_12%,rgba(255,255,255,0.28),transparent_28%),radial-gradient(circle_at_0%_100%,rgba(0,0,0,0.28),transparent_45%)]" />
+        <Card className="relative min-h-[318px] overflow-hidden border-border bg-card text-foreground shadow-none">
           <CardHeader className="relative z-10 flex-row items-start justify-between gap-4">
             <div>
-              <CardDescription className="font-mono text-[10px] tracking-[0.16em] text-white/70">WORKSPACE PULSE</CardDescription>
-              <CardTitle className="mt-2 text-lg text-white">Total activity</CardTitle>
+              <CardDescription className="font-mono text-[10px] tracking-[0.16em]">WORKSPACE PULSE</CardDescription>
+              <CardTitle className="mt-2 text-lg">Total activity</CardTitle>
             </div>
-            <Button render={<Link href="/reports" />} nativeButton={false} size="icon" variant="secondary" className="rounded-full bg-white text-zinc-900 hover:bg-white/90" aria-label="Open workspace reports">
+            <Button render={<Link href="/reports" />} nativeButton={false} size="icon" variant="secondary" className="rounded-full bg-foreground text-background hover:bg-foreground/90" aria-label="Open workspace reports">
               <IconArrowUpRight />
             </Button>
           </CardHeader>
@@ -216,14 +248,14 @@ export default function StudioDashboard() {
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="font-mono text-5xl font-semibold tracking-[-0.08em] sm:text-6xl">{loading ? "—" : totalRecords.toLocaleString()}</p>
-                <p className="mt-2 text-sm text-white/70">records across connected studio areas</p>
+                <p className="mt-2 text-sm text-muted-foreground">records across connected studio areas</p>
               </div>
-              <div className="hidden text-right sm:block"><p className="font-mono text-2xl font-semibold">{connectedSources}/5</p><p className="text-xs text-white/70">sources online</p></div>
+              <div className="hidden text-right sm:block"><p className="font-mono text-2xl font-semibold">{connectedSources}/5</p><p className="text-xs text-muted-foreground">sources online</p></div>
             </div>
             <div className="grid max-w-sm grid-cols-8 gap-2" aria-hidden="true">
-              {Array.from({ length: 32 }, (_, index) => <span key={index} className={`size-2 rounded-full border ${index % 3 === 0 ? "border-white bg-white" : "border-white/35 bg-transparent"} ${index % 7 === 0 ? "opacity-50" : ""}`} />)}
+              {Array.from({ length: 32 }, (_, index) => <span key={index} className={`size-2 rounded-full border ${index % 3 === 0 ? "border-foreground bg-foreground" : "border-foreground/25 bg-transparent"} ${index % 7 === 0 ? "opacity-50" : ""}`} />)}
             </div>
-            <div className="flex items-center justify-between border-t border-white/20 pt-4 text-xs text-white/75"><span>{checkedAtLabel ? `Checked at ${checkedAtLabel}` : "Waiting for live data"}</span><Link href="/settings" className="inline-flex items-center gap-1 font-medium text-white hover:underline">Workspace settings<IconArrowUpRight className="size-3.5" /></Link></div>
+            <div className="flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground"><span>{checkedAtLabel ? `Checked at ${checkedAtLabel}` : "Waiting for live data"}</span><Link href="/settings" className="inline-flex items-center gap-1 font-medium text-foreground hover:underline">Workspace settings<IconArrowUpRight className="size-3.5" /></Link></div>
           </CardContent>
         </Card>
         <Card className="min-h-[318px] border-border/70 bg-card">

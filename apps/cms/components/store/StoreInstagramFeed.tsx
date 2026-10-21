@@ -4,12 +4,12 @@ import { IconInstagram, IconPinterest, IconYoutube } from "@/components/store/St
 import type { CatalogProduct } from "@/lib/commerce/catalog";
 
 const fallbackImages = [
-  "/images/products/catalog/poster-frame-of-mind.png",
-  "/images/products/catalog/photo-frame-quiet.png",
-  "/images/products/catalog/tee-cut-to-feeling.png",
-  "/images/products/catalog/hoodie-signal.png",
-  "/images/products/catalog/print-colour-scenes.png",
-  "/images/products/catalog/tote-matinee.png",
+  "/hero-designer.png",
+  "/hero-designer.png",
+  "/hero-designer.png",
+  "/hero-designer.png",
+  "/hero-designer.png",
+  "/hero-designer.png",
 ];
 
 export default function StoreInstagramFeed({ products }: { products: CatalogProduct[] }) {

@@ -237,7 +237,7 @@ export default function StudioBlogsCRUD() {
                 }`}
             >
               <span>All Articles</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-zinc-700 text-foreground text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
                 {tabCounts.all}
               </span>
             </button>
@@ -250,7 +250,7 @@ export default function StudioBlogsCRUD() {
                 }`}
             >
               <span>Published</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-[#22C55E]/20 text-[#4ADE80] text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-700 text-[10px] font-bold">
                 {tabCounts.published}
               </span>
             </button>
@@ -263,7 +263,7 @@ export default function StudioBlogsCRUD() {
                 }`}
             >
               <span>Drafts</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-700 text-[10px] font-bold">
                 {tabCounts.draft}
               </span>
             </button>
@@ -369,7 +369,7 @@ export default function StudioBlogsCRUD() {
                 <TableHead className="w-12 text-right text-muted-foreground"></TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-zinc-800/50">
+            <TableBody className="divide-y divide-border">
               {filteredBlogs.length === 0 ? (
                 <TableRow className="hover:bg-transparent border-none">
                   <TableCell colSpan={7} className="h-32 text-center text-xs text-muted-foreground">

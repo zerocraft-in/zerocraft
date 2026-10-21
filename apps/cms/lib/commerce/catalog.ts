@@ -167,8 +167,8 @@ function mapProduct(row: ProductRow): CatalogProduct {
   if (!images.length) {
     const productText = `${row.title} ${row.description ?? ""} ${category?.name ?? ""}`.toLowerCase();
     images.push(productText.includes("tee") || productText.includes("shirt") || productText.includes("hoodie") || productText.includes("merch")
-      ? "/og-image.jpg"
-      : "/og-image.jpg");
+      ? "/hero-designer.png"
+      : "/hero-designer.png");
   }
 
   return {

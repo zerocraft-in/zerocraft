@@ -172,11 +172,12 @@ export default function StudioClientsCRUD() {
   }, [clients]);
 
   return (
-    <div className="space-y-8 max-w-[1600px] mx-auto pt-2 text-foreground font-sans antialiased">
+    <div className="mx-auto w-full max-w-[1180px] space-y-7 px-6 py-7 text-foreground font-sans antialiased lg:px-10">
       {/* Top Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-medium tracking-tight text-foreground flex items-center gap-2.5">
+          <div className="mb-2 text-[11px] text-muted-foreground">Studio / Clients</div>
+          <h1 className="text-[22px] font-medium tracking-tight text-foreground flex items-center gap-2.5">
             <IconUsers className="w-6 h-6 text-[#22C55E]" /> Clients
           </h1>
           <p className="text-xs text-muted-foreground font-normal mt-0.5">
@@ -194,19 +195,19 @@ export default function StudioClientsCRUD() {
       </div>
 
       {/* Reference-Styled Table Container */}
-      <div className=" py-6 bg-background space-y-6">
+      <div className="space-y-5 bg-background">
         {/* Top Pill Tabs & Actions */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 bg-card p-1.5 rounded-full border border-border max-w-max">
+          <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1 shadow-sm max-w-max">
             <button
               onClick={() => setActiveTab("all")}
               className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${activeTab === "all"
-                  ? "bg-accent text-foreground border border-border shadow-md"
+                  ? "bg-accent text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-accent-foreground"
                 }`}
             >
               <span>All Clients</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-zinc-700 text-foreground text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
                 {tabCounts.all}
               </span>
             </button>
@@ -214,12 +215,12 @@ export default function StudioClientsCRUD() {
             <button
               onClick={() => setActiveTab("active")}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "active"
-                  ? "bg-accent text-foreground border border-border shadow-md"
+                  ? "bg-accent text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-accent-foreground"
                 }`}
             >
               <span>Active</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-[#22C55E]/20 text-[#4ADE80] text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-700 text-[10px] font-bold">
                 {tabCounts.active}
               </span>
             </button>
@@ -227,12 +228,12 @@ export default function StudioClientsCRUD() {
             <button
               onClick={() => setActiveTab("lead")}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "lead"
-                  ? "bg-accent text-foreground border border-border shadow-md"
+                  ? "bg-accent text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-accent-foreground"
                 }`}
             >
               <span>Leads</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-purple-500/15 text-purple-700 text-[10px] font-bold">
                 {tabCounts.lead}
               </span>
             </button>
@@ -334,7 +335,7 @@ export default function StudioClientsCRUD() {
                 <TableHead className="w-12 text-right text-muted-foreground"></TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-zinc-800/50">
+            <TableBody className="divide-y divide-border">
               {filteredClients.length === 0 ? (
                 <TableRow className="hover:bg-transparent border-none">
                   <TableCell colSpan={7} className="h-32 text-center text-xs text-muted-foreground">

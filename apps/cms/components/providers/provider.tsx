@@ -12,7 +12,7 @@ export function Providers({ children }: ProvidersProps) {
     <AuthProvider>
       <CurrencyProvider>
         {children}
-        <Toaster position="bottom-right" theme="dark" />
+        <Toaster position="bottom-right" theme="light" />
       </CurrencyProvider>
     </AuthProvider>
   );

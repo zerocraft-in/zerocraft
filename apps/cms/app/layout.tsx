@@ -14,10 +14,10 @@ export default function StudioLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className="min-w-80 bg-background font-sans text-foreground">
         <Providers>
-          <div id="zerocraft-cms" className="dark min-h-svh bg-background font-sans text-foreground" data-appearance="dark" data-theme="dark">
+          <div id="zerocraft-cms" className="min-h-svh bg-background font-sans text-foreground" data-appearance="light" data-theme="light">
             <StudioAppearance>
               <CmsFrame>{children}</CmsFrame>
               <div id="studio-portals" />
