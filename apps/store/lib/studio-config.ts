@@ -1,6 +1,6 @@
 // The production domain and email are the existing studio configuration.
 export const studio = {
-  url: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://zerocraft.in").origin,
+  url: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://store.zerocraft.in").origin,
   email: "hello@zerocraft.in",
   description: "Zerocraft Studio is a creative and digital studio in Tenkasi, India, specializing in branding, design, web and app development, photography, video, and motion.",
 };

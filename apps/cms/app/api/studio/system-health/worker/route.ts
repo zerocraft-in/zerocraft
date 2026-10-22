@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     const sla = await evaluateSystemHealthSla({ supabase: service });
     return Response.json({ ok: true, overall: health.overall, checkedAt: health.summary.checkedAt, sla });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "System health worker failed" }, { status: 500 });
+    console.error("System health worker failed", error);
+    return Response.json({ error: "System health worker failed" }, { status: 500 });
   }
 }

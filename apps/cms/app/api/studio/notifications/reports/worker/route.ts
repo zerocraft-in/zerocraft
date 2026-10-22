@@ -37,8 +37,9 @@ export async function POST(request: Request) {
     return Response.json({ ok: true, status: "succeeded", runId: claimed.id, recipientCount: validRecipients.length });
   } catch (cause) {
     const errorMessage = cause instanceof Error ? cause.message.slice(0, 500) : "Scheduled report delivery failed.";
+    console.error("Scheduled report delivery failed", cause);
     await supabase.from("studio_notification_report_runs").update({ status: "failed", finished_at: new Date().toISOString(), error_message: errorMessage }).eq("id", claimed.id);
-    return Response.json({ error: errorMessage, runId: claimed.id }, { status: 502 });
+    return Response.json({ error: "Scheduled report delivery failed.", runId: claimed.id }, { status: 502 });
   }
 }
 

@@ -1,6 +1,6 @@
 export const studio = {
   name: "Zerocraft Studio",
-  url: process.env.NEXT_PUBLIC_STUDIO_URL || "http://localhost:3000",
+  url: process.env.NEXT_PUBLIC_STUDIO_URL || "https://zerocraft.in",
   email: "hello@zerocraft.in",
   description: "Zerocraft Studio builds distinctive brands, meaningful digital experiences, and compelling visual stories.",
 };

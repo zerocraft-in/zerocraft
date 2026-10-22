@@ -21,15 +21,12 @@ interface StoreState {
   // Cart State
   cart: CartItem[];
   cartDrawerOpen: boolean;
-  couponCode: string;
-  discountPercentage: number;
   giftNote: string;
   addToCart: (product: Product, quantity?: number, color?: string, size?: string, variantId?: string, variantLabel?: string, customizationReference?: string) => void;
   removeFromCart: (lineId: string) => void;
   updateQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
   toggleCartDrawer: (open?: boolean) => void;
-  applyCoupon: (code: string) => { success: boolean; message: string };
   setGiftNote: (note: string) => void;
 
   // UI State
@@ -63,8 +60,6 @@ export const useStore = create<StoreState>()(
       // Cart
       cart: [],
       cartDrawerOpen: false,
-      couponCode: "",
-      discountPercentage: 0,
       giftNote: "",
 
       addToCart: (product, quantity = 1, color, size, variantId, variantLabel, customizationReference) => {
@@ -115,25 +110,12 @@ export const useStore = create<StoreState>()(
         });
       },
 
-      clearCart: () => set({ cart: [], couponCode: "", discountPercentage: 0, giftNote: "" }),
+      clearCart: () => set({ cart: [], giftNote: "" }),
 
       toggleCartDrawer: (open) =>
         set((state) => ({
           cartDrawerOpen: open !== undefined ? open : !state.cartDrawerOpen,
         })),
-
-      applyCoupon: (code) => {
-        const cleanCode = code.trim().toUpperCase();
-        if (cleanCode === "CRAFT10" || cleanCode === "WELCOME10") {
-          set({ couponCode: cleanCode, discountPercentage: 10 });
-          return { success: true, message: "10% discount coupon applied!" };
-        } else if (cleanCode === "ZEROCRAFT20" || cleanCode === "LUXURY20") {
-          set({ couponCode: cleanCode, discountPercentage: 20 });
-          return { success: true, message: "20% VIP discount coupon applied!" };
-        } else {
-          return { success: false, message: "Invalid or expired coupon code. Try CRAFT10 or ZEROCRAFT20." };
-        }
-      },
 
       setGiftNote: (note) => set({ giftNote: note }),
 
@@ -187,16 +169,11 @@ export const useStore = create<StoreState>()(
           ...state,
           cart,
           orders: (state.orders || []).filter((order) => !DUMMY_ORDERS.some((sample) => sample.id === order.id)),
-          userProfile: state.userProfile?.email === "julian.vance@zerocraft.in" ? {
-            name: "", email: "", avatar: "", phone: "",
-            address: { street: "", city: "", state: "", postalCode: "", country: "" },
-          } : state.userProfile,
+          userProfile: state.userProfile,
         } as StoreState;
       },
       partialize: (state) => ({
         cart: state.cart,
-        couponCode: state.couponCode,
-        discountPercentage: state.discountPercentage,
         userProfile: state.userProfile,
         orders: state.orders,
       }),

@@ -17,6 +17,7 @@ const supabaseHostname = (() => {
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  experimental: { cpus: 1, webpackBuildWorker: false },
   ...(releaseDistDirectory ? { distDir: releaseDistDirectory } : {}),
   ...(releaseDistDirectory
     ? { experimental: { cpus: 1, webpackBuildWorker: false } }
