@@ -5,10 +5,17 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import Magnetic from "@/components/ui/Magnetic";
 import Menu from "@/components/layout/Menu";
-import PixelHand from "@/components/ui/PixelHand";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 24);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
 
   // Lock body scroll and pause Lenis smooth scroll when menu is open
   useEffect(() => {
@@ -45,7 +52,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="navbar" role="navigation" aria-label="Main navigation">
+      <nav className={`navbar${scrolled ? " navbar--scrolled" : ""}`} role="navigation" aria-label="Main navigation">
         <div className="navbar__inner">
           {/* Logo */}
           <Link
@@ -77,14 +84,6 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="navbar__actions">
-            {/* Say Hello */}
-            <Magnetic strength={0.15}>
-              <Link href="/contact" className="navbar__link">
-                Say Hello
-                <PixelHand />
-              </Link>
-            </Magnetic>
-
             {/* Theme Toggle */}
             <ThemeToggle />
 

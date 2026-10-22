@@ -1,8 +1,9 @@
 export default function ArrowIcon({
   size = 16,
+  direction = "up-right",
   className = "",
 }: {
-  direction?: string;
+  direction?: "up-right" | "down" | "up" | "right";
   size?: number;
   className?: string;
 }) {
@@ -13,7 +14,7 @@ export default function ArrowIcon({
       viewBox="0 0 18 18"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      className={`arrow-icon arrow-icon--${direction} ${className}`.trim()}
       aria-hidden="true"
       focusable="false"
     >

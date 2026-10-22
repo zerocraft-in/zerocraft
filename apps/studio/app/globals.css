@@ -1,33 +1,34 @@
 /* Zerocraft Studio design tokens. This app intentionally uses plain CSS. */
 :root {
-  --background: #f5f4ef;
-  --foreground: #10110f;
-  --border: #e4e4e7;
-  --zc-bg: #f5f4ef;
-  --zc-text: #10110f;
+  --background: #f5f3ec;
+  --foreground: #12130f;
+  --border: #deded5;
+  --zc-bg: #f5f3ec;
+  --zc-text: #12130f;
   --zc-text-muted: #686a61;
-  --zc-border: #e4e4e7;
-  --zc-accent: #d3ff00;
-  --zc-accent-hover: #c5ec00;
+  --zc-border: #deded5;
+  --zc-accent: #c8f23d;
+  --zc-accent-hover: #d8ff69;
   --font-primary: "Inter";
   --font-mono: "Inter";
 }
 
 .dark {
-  --background: #10110f;
-  --foreground: #f5f4ef;
+  --background: #12130f;
+  --foreground: #f5f3ec;
   --border: rgba(255, 255, 255, 0.12);
-  --zc-bg: #10110f;
-  --zc-text: #f5f4ef;
+  --zc-bg: #12130f;
+  --zc-text: #f5f3ec;
   --zc-text-muted: #a5a79c;
   --zc-border: rgba(255, 255, 255, 0.12);
-  --zc-accent: #d3ff00;
-  --zc-accent-hover: #e2ff38;
+  --zc-accent: #c8f23d;
+  --zc-accent-hover: #d8ff69;
 }
 
 * { box-sizing: border-box; border-color: var(--border); }
 *::before, *::after { box-sizing: border-box; }
-html { background: var(--background); color: var(--foreground); font-family: var(--font-primary), sans-serif; scroll-behavior: smooth; }
+html { background: var(--background); color: var(--foreground); font-family: var(--font-primary), sans-serif; scroll-behavior: smooth; scrollbar-width: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; display: none; }
 body { margin: 0; min-width: 0; background: var(--background); color: var(--foreground); line-height: 1.6; overflow-x: hidden; }
 h1, h2, h3, h4, h5, h6 { font-family: var(--font-primary), sans-serif; line-height: 1.2; }
 a { color: inherit; }
@@ -41,6 +42,25 @@ img, video { display: block; max-width: 100%; }
 .antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 .text-muted { color: var(--zc-text-muted); }
 .container-site { width: 100%; max-width: 1600px; margin: 0 auto; padding: 0 20px; }
+.route-transition { width: 100%; min-width: 0; }
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  height: 2px;
+  pointer-events: none;
+}
+.scroll-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--zc-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
 @media (min-width: 768px) { .container-site { padding: 0 32px; } }
 @media (min-width: 1024px) { .container-site { padding: 0 48px; } }
 

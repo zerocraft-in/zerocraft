@@ -19,7 +19,7 @@ export default function StudioGlyph({
         fontSize: size,
       }}
     >
-      {variant === "close" ? "×" : variant === "plus" ? "+" : "·"}
+      {variant === "close" ? "×" : variant === "plus" ? "+" : variant === "spark" ? "✦" : "·"}
     </span>
   );
 }

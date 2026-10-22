@@ -21,6 +21,11 @@ export type StudioProject = {
 export default function Works({ projects }: { projects: StudioProject[] }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [selected, setSelected] = useState<StudioProject | null>(null);
+  const [activeFilter, setActiveFilter] = useState("All");
+  const categories = ["All", ...Array.from(new Set(projects.map((project) => project.category)))];
+  const visibleProjects = activeFilter === "All"
+    ? projects
+    : projects.filter((project) => project.category === activeFilter);
   useEffect(() => {
     if (!selected) return;
     const previousOverflow = document.body.style.overflow;
@@ -62,8 +67,21 @@ export default function Works({ projects }: { projects: StudioProject[] }) {
         <p className="studio-work__disclosure">
           Published projects from the Zerocraft Studio portfolio.
         </p>
-        <div className="studio-work__grid">
-          {projects.map((project, index) => (
+        <div className="studio-work__filters" aria-label="Filter projects by discipline">
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              className={activeFilter === category ? "studio-work__filter studio-work__filter--active" : "studio-work__filter"}
+              aria-pressed={activeFilter === category}
+              onClick={() => setActiveFilter(category)}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+        {visibleProjects.length > 0 ? <div className="studio-work__grid">
+          {visibleProjects.map((project, index) => (
             <button
               className="project-card"
               key={project.title}
@@ -91,9 +109,14 @@ export default function Works({ projects }: { projects: StudioProject[] }) {
                   <ArrowIcon direction="up-right" size={16} />
                 </span>
               </span>
+              <span className="project-card__hover-note">Open case study <ArrowIcon direction="up-right" size={11} /></span>
             </button>
           ))}
-        </div>
+        </div> : <div className="studio-work__empty" role="status">
+          <span className="studio-eyebrow">Portfolio loading</span>
+          <p>New case studies are being prepared. Start a conversation and we’ll share the work most relevant to your brief.</p>
+          <a href="mailto:hello@zerocraft.in">Request the private reel <ArrowIcon direction="up-right" size={12} /></a>
+        </div>}
         <div className="studio-work__footer">
           <a
             href="https://instagram.com/studio.zerocraft"

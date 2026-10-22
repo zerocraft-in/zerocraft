@@ -3,6 +3,15 @@ import { useState, type FormEvent } from "react";
 import ArrowIcon from "@/components/ui/ArrowIcon";
 export default function ProjectBrief() {
   const [prepared, setPrepared] = useState(false);
+  const [completion, setCompletion] = useState(0);
+  function updateCompletion(form: HTMLFormElement) {
+    const fields = ["name", "email", "message"];
+    const filled = fields.filter((name) => {
+      const field = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | null;
+      return Boolean(field?.value.trim());
+    }).length;
+    setCompletion(Math.round((filled / fields.length) * 100));
+  }
   function prepareEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     for (const name of ["name", "message"]) {
@@ -48,6 +57,7 @@ export default function ProjectBrief() {
             field instanceof HTMLTextAreaElement
           )
             field.setCustomValidity("");
+          updateCompletion(event.currentTarget);
           setPrepared(false);
         }}
         onSubmit={prepareEmail}
@@ -108,6 +118,10 @@ export default function ProjectBrief() {
           This prepares a draft in your email app. Review it and press Send
           there; this form does not send or store your message.
         </p>
+        <div className="studio-brief__progress" aria-label={`Brief completion ${completion}%`}>
+          <div className="studio-brief__progress-label"><span>Brief readiness</span><span>{String(completion).padStart(3, "0")} %</span></div>
+          <span className="studio-brief__progress-track"><span style={{ width: `${completion}%` }} /></span>
+        </div>
         <button className="badge-btn" type="submit">
           PREPARE MY EMAIL <ArrowIcon direction="up-right" size={13} />
         </button>

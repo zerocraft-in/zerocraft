@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { type MouseEvent } from "react";
 import type Lenis from "lenis";
 import BadgeButton from "@/components/ui/BadgeButton";
 import ArrowIcon from "@/components/ui/ArrowIcon";
@@ -9,7 +9,6 @@ import RotatingWords from "@/components/ui/RotatingWords";
 const words = ["extraordinary.", "meaningful.", "memorable."];
 
 export default function Hero() {
-  const [paused, setPaused] = useState(false);
   function explore(event: MouseEvent<HTMLAnchorElement>) {
     const target = document.getElementById("works");
     if (!target) return;
@@ -65,7 +64,7 @@ export default function Hero() {
         >
           <span>Ideas made bold.</span>
           <span>Experiences made</span>
-          <RotatingWords words={words} paused={paused} className="hero__word-window studio-accent" />
+          <RotatingWords words={words} className="hero__word-window studio-accent" />
         </h1>
         <p className="hero__intro">
           We build distinctive brands, meaningful digital experiences, and
@@ -77,17 +76,6 @@ export default function Hero() {
             EXPLORE OUR WORK <ArrowIcon direction="up-right" size={12} />
           </a>
         </div>
-        <button
-          type="button"
-          className="hero__motion-toggle"
-          onClick={() => setPaused(!paused)}
-          aria-pressed={paused}
-          aria-label={
-            paused ? "Play headline animation" : "Pause headline animation"
-          }
-        >
-          {paused ? <>Play motion <ArrowIcon direction="up-right" size={10} /></> : "Pause motion Ⅱ"}
-        </button>
       </div>
       <div className="hero__bottom">
         <a
