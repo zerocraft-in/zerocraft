@@ -21,10 +21,6 @@ const nextConfig: NextConfig = {
     cpus: 1,
     workerThreads: false,
     webpackBuildWorker: false,
-    parallelServerCompiles: false,
-    parallelServerBuildTraces: false,
-    staticGenerationMaxConcurrency: 1,
-    staticGenerationRetryCount: 0,
   },
   distDir: releaseDistDirectory || (process.env.VERCEL ? ".next" : ".next-local"),
   ...(releaseDistDirectory
@@ -33,10 +29,6 @@ const nextConfig: NextConfig = {
           cpus: 1,
           workerThreads: false,
           webpackBuildWorker: false,
-          parallelServerCompiles: false,
-          parallelServerBuildTraces: false,
-          staticGenerationMaxConcurrency: 1,
-          staticGenerationRetryCount: 0,
         },
       }
     : {}),
