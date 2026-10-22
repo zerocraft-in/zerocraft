@@ -1,10 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import Link from "next/link";
 import {
   IconAlertTriangle,
-  IconArrowLeft,
   IconBox,
   IconCheck,
   IconPlus,
@@ -16,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageState } from "@/components/studio/page-state";
+import { PageHeader, PageShell } from "@/components/studio/page-header";
 
 type Location = { id: string; name: string; code: string; is_active: boolean; created_at: string };
 type Level = {
@@ -157,15 +156,8 @@ export default function InventoryWorkspace() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100dvh-10rem)] w-full max-w-screen-xl flex-col gap-6 pb-14">
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Button variant="ghost" size="sm" className="mb-3 -ml-2 gap-2" render={<Link href="/studio/store" />} nativeButton={false}><IconArrowLeft /> Store overview</Button>
-          <h1 className="text-4xl font-semibold tracking-[-0.06em]">Inventory</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Manage stock by location, track reserved units, and keep reorder points accurate.</p>
-        </div>
-        <Button variant="outline" size="icon" aria-label="Refresh inventory" onClick={() => void load()} disabled={loading}><IconRefresh /></Button>
-      </header>
+    <PageShell className="max-w-screen-xl">
+      <PageHeader eyebrow="Store / Operations" title="Inventory" description="Manage stock by location, track reserved units, and keep reorder points accurate." actions={<Button variant="outline" size="icon" aria-label="Refresh inventory" onClick={() => void load()} disabled={loading}><IconRefresh /></Button>} />
 
       {error && <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}
 
@@ -181,6 +173,6 @@ export default function InventoryWorkspace() {
 
         <Card className="h-fit"><CardHeader><CardTitle>Locations</CardTitle><CardDescription>{canManageInventory ? "Create locations for stock tracking. Deactivate locations before removing them from operations." : "View stock locations and their current status."}</CardDescription></CardHeader><CardContent className="grid gap-4">{canManageInventory && <form onSubmit={addLocation} className="grid gap-2 rounded-xl border border-dashed p-3"><Input value={locationName} onChange={(event) => setLocationName(event.target.value)} placeholder="Location name" required maxLength={120} className={inputClass} /><Input value={locationCode} onChange={(event) => setLocationCode(event.target.value.toUpperCase())} placeholder="Code e.g. MAIN" required minLength={2} maxLength={32} className={inputClass} /><Button type="submit" disabled={busy} className="gap-2"><IconPlus /> Add location</Button></form>}<div className="grid gap-2">{payload.locations.map((location) => <div key={location.id} className="flex items-center gap-3 rounded-xl border px-3 py-3"><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground"><IconBox size={16} /></span><div className="min-w-0 flex-1"><strong className="block truncate text-sm">{location.name}</strong><span className="text-xs text-muted-foreground">{location.code}</span></div><Badge variant={location.is_active ? 'default' : 'secondary'}>{location.is_active ? 'Active' : 'Inactive'}</Badge>{canManageInventory && <><Button variant="ghost" size="icon-xs" aria-label={`${location.is_active ? 'Deactivate' : 'Activate'} ${location.name}`} onClick={() => void toggleLocation(location)} disabled={busy}><IconRefresh /></Button><Button variant="ghost" size="icon-xs" aria-label={`Delete ${location.name}`} onClick={() => void deleteLocation(location)} disabled={busy}><IconTrash /></Button></>}</div>)}{!loading && !payload.locations.length && <PageState kind="empty" title="No locations yet" description="Add your first stock location above." className="min-h-32 border-0 rounded-none py-5" />}</div></CardContent></Card>
       </section>
-    </main>
+    </PageShell>
   );
 }
