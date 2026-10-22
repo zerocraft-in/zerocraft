@@ -7,6 +7,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { IconCheck, IconChevronRight, IconFolder, IconHierarchy3, IconPhoto, IconSearch, IconTag, IconX } from "@tabler/icons-react";
+import { PageState } from "@/components/studio/page-state";
 
 type Category = { id: string; name: string; slug: string; description: string; image_url: string; is_active: boolean; store_subcategories?: Array<{ id: string; name: string; is_active: boolean }> };
 type Product = { id: string; title: string; image_url: string; category_id: string | null };
@@ -135,7 +136,7 @@ export default function CategoryEditorPage({ categoryId }: { categoryId?: string
     }
   }
 
-  if (loading) return <main className="mx-auto w-full max-w-[1180px] px-6 py-10"><div className="h-8 w-48 animate-pulse rounded-lg bg-muted" /><div className="mt-8 h-[520px] animate-pulse rounded-2xl border bg-muted/40" /></main>;
+  if (loading) return <main className="mx-auto w-full max-w-[1180px] px-6 py-10"><PageState kind="loading" title={editing ? "Loading category" : "Preparing category"} description="Fetching catalog data and editor settings." /></main>;
 
   return (
     <main className="min-h-screen w-full bg-background text-foreground">
