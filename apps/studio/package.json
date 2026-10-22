@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000",
-    "build": "next build --webpack",
+    "build": "node ../../scripts/next-windows-build.cjs build --webpack",
     "start": "next start --port 3000",
     "typecheck": "next typegen && tsc --noEmit"
   },
