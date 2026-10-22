@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const configDirectory = path.dirname(fileURLToPath(import.meta.url));
+const releaseDistDirectory = process.env.CMS_BUILD_DIR?.trim();
 
 const supabaseHostname = (() => {
   const value = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,6 +17,10 @@ const supabaseHostname = (() => {
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  ...(releaseDistDirectory ? { distDir: releaseDistDirectory } : {}),
+  ...(releaseDistDirectory
+    ? { experimental: { cpus: 1, webpackBuildWorker: false } }
+    : {}),
   outputFileTracingRoot: path.join(configDirectory, "../.."),
   transpilePackages: ["@zerocraft/supabase"],
   images: {

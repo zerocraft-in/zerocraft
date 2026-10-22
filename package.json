@@ -16,6 +16,7 @@
     "build:studio": "turbo run build --filter=@zerocraft/studio",
     "build:store": "turbo run build --filter=@zerocraft/store",
     "build:cms": "turbo run build --filter=@zerocraft/cms",
+    "build:cms:release": "node scripts/release/build-cms.mjs",
     "typecheck": "turbo run typecheck",
     "lint": "eslint .",
     "lint:cms": "eslint apps/cms --no-cache",

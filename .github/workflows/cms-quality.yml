@@ -8,6 +8,8 @@ on:
       - "apps/cms/**"
       - "packages/supabase/**"
       - "scripts/**"
+      - "eslint.config.mjs"
+      - ".github/workflows/cms-quality.yml"
       - "package.json"
       - "package-lock.json"
 
@@ -18,7 +20,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,5 +29,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run verify:release
-      - run: npm run build:cms
+      - run: npm run build:cms:release
 
