@@ -1,2 +1,15 @@
-import { SquareWorkspace } from "@/components/studio/square-workspace";
-export default function TimeTrackingPage() { return <SquareWorkspace config={{ eyebrow: "Staff", title: "Time tracking", description: "Review team hours, approvals, and labor trends without leaving your workspace.", primaryAction: { label: "Add time entry", href: "/time-tracking" }, stats: [{ label: "Hours today", value: "0h", detail: "Across the team" }, { label: "Pending approval", value: "0", detail: "Timecards" }, { label: "This week", value: "0h", detail: "Logged hours" }, { label: "Labor cost", value: "₹0", detail: "Current period" }], tabs: ["Timecards", "Approvals", "Labor trends"], rows: [{ name: "No time entries", meta: "Team timecards will appear here", status: "Active", value: "—" }] }} />; }
+import { ComingSoonPage } from "@/components/studio/coming-soon-page";
+export default function TimeTrackingPage() {
+  return (
+    <ComingSoonPage
+      area="Staff"
+      title="Time tracking"
+      description="Review team hours, approvals, and labor trends."
+      plannedFeatures={[
+        "Time entry workflow",
+        "Approval queue",
+        "Labor cost reporting",
+      ]}
+    />
+  );
+}

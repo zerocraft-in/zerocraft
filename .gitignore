@@ -44,6 +44,12 @@ yarn-error.log*
 /.storage-runtime-test/
 /.seed-preflight/
 
+# Local Supabase runtime state and visual QA artifacts
+/supabase/.temp/
+/packages/supabase/supabase/supabase/.temp/
+/tmp/
+/apps/cms/ref/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

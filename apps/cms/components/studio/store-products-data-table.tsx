@@ -31,6 +31,7 @@ import {
   IconPackage,
   IconSearch,
   IconTrash,
+  IconX,
 } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -461,7 +462,7 @@ export function StoreProductsDataTable({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       <section
-        className="grid overflow-hidden rounded-lg border bg-card sm:grid-cols-3"
+        className="grid overflow-hidden rounded-xl border border-border/80 bg-card sm:grid-cols-3"
         aria-label="Product summary"
       >
         {[
@@ -479,7 +480,7 @@ export function StoreProductsDataTable({
         ].map((metric) => (
           <div
             key={metric.label}
-            className="border-b px-4 py-3 last:border-b-0 sm:border-r sm:border-b-0 sm:last:border-r-0"
+            className="border-b border-border/70 px-4 py-3 last:border-b-0 sm:border-r sm:border-b-0 sm:last:border-r-0"
           >
             <p className="text-sm text-muted-foreground">{metric.label}</p>
             <div className="mt-2 flex items-baseline justify-between gap-3">
@@ -493,7 +494,7 @@ export function StoreProductsDataTable({
           </div>
         ))}
       </section>
-      <div className="flex flex-col gap-3 rounded-lg border bg-card p-2 xl:flex-row xl:items-center">
+      <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-card p-2.5 xl:flex-row xl:items-center">
         <Tabs value={typeFilter} onValueChange={setType}>
           <TabsList className="h-9">
             <TabsTrigger value="all">All products</TabsTrigger>
@@ -551,7 +552,7 @@ export function StoreProductsDataTable({
                 {statusFilter === "all" ? "All statuses" : statusFilter}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent side="top">
+            <SelectContent side="bottom">
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
@@ -629,19 +630,20 @@ export function StoreProductsDataTable({
           </Button>
           <Button
             type="button"
-            size="sm"
             variant="ghost"
             className="ml-auto"
+            size="icon-sm"
+            aria-label="Clear product selection"
             onClick={() => table.resetRowSelection()}
           >
-            Clear selection
+            <IconX className="size-4" />
           </Button>
         </div>
       )}
 
       <div
         ref={tableRef}
-        className="min-h-0 overflow-hidden rounded-lg border border-border bg-card"
+        className="min-h-0 overflow-x-auto rounded-xl border border-border bg-card"
       >
         <Table className="min-w-[900px]" style={{ width: "100%" }}>
           <TableHeader className="bg-muted/40">

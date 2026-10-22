@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const configDirectory = path.dirname(fileURLToPath(import.meta.url));
 
 const supabaseHostname = (() => {
   const value = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -13,7 +16,7 @@ const supabaseHostname = (() => {
 
 const nextConfig: NextConfig = {
   turbopack: {},
-  outputFileTracingRoot: path.join(__dirname, "../.."),
+  outputFileTracingRoot: path.join(configDirectory, "../.."),
   transpilePackages: ["@zerocraft/supabase"],
   images: {
     remotePatterns: [

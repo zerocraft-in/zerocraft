@@ -1,7 +1,8 @@
 export const ADMIN_ROUTES = {
   overview: "/",
   studio: {
-    overview: "/studio",
+    // The CMS is mounted at the domain root. `/studio` remains a legacy redirect.
+    overview: "/",
     works: "/works",
     clients: "/clients",
     appointments: "/appointments",
@@ -11,6 +12,7 @@ export const ADMIN_ROUTES = {
     overview: "/store",
     products: "/store/products",
     categories: "/store/categories",
+    mediaLibrary: "/media-library",
     inventory: "/store/inventory",
     customization: "/store/customization",
     channels: "/channels",
@@ -31,6 +33,7 @@ export const ADMIN_ROUTES = {
     whatsNew: "/whats-new",
   },
   system: {
+    overview: "/system",
     settings: "/settings",
     devices: "/devices",
     integrations: "/integrations",

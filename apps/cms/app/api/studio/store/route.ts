@@ -63,7 +63,7 @@ export async function GET() {
   const { supabase, user } = access;
   const [categories, products, recentOrders, orderSummary, inventoryLocations] = await Promise.all([
     supabase.from("store_categories").select("id,name,slug,description,image_url,is_active,created_at,updated_at,store_subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,created_at,updated_at)").order("name"),
-    supabase.from("store_products").select("id,category_id,subcategory_id,design_origin,rights_status,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,write_version,created_at,updated_at,store_product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,store_inventory_levels(location_id,on_hand,reserved,reorder_point)),store_collection_products(collection:store_collections(id,name,slug,status))").order("updated_at", { ascending: false }),
+    supabase.from("store_products").select("id,category_id,subcategory_id,design_origin,rights_status,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,digital_delivery,write_version,created_at,updated_at,store_product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),store_product_digital_files(id,product_id,variant_id,file_name,mime_type,size_bytes,sort_order,created_at),store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,store_inventory_levels(location_id,on_hand,reserved,reorder_point)),store_collection_products(collection:store_collections(id,name,slug,status))").order("updated_at", { ascending: false }),
     supabase.from("store_orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(10),
     supabase.rpc("studio_store_order_summary"),
     supabase.from("store_inventory_locations").select("id,name,code,is_active").order("name"),
@@ -86,7 +86,7 @@ export async function GET() {
 type CategoryInput = { name?: string; slug?: string; description?: string; image_url?: string; is_active?: boolean };
 type SubcategoryInput = { category_id?: string; name?: string; slug?: string; description?: string; image_url?: string; sort_order?: number; is_active?: boolean };
 type VariantInput = { id?: string; label: string; sku: string; options?: Record<string, string | string[]>; price: number; price_paise?: number | null; stock?: number | null; is_active?: boolean; inventory?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[]; store_inventory_levels?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[] };
-type ProductInput = { id?: string; write_version?: number; title?: string; slug?: string; category_id?: string | null; subcategory_id?: string | null; design_origin?: "original_zerocraft" | "licensed" | "fan_inspired"; rights_status?: "not_applicable" | "approved_license" | "review_required"; description?: string; product_type?: "physical" | "digital"; status?: "draft" | "active" | "archived"; sku?: string; price?: number; price_paise?: number | null; compare_at_price?: number | null; compare_at_price_paise?: number | null; currency?: string; currency_code?: string | null; stock?: number | null; image_url?: string; collection_ids?: string[]; variants?: VariantInput[] };
+type ProductInput = { id?: string; write_version?: number; title?: string; slug?: string; category_id?: string | null; subcategory_id?: string | null; design_origin?: "original_zerocraft" | "licensed" | "fan_inspired"; rights_status?: "not_applicable" | "approved_license" | "review_required"; description?: string; product_type?: "physical" | "digital"; status?: "draft" | "active" | "archived"; sku?: string; price?: number; price_paise?: number | null; compare_at_price?: number | null; compare_at_price_paise?: number | null; currency?: string; currency_code?: string | null; stock?: number | null; image_url?: string; digital_delivery?: { mode?: "instant" | "manual"; download_limit?: number; link_expiry_hours?: number }; collection_ids?: string[]; variants?: VariantInput[] };
 
 function validSlug(slug: unknown): slug is string { return typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug); }
 function validVariants(value: unknown): value is VariantInput[] {
@@ -95,6 +95,8 @@ function validVariants(value: unknown): value is VariantInput[] {
 
 function validateProductInput(product: ProductInput) {
   if (!product.title?.trim() || !validSlug(product.slug) || !product.sku?.trim() || !["physical", "digital"].includes(product.product_type || "") || !["draft", "active", "archived"].includes(product.status || "") || !Number.isFinite(Number(product.price)) || Number(product.price) < 0 || (product.stock != null && (!Number.isInteger(Number(product.stock)) || Number(product.stock) < 0)) || (product.variants && !validVariants(product.variants))) return "Check the product name, SKU, type, status, price, stock, and variants.";
+  const delivery = product.digital_delivery;
+  if (delivery && (!['instant', 'manual'].includes(delivery.mode || '') || !Number.isInteger(Number(delivery.download_limit)) || Number(delivery.download_limit) < 0 || !Number.isInteger(Number(delivery.link_expiry_hours)) || Number(delivery.link_expiry_hours) < 0)) return "Check the digital delivery settings.";
   if (product.status === "active" && product.rights_status === "review_required") return "Products awaiting rights review cannot be published.";
   if (product.status === "active" && (!product.category_id || !product.subcategory_id)) return "Active products require an active category and subcategory.";
   return null;
@@ -229,7 +231,7 @@ async function saveProductTaxonomy(supabase: Awaited<ReturnType<typeof createCli
     const { data, error } = await supabase.from("store_subcategories").select("id,category_id").eq("id", subcategoryId).eq("is_active", true).maybeSingle();
     if (error || !data || data.category_id !== categoryId) return { error: { code: "22023", message: "VALIDATION_ERROR: subcategory must belong to the selected category." } };
   }
-  const { error } = await supabase.from("store_products").update({ subcategory_id: subcategoryId, design_origin: product.design_origin || "original_zerocraft", rights_status: product.rights_status || "not_applicable" }).eq("id", productId);
+  const { error } = await supabase.from("store_products").update({ subcategory_id: subcategoryId, design_origin: product.design_origin || "original_zerocraft", rights_status: product.rights_status || "not_applicable", digital_delivery: product.digital_delivery || { mode: "instant", download_limit: 0, link_expiry_hours: 0 } }).eq("id", productId);
   return { error };
 }
 

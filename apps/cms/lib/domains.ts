@@ -6,7 +6,10 @@ export const DOMAIN_HOSTS = {
   admin: "admin.zerocraft.in",
 } as const;
 
-type PublicDomainEnv = "NEXT_PUBLIC_STUDIO_URL" | "NEXT_PUBLIC_STORE_URL" | "NEXT_PUBLIC_ADMIN_URL";
+type PublicDomainEnv =
+  | "NEXT_PUBLIC_STUDIO_URL"
+  | "NEXT_PUBLIC_STORE_URL"
+  | "NEXT_PUBLIC_ADMIN_URL";
 
 function configuredOrigin(key: PublicDomainEnv, fallbackHost: string) {
   const value = process.env[key];
@@ -27,14 +30,27 @@ export function domainOrigin(area: Exclude<DomainArea, "preview" | "unknown">) {
   return configuredOrigin(key[area], DOMAIN_HOSTS[area]);
 }
 
-export function domainUrl(area: Exclude<DomainArea, "preview" | "unknown">, path = "/") {
+export function domainUrl(
+  area: Exclude<DomainArea, "preview" | "unknown">,
+  path = "/",
+) {
   const url = new URL(path, domainOrigin(area));
   return `${url.origin}${url.pathname}${url.search}${url.hash}`;
 }
 
-export function domainUrlForRequest(area: Exclude<DomainArea, "preview" | "unknown">, requestUrl: URL, path = "/", sourceHost?: string) {
+export function domainUrlForRequest(
+  area: Exclude<DomainArea, "preview" | "unknown">,
+  requestUrl: URL,
+  path = "/",
+  sourceHost?: string,
+) {
   const requestHost = hostWithoutPort(sourceHost || requestUrl.hostname);
-  const isLocal = requestHost === "localhost" || requestHost === "127.0.0.1" || requestHost === "[::1]" || requestHost.endsWith(".localhost") || requestHost.endsWith(".127.0.0.1");
+  const isLocal =
+    requestHost === "localhost" ||
+    requestHost === "127.0.0.1" ||
+    requestHost === "[::1]" ||
+    requestHost.endsWith(".localhost") ||
+    requestHost.endsWith(".127.0.0.1");
   if (isLocal) {
     const port = requestUrl.port ? `:${requestUrl.port}` : "";
     const localHost = area === "studio" ? "localhost" : `${area}.localhost`;
@@ -53,22 +69,30 @@ function isVercelPreviewHost(host: string) {
   return host.endsWith(".vercel.app") || host.endsWith(".vercel.sh");
 }
 
-export function resolveDomainHost(rawHost: string | null | undefined): DomainArea {
+export function resolveDomainHost(
+  rawHost: string | null | undefined,
+): DomainArea {
   const host = hostWithoutPort(rawHost || "");
   if (!host) return "unknown";
 
-  if (host === DOMAIN_HOSTS.studio || host === `www.${DOMAIN_HOSTS.studio}`) return "studio";
+  if (host === DOMAIN_HOSTS.studio || host === `www.${DOMAIN_HOSTS.studio}`)
+    return "studio";
   if (host === DOMAIN_HOSTS.store) return "store";
   if (host === DOMAIN_HOSTS.admin) return "admin";
 
   if (host === "store.localhost" || host === "store.127.0.0.1") return "store";
   if (host === "admin.localhost" || host === "admin.127.0.0.1") return "admin";
-  if (host === "localhost" || host === "127.0.0.1" || host === "[::1]") return "studio";
+  if (host === "localhost" || host === "127.0.0.1" || host === "[::1]")
+    return "studio";
 
-  const previewHosts = [process.env.VERCEL_URL, process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL]
+  const previewHosts = [
+    process.env.VERCEL_URL,
+    process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL,
+  ]
     .filter(Boolean)
     .map((value) => hostWithoutPort(value as string));
-  if (previewHosts.includes(host) || isVercelPreviewHost(host)) return "preview";
+  if (previewHosts.includes(host) || isVercelPreviewHost(host))
+    return "preview";
 
   return "unknown";
 }
@@ -77,17 +101,31 @@ export function isAllowedHost(rawHost: string | null | undefined) {
   return resolveDomainHost(rawHost) !== "unknown";
 }
 
-export function isSafeReturnPath(value: string | null | undefined, fallback = "/") {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return fallback;
+export function isSafeReturnPath(
+  value: string | null | undefined,
+  fallback = "/",
+) {
+  if (!value || !value.startsWith("/") || value.startsWith("//"))
+    return fallback;
   return value;
 }
 
 export function storeRoute(path: string) {
-  return path === "/" ? "/" : path.startsWith("/store") ? path : `/store${path}`;
+  return path === "/"
+    ? "/"
+    : path.startsWith("/store")
+      ? path
+      : `/store${path}`;
 }
 
 export function adminRoute(path: string) {
-  return path === "/" ? "/studio" : path === "/store" || path.startsWith("/store/") ? `/studio${path}` : path.startsWith("/studio") ? path : `/studio${path}`;
+  return path === "/"
+    ? "/studio"
+    : path === "/store" || path.startsWith("/store/")
+      ? `/studio${path}`
+      : path.startsWith("/studio")
+        ? path
+        : `/studio${path}`;
 }
 
 export function storeHref(path: string) {

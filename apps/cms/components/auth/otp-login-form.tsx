@@ -9,7 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { createClient } from "@zerocraft/supabase/client";
 import { useAuthStore } from "@/store/useAuthStore";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -198,8 +198,8 @@ export function OtpLoginForm() {
           setUser(data.user);
           setSession(data.session);
         }
-        // Successfully verified - redirect to studio dashboard with refreshed cookies
-        router.push("/studio");
+        // Successfully verified - redirect to the canonical root dashboard.
+        router.push("/");
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");

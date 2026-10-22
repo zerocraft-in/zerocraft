@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { IconArrowLeft, IconRoute } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function NotFound() {
   return (
@@ -13,7 +19,8 @@ export default function NotFound() {
           </span>
           <CardTitle className="mt-2 text-2xl">Page not found</CardTitle>
           <CardDescription>
-            This workspace route is not available or has moved to a core CMS area.
+            This workspace route is not available or has moved to a core CMS
+            area.
           </CardDescription>
         </CardHeader>
         <CardContent>

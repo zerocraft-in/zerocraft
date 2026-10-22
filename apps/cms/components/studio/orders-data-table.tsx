@@ -19,7 +19,7 @@ import {
   type PaginationState,
   type RowData,
 } from "@tanstack/react-table";
-import { IconArrowsSort, IconChevronLeft, IconChevronRight, IconColumns3, IconMail, IconSearch } from "@tabler/icons-react";
+import { IconArrowsSort, IconChevronLeft, IconChevronRight, IconColumns3, IconSearch } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -105,13 +105,6 @@ const orderColumns = column.columns([
     },
     filterFn: "includesString",
   }),
-  column.display({
-    id: "email",
-    header: "Email",
-    cell: ({ row, table }) => <Button variant="ghost" size="icon-xs" aria-label={`Send order update for ${row.original.order_number}`} title="Send email update" onClick={() => void (table.options.meta as OrdersTableMeta | undefined)?.onEmailOrder(row.original)}><IconMail /></Button>,
-    enableSorting: false,
-    enableHiding: false,
-  }),
   column.accessor((order) => `${order.order_number} ${order.customer_name} ${order.customer_email}`.toLowerCase(), {
     id: "search",
     header: "Search index",
@@ -121,19 +114,18 @@ const orderColumns = column.columns([
   }),
 ]);
 
-type OrdersTableMeta = { onStatusChange: (order: StoreOrder, status: OrderStatus) => void; onEmailOrder: (order: StoreOrder) => void | Promise<void> };
+type OrdersTableMeta = { onStatusChange: (order: StoreOrder, status: OrderStatus) => void };
 function SortHeader({ column, label }: { column: { toggleSorting: (descending?: boolean) => void; getIsSorted: () => false | "asc" | "desc" }; label: string }) {
   return <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
     {label}<IconArrowsSort className="ml-2 size-3.5 text-muted-foreground" />
   </Button>;
 }
 
-export function OrdersDataTable({ data, loading, onStatusChange, onBulkStatusChange, onEmailOrder }: {
+export function OrdersDataTable({ data, loading, onStatusChange, onBulkStatusChange }: {
   data: StoreOrder[];
   loading: boolean;
   onStatusChange: (order: StoreOrder, status: OrderStatus) => void;
   onBulkStatusChange: (ids: string[], status: OrderStatus) => void;
-  onEmailOrder: (order: StoreOrder) => void | Promise<void>;
 }) {
   const [search, setSearch] = React.useState("");
   const [paymentFilter, setPaymentFilter] = React.useState("all");
@@ -144,7 +136,7 @@ export function OrdersDataTable({ data, loading, onStatusChange, onBulkStatusCha
     data,
     columns: orderColumns,
     getRowId: (row: StoreOrder) => row.id,
-    meta: { onStatusChange, onEmailOrder },
+    meta: { onStatusChange },
     initialState: { columnVisibility: { search: false } },
     state: { pagination },
     onPaginationChange: setPagination,

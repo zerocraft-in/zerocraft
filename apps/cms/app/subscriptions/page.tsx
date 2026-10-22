@@ -1,2 +1,15 @@
-import { SquareWorkspace } from "@/components/studio/square-workspace";
-export default function SubscriptionsPage() { return <SquareWorkspace config={{ eyebrow: "Payments & invoices", title: "Subscriptions", description: "Build recurring relationships with clients and manage active plans from one workspace.", primaryAction: { label: "Create plan", href: "/subscriptions" }, stats: [{ label: "Active plans", value: "0", detail: "Recurring customers" }, { label: "Monthly value", value: "₹0", detail: "Expected revenue" }, { label: "Renewals", value: "0", detail: "Next 30 days" }, { label: "Churn", value: "0%", detail: "Current period" }], tabs: ["Plans", "Subscribers", "Cancelled"], rows: [{ name: "No subscription plans", meta: "Create a plan to start recurring billing", status: "Draft", value: "—" }] }} />; }
+import { ComingSoonPage } from "@/components/studio/coming-soon-page";
+export default function SubscriptionsPage() {
+  return (
+    <ComingSoonPage
+      area="Payments & invoices"
+      title="Subscriptions"
+      description="Build recurring relationships with clients and manage active plans."
+      plannedFeatures={[
+        "Recurring billing provider",
+        "Plan and subscriber management",
+        "Renewal and churn reporting",
+      ]}
+    />
+  );
+}

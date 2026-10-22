@@ -18,7 +18,7 @@ const productTable = read("apps/cms/components/studio/store-products-data-table.
 const inventory = read("apps/cms/components/studio/inventory-workspace.tsx");
 const catalogApi = read("apps/cms/app/api/studio/store/route.ts");
 const inventoryApi = read("apps/cms/app/api/studio/store/inventory/route.ts");
-const storeHealth = read("apps/cms/components/studio/studio-store.tsx");
+const storeHealth = read("apps/cms/components/studio/store-overview-dashboard.tsx");
 const systemHealth = read("apps/cms/app/system-health/page.tsx");
 
 for (const table of ["studio_permissions", "studio_role_permissions", "studio_user_permissions"]) {

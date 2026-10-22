@@ -17,10 +17,29 @@ export async function GET(request: Request) {
       if (userData.user) {
         try {
           const service = createServiceClient();
-          const { data: invite } = await service.from("studio_team_invites").select("id,email,role").eq("auth_user_id", userData.user.id).eq("status", "pending").maybeSingle();
+          const { data: invite } = await service
+            .from("studio_team_invites")
+            .select("id,email,role")
+            .eq("auth_user_id", userData.user.id)
+            .eq("status", "pending")
+            .maybeSingle();
           if (invite) {
-            await service.from("studio_team_invites").update({ status: "accepted", accepted_at: new Date().toISOString() }).eq("id", invite.id);
-            await service.from("store_audit_logs").insert({ actor_id: userData.user.id, action: "team.invite_accepted", entity_type: "team_invite", entity_id: invite.id, metadata: { email: invite.email, role: invite.role } });
+            await service
+              .from("studio_team_invites")
+              .update({
+                status: "accepted",
+                accepted_at: new Date().toISOString(),
+              })
+              .eq("id", invite.id);
+            await service
+              .from("store_audit_logs")
+              .insert({
+                actor_id: userData.user.id,
+                action: "team.invite_accepted",
+                entity_type: "team_invite",
+                entity_id: invite.id,
+                metadata: { email: invite.email, role: invite.role },
+              });
           }
         } catch (acceptError) {
           console.error("Team invitation acceptance sync failed", acceptError);

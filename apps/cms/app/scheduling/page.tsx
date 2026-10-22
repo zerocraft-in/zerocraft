@@ -1,2 +1,15 @@
-import { SquareWorkspace } from "@/components/studio/square-workspace";
-export default function SchedulingPage() { return <SquareWorkspace config={{ eyebrow: "Staff", title: "Scheduling", description: "Plan appointments, assign work, and keep your studio team aligned.", primaryAction: { label: "Create shift", href: "/scheduling" }, stats: [{ label: "Today", value: "0", detail: "Scheduled shifts" }, { label: "This week", value: "0", detail: "Team hours" }, { label: "Open shifts", value: "0", detail: "Need coverage" }, { label: "Team members", value: "1", detail: "Active staff" }], tabs: ["Schedule", "Team", "Availability"], rows: [{ name: "No shifts scheduled", meta: "Create a shift to start planning your week", status: "Active", value: "—" }] }} />; }
+import { ComingSoonPage } from "@/components/studio/coming-soon-page";
+export default function SchedulingPage() {
+  return (
+    <ComingSoonPage
+      area="Staff"
+      title="Scheduling"
+      description="Plan staff shifts and assign work around appointments."
+      plannedFeatures={[
+        "Staff availability",
+        "Shift planning",
+        "Appointment workload view",
+      ]}
+    />
+  );
+}

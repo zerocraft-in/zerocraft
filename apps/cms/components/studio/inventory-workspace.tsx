@@ -160,8 +160,7 @@ export default function InventoryWorkspace() {
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Button variant="ghost" size="sm" className="mb-3 -ml-2 gap-2" render={<Link href="/studio/store" />} nativeButton={false}><IconArrowLeft /> Store overview</Button>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Operations / Stock</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-[-0.06em]">Inventory</h1>
+          <h1 className="text-4xl font-semibold tracking-[-0.06em]">Inventory</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Manage stock by location, track reserved units, and keep reorder points accurate.</p>
         </div>
         <Button variant="outline" size="icon" aria-label="Refresh inventory" onClick={() => void load()} disabled={loading}><IconRefresh /></Button>

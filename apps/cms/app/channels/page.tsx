@@ -1,2 +1,15 @@
-import { SquareWorkspace } from "@/components/studio/square-workspace";
-export default function ChannelsPage() { return <SquareWorkspace config={{ eyebrow: "Channels", title: "Storefront", description: "Manage how your products and studio work appear across connected channels.", primaryAction: { label: "Connect channel", href: "/channels" }, stats: [{ label: "Connected", value: "1", detail: "Active channel" }, { label: "Published items", value: "14", detail: "Available online" }, { label: "Visitors", value: "—", detail: "Awaiting analytics" }, { label: "Channel health", value: "Live", detail: "No issues detected" }], tabs: ["Channels", "Catalog sync", "Settings"], rows: [{ name: "ZeroCraft storefront", meta: "Connected storefront", status: "Active", value: "Live" }] }} />; }
+import { ComingSoonPage } from "@/components/studio/coming-soon-page";
+export default function ChannelsPage() {
+  return (
+    <ComingSoonPage
+      area="Channels"
+      title="Storefront channels"
+      description="Manage product publishing across connected sales channels."
+      plannedFeatures={[
+        "Channel connection management",
+        "Catalog sync status",
+        "Per-channel publishing controls",
+      ]}
+    />
+  );
+}

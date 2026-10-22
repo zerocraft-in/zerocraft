@@ -1,9 +1,60 @@
 "use client";
 
-import { toast } from "sonner";
-import { Checkbox, Dialog, DialogContent, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/studio-controls";
+import { toast } from "@/lib/toast";
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/studio-controls";
 import React, { useState, useEffect, useMemo } from "react";
-import { IconCalendar, IconPlus, IconSearch, IconSend, IconMail, IconCircleCheck, IconX, IconSparkles, IconChevronDown, IconColumns, IconDotsVertical, IconChevronsLeft, IconChevronLeft, IconChevronRight, IconChevronsRight, IconClock } from "@tabler/icons-react";
+import {
+  IconCalendar,
+  IconPlus,
+  IconSearch,
+  IconSend,
+  IconCircleCheck,
+  IconX,
+  IconSparkles,
+  IconChevronDown,
+  IconColumns,
+  IconDotsVertical,
+  IconChevronsLeft,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsRight,
+  IconClock,
+} from "@tabler/icons-react";
+import { Field } from "@/components/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 import { sendWhatsAppViaN8n } from "@/lib/n8n";
 import {
@@ -28,8 +79,11 @@ interface Appointment {
 
 export default function StudioAppointmentsCRUD() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [activeTab, setActiveTab] = useState<"all" | "confirmed" | "pending">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "confirmed" | "pending">(
+    "all",
+  );
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,16 +99,25 @@ export default function StudioAppointmentsCRUD() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAppt, setEditingAppt] = useState<Appointment | null>(null);
   const [n8nStatusMessage, setN8nStatusMessage] = useState<string | null>(null);
-  const [emailStatusMessage, setEmailStatusMessage] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     let active = true;
-    void Promise.resolve().then(() => { if (active) setIsMounted(true); });
-    fetchAppointmentsFromSupabase(true).then((data) => {
-      if (active && data) setAppointments(data as any);
-    }).catch(() => { toast.error("Records could not be loaded. Check your connection and reload."); });
-    return () => { active = false; };
+    void Promise.resolve().then(() => {
+      if (active) setIsMounted(true);
+    });
+    fetchAppointmentsFromSupabase(true)
+      .then((data) => {
+        if (active && data) setAppointments(data as any);
+      })
+      .catch(() => {
+        toast.error(
+          "Records could not be loaded. Check your connection and reload.",
+        );
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const [formData, setFormData] = useState({
@@ -82,7 +145,8 @@ export default function StudioAppointmentsCRUD() {
   };
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("create") !== "1") return;
+    if (new URLSearchParams(window.location.search).get("create") !== "1")
+      return;
     const timer = window.setTimeout(() => {
       openCreateModal();
       window.history.replaceState({}, "", window.location.pathname);
@@ -97,7 +161,12 @@ export default function StudioAppointmentsCRUD() {
       client_email: appt.client_email,
       client_phone: appt.client_phone,
       service: appt.service,
-      scheduled_at: new Date(new Date(appt.scheduled_at).getTime() - new Date(appt.scheduled_at).getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+      scheduled_at: new Date(
+        new Date(appt.scheduled_at).getTime() -
+          new Date(appt.scheduled_at).getTimezoneOffset() * 60000,
+      )
+        .toISOString()
+        .slice(0, 16),
       status: appt.status,
       notes: appt.notes || "",
     });
@@ -110,51 +179,125 @@ export default function StudioAppointmentsCRUD() {
     if (saving) return;
     setSaving(true);
     try {
-      const payload = { ...formData, scheduled_at: new Date(formData.scheduled_at).toISOString() };
+      const payload = {
+        ...formData,
+        scheduled_at: new Date(formData.scheduled_at).toISOString(),
+      };
       if (editingAppt) {
-        const updated = await updateAppointmentInSupabase(editingAppt.id, payload);
-        setAppointments(previous => previous.map(item => item.id === editingAppt.id ? { ...item, ...updated } : item));
-        void sendAppointmentEmail(editingAppt.id);
+        const updated = await updateAppointmentInSupabase(
+          editingAppt.id,
+          payload,
+        );
+        setAppointments((previous) =>
+          previous.map((item) =>
+            item.id === editingAppt.id ? { ...item, ...updated } : item,
+          ),
+        );
       } else {
         const created = await createAppointmentInSupabase(payload);
-        setAppointments(previous => [created as Appointment, ...previous]);
-        void sendAppointmentEmail((created as Appointment).id);
+        setAppointments((previous) => [created as Appointment, ...previous]);
       }
       setIsModalOpen(false);
       toast.success("Appointment saved");
-    } catch { toast.error("Could not save the appointment. Your changes are still here."); }
-    finally { setSaving(false); }
-  };
-
-  const sendAppointmentEmail = async (appointmentId: string) => {
-    setEmailStatusMessage("Sending appointment email…");
-    try {
-      const response = await fetch("/api/studio/email/appointment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ appointmentId }) });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Appointment email could not be sent.");
-      setEmailStatusMessage("Appointment email sent successfully.");
-    } catch (cause) { setEmailStatusMessage(cause instanceof Error ? cause.message : "Appointment email could not be sent."); }
-    setTimeout(() => setEmailStatusMessage(null), 5000);
+    } catch {
+      toast.error(
+        "Could not save the appointment. Your changes are still here.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (confirm("Delete this appointment slot?")) {
       try {
         await deleteAppointmentInSupabase(id);
-      } catch { toast.error("Could not delete the appointment."); return; }
+      } catch {
+        toast.error("Could not delete the appointment.");
+        return;
+      }
       setAppointments((prev) => prev.filter((a) => a.id !== id));
       setSelectedRows((prev) => prev.filter((rId) => rId !== id));
     }
   };
 
+  const handleBulkDelete = async () => {
+    const ids = [...selectedRows];
+    if (
+      !ids.length ||
+      !confirm(`Delete ${ids.length} selected appointment(s)? This cannot be undone.`)
+    ) {
+      return;
+    }
+
+    setBulkActionLoading(true);
+    const results = await Promise.allSettled(
+      ids.map(deleteAppointmentInSupabase),
+    );
+    const deletedIds = ids.filter(
+      (_, index) => results[index].status === "fulfilled",
+    );
+    const failedCount = ids.length - deletedIds.length;
+
+    setAppointments((previous) =>
+      previous.filter((appointment) => !deletedIds.includes(appointment.id)),
+    );
+    setSelectedRows((previous) =>
+      previous.filter((id) => !deletedIds.includes(id)),
+    );
+    if (failedCount) {
+      toast.error(
+        `${deletedIds.length} appointment(s) deleted; ${failedCount} could not be deleted.`,
+      );
+    } else {
+      toast.success(`${deletedIds.length} appointment(s) deleted`);
+    }
+    setBulkActionLoading(false);
+  };
+
+  const handleBulkStatusUpdate = async (status: Appointment["status"]) => {
+    const ids = [...selectedRows];
+    if (!ids.length) return;
+
+    setBulkActionLoading(true);
+    const results = await Promise.allSettled(
+      ids.map((id) => updateAppointmentInSupabase(id, { status })),
+    );
+    const succeededIds = ids.filter(
+      (_, index) => results[index].status === "fulfilled",
+    );
+    const failedCount = ids.length - succeededIds.length;
+
+    setAppointments((previous) =>
+      previous.map((appointment) =>
+        succeededIds.includes(appointment.id)
+          ? { ...appointment, status }
+          : appointment,
+      ),
+    );
+    setSelectedRows((previous) =>
+      previous.filter((id) => !succeededIds.includes(id)),
+    );
+    if (failedCount) {
+      toast.error(
+        `${succeededIds.length} appointment(s) updated; ${failedCount} could not be updated.`,
+      );
+    } else {
+      toast.success(`${succeededIds.length} appointment(s) set to ${status}`);
+    }
+    setBulkActionLoading(false);
+  };
+
   const handleTriggerN8n = async (appt: Appointment) => {
-    setN8nStatusMessage(`Triggering n8n WhatsApp workflow for ${appt.client_name}...`);
+    setN8nStatusMessage(
+      `Triggering n8n WhatsApp workflow for ${appt.client_name}...`,
+    );
 
     const res = await sendWhatsAppViaN8n(appt.id);
 
     if (res.success) {
       setAppointments((prev) =>
-        prev.map((a) => (a.id === appt.id ? { ...a, whatsapp_sent: true } : a))
+        prev.map((a) => (a.id === appt.id ? { ...a, whatsapp_sent: true } : a)),
       );
     }
 
@@ -174,10 +317,17 @@ export default function StudioAppointmentsCRUD() {
   }, [appointments, searchQuery, activeTab]);
 
   const pageSize = Number(rowsPerPage);
-  const totalPages = Math.max(1, Math.ceil(filteredAppointments.length / pageSize));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredAppointments.length / pageSize),
+  );
   const page = Math.min(currentPage, totalPages);
-  const pageAppointments = filteredAppointments.slice((page - 1) * pageSize, page * pageSize);
-  const visibleColumnCount = 2 + Object.values(visibleColumns).filter(Boolean).length;
+  const pageAppointments = filteredAppointments.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
+  );
+  const visibleColumnCount =
+    2 + Object.values(visibleColumns).filter(Boolean).length;
 
   useEffect(() => {
     if (!isModalOpen) return;
@@ -190,22 +340,34 @@ export default function StudioAppointmentsCRUD() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRows((current) => [...new Set([...current, ...pageAppointments.map((a) => a.id)])]);
+      setSelectedRows((current) => [
+        ...new Set([...current, ...pageAppointments.map((a) => a.id)]),
+      ]);
     } else {
-      setSelectedRows((current) => current.filter((id) => !pageAppointments.some((appointment) => appointment.id === id)));
+      setSelectedRows((current) =>
+        current.filter(
+          (id) =>
+            !pageAppointments.some((appointment) => appointment.id === id),
+        ),
+      );
     }
   };
 
   const handleSelectRow = (id: string, checked: boolean) => {
     if (checked) {
-      setSelectedRows((prev) => [...prev, id]);
+      setSelectedRows((prev) =>
+        prev.includes(id) ? prev : [...prev, id],
+      );
     } else {
       setSelectedRows((prev) => prev.filter((item) => item !== id));
     }
   };
 
   const isAllSelected =
-    pageAppointments.length > 0 && pageAppointments.every((appointment) => selectedRows.includes(appointment.id));
+    pageAppointments.length > 0 &&
+    pageAppointments.every((appointment) =>
+      selectedRows.includes(appointment.id),
+    );
 
   const tabCounts = useMemo(() => {
     const conf = appointments.filter((a) => a.status === "confirmed").length;
@@ -226,152 +388,251 @@ export default function StudioAppointmentsCRUD() {
   };
 
   return (
-    <div className="space-y-8 max-w-[1600px] mx-auto pt-2 text-foreground font-sans antialiased">
+    <div className="space-y-6 pt-2 font-sans text-foreground antialiased">
       {/* Top Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-medium tracking-tight text-foreground flex items-center gap-2.5">
-            <IconCalendar className="w-6 h-6 text-[#22C55E]" /> Appointments
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-foreground">
+            <IconCalendar className="size-5 text-muted-foreground" /> Appointments
           </h1>
           <p className="text-xs text-muted-foreground font-normal mt-0.5">
-            Schedule studio sessions, product strategy calls, and n8n WhatsApp automations.
+            Schedule studio sessions, product strategy calls, and n8n WhatsApp
+            automations.
           </p>
         </div>
 
-        <button
+        <Button
+          variant="default"
+          size="sm"
           onClick={openCreateModal}
-          className="h-11 px-5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-extrabold flex items-center gap-2 shadow-lg transition-all self-start sm:self-auto"
+          className="self-start rounded-xl sm:self-auto"
         >
           <IconPlus className="w-4 h-4" />
           <span>Book Slot</span>
-        </button>
+        </Button>
       </div>
 
       {/* n8n Status Alert */}
       {n8nStatusMessage && (
-        <div className="p-4 rounded-2xl bg-muted border border-[#22C55E]/30 text-foreground text-xs flex items-center justify-between shadow-xl animate-fadeIn">
+        <div className="flex items-center justify-between rounded-lg border border-border bg-background p-3 text-xs text-foreground">
           <div className="flex items-center gap-2">
-            <IconSend className="w-4 h-4 text-[#22C55E] animate-bounce" />
-            <span className="font-semibold text-emerald-300">{n8nStatusMessage}</span>
+            <IconSend className="size-4 text-muted-foreground" />
+            <span className="font-medium">
+              {n8nStatusMessage}
+            </span>
           </div>
-          <button onClick={() => setN8nStatusMessage(null)} className="text-muted-foreground hover:text-accent-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setN8nStatusMessage(null)}
+            className="h-8 text-muted-foreground hover:text-accent-foreground"
+          >
             Dismiss
-          </button>
+          </Button>
         </div>
       )}
-      {emailStatusMessage && <div className="p-4 rounded-2xl bg-muted border border-primary/30 text-foreground text-xs flex items-center justify-between shadow-xl"><div className="flex items-center gap-2"><IconMail className="w-4 h-4 text-primary" /><span className="font-semibold">{emailStatusMessage}</span></div><button onClick={() => setEmailStatusMessage(null)} className="text-muted-foreground hover:text-accent-foreground">Dismiss</button></div>}
 
       {/* Reference-Styled Table Container */}
-      <div className=" py-6 bg-background space-y-6">
-        {/* Top Pill Tabs & Actions */}
+      <div className="space-y-4">
+        {/* Tabs & Actions */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 bg-card p-1.5 rounded-full border border-border max-w-max">
-            <button
-              onClick={() => { setActiveTab("all"); setCurrentPage(1); }}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${activeTab === "all"
-                ? "bg-accent text-foreground border border-border shadow-md"
-                : "text-muted-foreground hover:text-accent-foreground"
-                }`}
-            >
-              <span>All Bookings</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
-                {tabCounts.all}
-              </span>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("confirmed"); setCurrentPage(1); }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "confirmed"
-                ? "bg-accent text-foreground border border-border shadow-md"
-                : "text-muted-foreground hover:text-accent-foreground"
-                }`}
-            >
-              <span>Confirmed</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-700 text-[10px] font-bold">
-                {tabCounts.confirmed}
-              </span>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("pending"); setCurrentPage(1); }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${activeTab === "pending"
-                ? "bg-accent text-foreground border border-border shadow-md"
-                : "text-muted-foreground hover:text-accent-foreground"
-                }`}
-            >
-              <span>Pending</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-700 text-[10px] font-bold">
-                {tabCounts.pending}
-              </span>
-            </button>
-          </div>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => {
+              setActiveTab(value as typeof activeTab);
+              setCurrentPage(1);
+            }}
+          >
+            <TabsList className="h-9 rounded-xl p-1">
+              <TabsTrigger value="all" className="rounded-lg">
+                All bookings{" "}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  {tabCounts.all}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="confirmed">
+                Confirmed{" "}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  {tabCounts.confirmed}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="pending">
+                Pending{" "}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  {tabCounts.pending}
+                </span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           <div className="flex items-center gap-2.5">
-            <div className="relative w-48">
-              <IconSearch className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                placeholder="Filter bookings..."
-                className="h-9 pl-9 pr-3 rounded-full bg-card border-border text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-[#22C55E]"
-              />
-            </div>
+            <Field className="max-w-sm">
+              <InputGroup className="h-9 rounded-xl">
+                <InputGroupInput
+                  id="appointments-search"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+                <InputGroupAddon align="inline-start">
+                  <IconSearch className="text-muted-foreground" />
+                </InputGroupAddon>
+              </InputGroup>
+            </Field>
 
-            <details className="studio-table-menu">
-              <summary className="h-9 px-3.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground hover:text-accent-foreground hover:bg-accent flex items-center gap-2 transition-all">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default" size="sm" className="rounded-xl">
                   <IconColumns className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>Customize columns</span>
                   <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-              </summary>
-              <div className="studio-table-menu-panel" aria-label="Toggle columns">
-                <span>SHOW COLUMNS</span>
-                {([
-                  ["client", "Client & contact"], ["service", "Service"], ["scheduled", "Scheduled time"], ["status", "Status"], ["whatsapp", "WhatsApp trigger"],
-                ] as const).map(([key, label]) => (
-                  <label key={key}><input type="checkbox" checked={visibleColumns[key]} onChange={(event) => setVisibleColumns((previous) => ({ ...previous, [key]: event.target.checked }))} />{label}</label>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-accent" />
+                {(
+                  [
+                    ["client", "Client & contact"],
+                    ["service", "Service"],
+                    ["scheduled", "Scheduled time"],
+                    ["status", "Status"],
+                    ["whatsapp", "WhatsApp trigger"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <DropdownMenuCheckboxItem
+                    key={key}
+                    checked={visibleColumns[key]}
+                    onCheckedChange={(checked) =>
+                      setVisibleColumns((previous) => ({
+                        ...previous,
+                        [key]: checked === true,
+                      }))
+                    }
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
                 ))}
-              </div>
-            </details>
-
-            <button
-              onClick={openCreateModal}
-              className="h-9 px-4 rounded-full bg-muted hover:bg-accent border border-border text-xs font-bold text-foreground flex items-center gap-1.5 transition-all shadow-md"
-            >
-              <IconPlus className="w-3.5 h-3.5" />
-              <span>Book Slot</span>
-            </button>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
+        {selectedRows.length > 0 && (
+          <div
+            role="toolbar"
+            aria-label="Bulk actions"
+            className="fixed bottom-4 left-1/2 z-50 flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-nowrap items-center gap-1 overflow-x-auto rounded-xl border border-border bg-background/95 p-2 shadow-xl backdrop-blur"
+          >
+            <span className="flex shrink-0 items-center gap-2 px-2 text-xs font-medium text-foreground">
+              <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                {selectedRows.length}
+              </span>
+              selected
+            </span>
+            <span aria-hidden="true" className="mx-1 h-6 shrink-0 border-l border-border" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={bulkActionLoading}
+                  className="h-8 shrink-0 rounded-lg"
+                >
+                  Status
+                  <IconChevronDown className="size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuLabel>Set status</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {(
+                  ["confirmed", "pending", "completed", "cancelled"] as const
+                ).map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={() => void handleBulkStatusUpdate(status)}
+                  >
+                    {status[0].toUpperCase() + status.slice(1)}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={bulkActionLoading}
+              onClick={() => void handleBulkDelete()}
+              className="h-8 shrink-0 rounded-lg text-destructive hover:text-destructive"
+            >
+              Delete
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={bulkActionLoading}
+              onClick={() => setSelectedRows([])}
+              aria-label="Clear selection"
+              className="size-8 shrink-0 rounded-lg px-0"
+            >
+              <IconX className="size-4" />
+            </Button>
+          </div>
+        )}
+
         {/* Table View */}
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="overflow-x-auto rounded-lg border border-border bg-background">
           <Table>
             <TableHeader className="bg-muted/40">
-              <TableRow>
-                <TableHead className="w-10"><Checkbox aria-label="Select all bookings on this page" checked={isAllSelected} onCheckedChange={(checked) => handleSelectAll(checked === true)} /></TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="w-10 p-3">
+                  <Checkbox
+                    aria-label="Select all bookings on this page"
+                    checked={isAllSelected}
+                    onCheckedChange={(checked) =>
+                      handleSelectAll(checked === true)
+                    }
+                  />
+                </TableHead>
 
                 {visibleColumns.client && (
-                  <TableHead>Client & Contact</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground">
+                    Client & Contact
+                  </TableHead>
                 )}
                 {visibleColumns.service && (
-                  <TableHead>Service</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground">
+                    Service
+                  </TableHead>
                 )}
                 {visibleColumns.scheduled && (
-                  <TableHead>Scheduled Time</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground">
+                    Scheduled Time
+                  </TableHead>
                 )}
                 {visibleColumns.status && (
-                  <TableHead>Status</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground">
+                    Status
+                  </TableHead>
                 )}
                 {visibleColumns.whatsapp && (
-                  <TableHead className="text-right">WhatsApp Trigger</TableHead>
+                  <TableHead className="text-right text-xs font-medium text-muted-foreground">
+                    WhatsApp Trigger
+                  </TableHead>
                 )}
-                <TableHead aria-label="Booking actions" />
+                <TableHead aria-label="Booking actions" className="w-12" />
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="divide-y divide-border">
               {filteredAppointments.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={visibleColumnCount} className="h-32 text-center text-sm text-muted-foreground">
+                <TableRow className="hover:bg-transparent">
+                  <TableCell
+                    colSpan={visibleColumnCount}
+                    className="h-32 text-center text-xs text-muted-foreground"
+                  >
                     No appointment bookings matching search criteria.
                   </TableCell>
                 </TableRow>
@@ -379,69 +640,127 @@ export default function StudioAppointmentsCRUD() {
                 pageAppointments.map((appt) => {
                   const isSelected = selectedRows.includes(appt.id);
                   return (
-                    <TableRow key={appt.id} data-state={isSelected ? "selected" : undefined}>
-                      <TableCell><Checkbox aria-label={`Select ${appt.client_name}`} checked={isSelected} onCheckedChange={(checked) => handleSelectRow(appt.id, checked === true)} /></TableCell>
+                    <TableRow
+                      key={appt.id}
+                      className={`border-border transition-colors hover:bg-muted/60 ${
+                        isSelected ? "bg-muted/70" : ""
+                      }`}
+                    >
+                      <TableCell className="w-10 p-3">
+                        <Checkbox
+                          aria-label={`Select ${appt.client_name}`}
+                          checked={isSelected}
+                          onCheckedChange={(checked) =>
+                            handleSelectRow(appt.id, checked === true)
+                          }
+                        />
+                      </TableCell>
 
                       {visibleColumns.client && (
-                        <TableCell><div className="flex min-w-40 flex-col"><strong className="text-sm font-medium">{appt.client_name}</strong><span className="text-xs text-muted-foreground">{appt.client_email}</span><small className="text-xs text-muted-foreground">{appt.client_phone}</small></div></TableCell>
+                        <TableCell className="p-3">
+                          <div className="flex min-w-40 flex-col">
+                            <strong className="text-sm font-medium text-foreground">
+                              {appt.client_name}
+                            </strong>
+                            <span className="text-xs text-muted-foreground">
+                              {appt.client_email}
+                            </span>
+                            <small className="text-xs text-muted-foreground">
+                              {appt.client_phone}
+                            </small>
+                          </div>
+                        </TableCell>
                       )}
 
                       {visibleColumns.service && (
-                        <TableCell>
-                          <span className="studio-service-chip">
+                        <TableCell className="p-3">
+                          <span className="inline-flex rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-foreground">
                             {appt.service}
                           </span>
                         </TableCell>
                       )}
 
                       {visibleColumns.scheduled && (
-                        <TableCell className="whitespace-nowrap text-muted-foreground" suppressHydrationWarning>
+                        <TableCell
+                          className="whitespace-nowrap p-3 text-xs text-muted-foreground"
+                          suppressHydrationWarning
+                        >
                           {formatDate(appt.scheduled_at)}
                         </TableCell>
                       )}
 
                       {visibleColumns.status && (
-                        <TableCell>
+                        <TableCell className="p-3">
                           {appt.status === "confirmed" ? (
-                            <span className="studio-status-chip is-confirmed">
-                              <IconCircleCheck className="w-3.5 h-3.5 text-[#22C55E] fill-[#22C55E]/20" />
+                            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-foreground">
+                              <IconCircleCheck className="size-3.5 text-emerald-600" />
                               <span>Confirmed</span>
                             </span>
                           ) : (
-                            <span className={`studio-status-chip ${appt.status === "pending" ? "is-pending" : "is-neutral"}`}>
-                              <IconClock className="w-3.5 h-3.5" />
-                              <span>{appt.status[0].toUpperCase() + appt.status.slice(1)}</span>
+                            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+                              <IconClock className="size-3.5" />
+                              <span>
+                                {appt.status[0].toUpperCase() +
+                                  appt.status.slice(1)}
+                              </span>
                             </span>
                           )}
                         </TableCell>
                       )}
 
                       {visibleColumns.whatsapp && (
-                        <TableCell className="text-right">
-                          <button
+                        <TableCell className="p-3 text-right">
+                          <Button
                             type="button"
                             onClick={() => handleTriggerN8n(appt)}
-                            className={`studio-whatsapp-button ${appt.whatsapp_sent
-                              ? "is-sent"
-                              : ""
-                              }`}
+                            variant="outline"
+                            size="sm"
+                            className="h-8 gap-1.5 rounded-lg"
                           >
-                            <IconSend size={13} />
-                            <span>{appt.whatsapp_sent ? "Sent via n8n" : "Trigger n8n"}</span>
-                          </button>
+                            <IconSend className="size-3.5" />
+                            <span>
+                              {appt.whatsapp_sent
+                                ? "Sent via n8n"
+                                : "Trigger n8n"}
+                            </span>
+                          </Button>
                         </TableCell>
                       )}
 
-                      <TableCell className="text-right">
-                        <details className="studio-row-menu">
-                          <summary aria-label={`Actions for ${appt.client_name}`}><IconDotsVertical size={17} /></summary>
-                          <div className="studio-row-menu-panel">
-                            <button onClick={() => openEditModal(appt)}>Edit booking</button>
-                            <button onClick={() => void handleTriggerN8n(appt)}>Trigger WhatsApp</button>
-                            <button onClick={() => void sendAppointmentEmail(appt.id)}>Send email update</button>
-                            <button className="is-danger" onClick={() => void handleDelete(appt.id)}>Cancel booking</button>
-                          </div>
-                        </details>
+                      <TableCell className="w-12 p-3 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label={`Actions for ${appt.client_name}`}
+                              className="size-8 rounded-lg text-muted-foreground"
+                            >
+                              <IconDotsVertical className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem
+                              onClick={() => openEditModal(appt)}
+                              className="cursor-pointer"
+                            >
+                              Edit booking
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => void handleTriggerN8n(appt)}
+                              className="cursor-pointer"
+                            >
+                              Trigger WhatsApp
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-accent" />
+                            <DropdownMenuItem
+                              onClick={() => void handleDelete(appt.id)}
+                              className="cursor-pointer text-destructive focus:text-destructive"
+                            >
+                              Cancel booking
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   );
@@ -454,137 +773,275 @@ export default function StudioAppointmentsCRUD() {
         {/* Footer Pagination */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-muted-foreground pt-2">
           <div>
-            <span>{selectedRows.length} of {filteredAppointments.length} row(s) selected.</span>
+            <span>
+              {selectedRows.length} of {filteredAppointments.length} row(s)
+              selected.
+            </span>
           </div>
 
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Rows per page</span>
-              <select aria-label="Rows per page" value={rowsPerPage} onChange={(event) => { setRowsPerPage(event.target.value); setCurrentPage(1); }} className="studio-native-select">
-                <option value="10">10</option>
-                <option value="20">20</option>
-              </select>
+              <Select
+                value={rowsPerPage}
+                onValueChange={(value) => {
+                  if (!value) return;
+                  setRowsPerPage(value);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger
+                  aria-label="Rows per page"
+                  className="h-8 w-16 rounded-xl text-xs"
+                >
+                  <SelectValue placeholder="10" />
+                </SelectTrigger>
+                <SelectContent align="start">
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <span className="font-semibold text-foreground">Page {currentPage} of {totalPages}</span>
+            <span className="font-semibold text-foreground">
+              Page {currentPage} of {totalPages}
+            </span>
 
             <div className="flex items-center gap-1">
-              <button aria-label="First page" disabled={currentPage <= 1} onClick={() => setCurrentPage(1)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              <Button
+                aria-label="First page"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(1)}
+                variant="outline"
+                size="icon"
+                className="size-8 rounded-lg text-muted-foreground"
+              >
                 <IconChevronsLeft className="w-4 h-4" />
-              </button>
-              <button aria-label="Previous page" disabled={currentPage <= 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              </Button>
+              <Button
+                aria-label="Previous page"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                variant="outline"
+                size="icon"
+                className="size-8 rounded-lg text-muted-foreground"
+              >
                 <IconChevronLeft className="w-4 h-4" />
-              </button>
-              <button aria-label="Next page" disabled={currentPage >= totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              </Button>
+              <Button
+                aria-label="Next page"
+                disabled={currentPage >= totalPages}
+                onClick={() =>
+                  setCurrentPage((page) => Math.min(totalPages, page + 1))
+                }
+                variant="outline"
+                size="icon"
+                className="size-8 rounded-lg text-muted-foreground"
+              >
                 <IconChevronRight className="w-4 h-4" />
-              </button>
-              <button aria-label="Last page" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(totalPages)} className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40">
+              </Button>
+              <Button
+                aria-label="Last page"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(totalPages)}
+                variant="outline"
+                size="icon"
+                className="size-8 rounded-lg text-muted-foreground"
+              >
                 <IconChevronsRight className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
       {/* CREATE / EDIT MODAL */}
-      <Dialog open={isModalOpen} onOpenChange={(open) => { if (!saving) setIsModalOpen(open); }}>
-          <DialogContent showCloseButton={false} className="studio-appointment-modal" aria-labelledby="appointment-modal-title">
-            <div className="studio-modal-heading">
-              <div><span>STUDIO / SCHEDULING</span><h2 id="appointment-modal-title"><IconSparkles size={16} />{editingAppt ? "Edit appointment" : "Book an appointment"}</h2></div>
-              <button type="button" disabled={saving} aria-label="Close appointment form" onClick={() => setIsModalOpen(false)}><IconX size={18} /></button>
-            </div>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          if (!saving) setIsModalOpen(open);
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-lg rounded-3xl border border-border bg-background p-6 text-foreground shadow-2xl"
+        >
+          <DialogHeader className="flex-row items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+              <IconSparkles className="size-4 text-muted-foreground" />
+              {editingAppt ? "Edit appointment" : "Book an appointment"}
+            </DialogTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              disabled={saving}
+              aria-label="Close appointment form"
+              onClick={() => setIsModalOpen(false)}
+              className="size-8"
+            >
+              <IconX className="size-4" />
+            </Button>
+          </DialogHeader>
 
-          <form onSubmit={handleSaveAppointment} className="space-y-4 text-xs pt-2">
+          <form
+            onSubmit={handleSaveAppointment}
+            className="space-y-4 text-xs pt-2"
+          >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Client Name</label>
-                <input
+                <label className="font-semibold text-foreground" htmlFor="appointment-client-name">
+                  Client Name
+                </label>
+                <Input
+                  id="appointment-client-name"
                   required
                   value={formData.client_name}
-                  onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, client_name: e.target.value })
+                  }
                   placeholder="e.g. Jonathan Reed"
-                  className="studio-form-control"
+                  className="h-10 rounded-xl text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Client Phone</label>
-                <input
+                <label className="font-semibold text-foreground" htmlFor="appointment-client-phone">
+                  Client Phone
+                </label>
+                <Input
+                  id="appointment-client-phone"
                   required
                   value={formData.client_phone}
-                  onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, client_phone: e.target.value })
+                  }
                   placeholder="+1 (555) 000-0000"
-                  className="studio-form-control"
+                  className="h-10 rounded-xl text-xs"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Client Email</label>
-              <input
+              <label className="font-semibold text-foreground" htmlFor="appointment-client-email">
+                Client Email
+              </label>
+              <Input
+                id="appointment-client-email"
                 type="email"
                 required
                 value={formData.client_email}
-                onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, client_email: e.target.value })
+                }
                 placeholder="client@company.com"
-                className="studio-form-control"
+                className="h-10 rounded-xl text-xs"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Service Type</label>
-                <select value={formData.service} onChange={(event) => setFormData({ ...formData, service: event.target.value })} className="studio-form-control">
-                  <option value="1:1 Product Strategy Session">1:1 Product Strategy Session</option>
-                  <option value="Design System Consultation">Design System Consultation</option>
-                  <option value="Full Web App Audit">Full Web App Audit</option>
-                  <option value="Custom Engineering Sprint">Custom Engineering Sprint</option>
-                </select>
+                <label className="font-semibold text-foreground" htmlFor="appointment-service">
+                  Service Type
+                </label>
+                <Select
+                  value={formData.service}
+                  onValueChange={(value) =>
+                    value && setFormData({ ...formData, service: value })
+                  }
+                >
+                  <SelectTrigger id="appointment-service" className="h-10 rounded-xl text-xs">
+                    <SelectValue placeholder="Select a service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1:1 Product Strategy Session">
+                    1:1 Product Strategy Session
+                    </SelectItem>
+                    <SelectItem value="Design System Consultation">
+                    Design System Consultation
+                    </SelectItem>
+                    <SelectItem value="Full Web App Audit">Full Web App Audit</SelectItem>
+                    <SelectItem value="Custom Engineering Sprint">
+                    Custom Engineering Sprint
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-1">
-                <label className="text-foreground font-semibold">Scheduled Date & Time</label>
-                <input
+                <label className="font-semibold text-foreground" htmlFor="appointment-scheduled-at">
+                  Scheduled Date & Time
+                </label>
+                <Input
+                  id="appointment-scheduled-at"
                   type="datetime-local"
                   required
                   value={formData.scheduled_at}
-                  onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
-                  className="studio-form-control"
+                  onChange={(e) =>
+                    setFormData({ ...formData, scheduled_at: e.target.value })
+                  }
+                  className="h-10 rounded-xl text-xs"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Status</label>
-              <select value={formData.status} onChange={(event) => setFormData({ ...formData, status: event.target.value })} className="studio-form-control">
-                <option value="confirmed">Confirmed</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+              <label className="font-semibold text-foreground" htmlFor="appointment-status">
+                Status
+              </label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) =>
+                  value && setFormData({ ...formData, status: value })
+                }
+              >
+                <SelectTrigger id="appointment-status" className="h-10 rounded-xl text-xs">
+                  <SelectValue placeholder="Select a status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-foreground font-semibold">Meeting Notes</label>
+              <label className="font-semibold text-foreground" htmlFor="appointment-notes">
+                Meeting Notes
+              </label>
               <textarea
+                id="appointment-notes"
                 rows={2}
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
                 placeholder="Special instructions..."
-                className="studio-form-control studio-form-notes"
+                className="w-full rounded-xl border border-input bg-transparent px-3 py-2 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
               />
             </div>
 
-            <div className="studio-modal-actions">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="studio-modal-cancel">
+            <div className="flex justify-end gap-3 border-t border-border pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsModalOpen(false)}
+                className="text-muted-foreground hover:text-accent-foreground"
+              >
                 Cancel
-              </button>
-              <button type="submit" disabled={saving} className="studio-modal-submit">
+              </Button>
+              <Button
+                type="submit"
+                disabled={saving}
+                className="rounded-xl"
+              >
                 {editingAppt ? "Update Booking" : "Save Booking"}
-              </button>
+              </Button>
             </div>
           </form>
-          </DialogContent>
+        </DialogContent>
       </Dialog>
     </div>
   );

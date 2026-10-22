@@ -35,8 +35,6 @@ export default function OrdersPage() {
     else {
       setError(null);
       setOrders((current) => current.map((order) => ids.includes(order.id) ? { ...order, ...values } : order));
-      const emailResults = await Promise.all(ids.map(async (id) => { const response = await fetch("/api/studio/email/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId: id }) }); return response.ok; }));
-      if (emailResults.some((sent) => !sent)) setError("Order status saved, but one or more customer emails could not be sent.");
     }
     setBusy(false);
   }
@@ -61,7 +59,7 @@ export default function OrdersPage() {
   ];
   return <main className="mx-auto flex min-h-[calc(100dvh-10rem)] w-full max-w-screen-2xl flex-col gap-6 pb-12">
     <header className="flex flex-wrap items-end justify-between gap-4">
-      <div><p className="text-sm font-medium text-muted-foreground">Store / Fulfillment</p><h1 className="mt-1 text-3xl font-semibold tracking-tight">Orders</h1><p className="mt-2 text-sm text-muted-foreground">Review customer requests and manage fulfillment. Payments are not collected by this site.</p></div>
+      <div><h1 className="text-3xl font-semibold tracking-tight">Orders</h1><p className="mt-2 text-sm text-muted-foreground">Review customer requests and manage fulfillment. Payments are not collected by this site.</p></div>
         <Button variant="outline" size="icon" onClick={() => void load()} disabled={loading} aria-label="Refresh orders" title="Refresh orders"><IconRefresh className={loading ? "animate-spin" : ""} /></Button>
     </header>
     {error && <Alert variant="destructive"><AlertTitle>Order update needs attention</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
@@ -79,7 +77,7 @@ export default function OrdersPage() {
             <TabsTrigger value="completed" className="flex-none rounded-md px-3">Completed <span className="ml-1 text-xs text-muted-foreground">{counts.completed}</span></TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="flex min-h-0 flex-1 flex-col"><OrdersDataTable data={filtered} loading={loading} onStatusChange={(order, status) => void updateOrders([order.id], { status })} onBulkStatusChange={(ids, status: OrderStatus) => void updateOrders(ids, { status })} onEmailOrder={async (order) => { const response = await fetch("/api/studio/email/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId: order.id }) }); if (!response.ok) setError("Order email could not be sent."); }} /></div>
+        <div className="flex min-h-0 flex-1 flex-col"><OrdersDataTable data={filtered} loading={loading} onStatusChange={(order, status) => void updateOrders([order.id], { status })} onBulkStatusChange={(ids, status: OrderStatus) => void updateOrders(ids, { status })} /></div>
         {busy && <p className="sr-only" role="status">Saving order changes…</p>}
       </CardContent>
     </Card>

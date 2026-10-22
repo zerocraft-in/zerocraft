@@ -26,8 +26,7 @@ export default async function OrderViewPage({ params }: { params: Promise<{ view
   return <main className="mx-auto flex min-h-[calc(100dvh-10rem)] w-full max-w-screen-xl flex-col gap-6 pb-12">
     <header>
       <Button variant="ghost" size="sm" className="mb-3 -ml-2" render={<Link href="/orders" />} nativeButton={false}><IconArrowLeft />All orders</Button>
-      <p className="text-sm font-medium text-muted-foreground">Store / Orders</p>
-      <h1 className="mt-1 text-3xl font-semibold tracking-tight">{content.title}</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{content.title}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{content.description}</p>
     </header>
     <Card className="flex-1">
