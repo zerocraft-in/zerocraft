@@ -134,7 +134,7 @@ ${client.notes || ""}`.trim();
   if (loading) {
     return (
       <div className="h-96 flex flex-col items-center justify-center space-y-3">
-        <IconLoader2 className="w-8 h-8 text-[#22C55E] animate-spin" />
+        <IconLoader2 className="w-8 h-8 text-primary animate-spin" />
         <p className="text-xs text-muted-foreground">Loading client account profile...</p>
       </div>
     );
@@ -154,7 +154,7 @@ ${client.notes || ""}`.trim();
           href="/clients"
           className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
         >
-          <IconArrowLeft className="w-4 h-4 text-[#22C55E] group-hover:-translate-x-0.5 transition-transform" />
+          <IconArrowLeft className="w-4 h-4 text-primary group-hover:-translate-x-0.5 transition-transform" />
           <span>Back to Clients</span>
         </Link>
 
@@ -175,8 +175,8 @@ ${client.notes || ""}`.trim();
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Avatar & Info */}
           <div className="flex items-center gap-4">
-            <Avatar className="w-16 h-16 border-2 border-[#22C55E]/30">
-              <AvatarFallback className="bg-[#22C55E]/10 text-[#22C55E] font-bold text-xl">
+            <Avatar className="w-16 h-16 border-2 border-primary/30">
+              <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
                 {client.name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -227,7 +227,7 @@ ${client.notes || ""}`.trim();
               rel="noreferrer"
               className="px-3.5 py-2 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-200 text-xs font-semibold transition-all shadow-md flex items-center gap-2"
             >
-              <IconSend className="w-4 h-4 text-[#22C55E]" />
+              <IconSend className="w-4 h-4 text-primary" />
               <span>WhatsApp Direct</span>
             </a>
 
@@ -248,7 +248,7 @@ ${client.notes || ""}`.trim();
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-border">
           <div className="p-4 rounded-xl bg-background/60 border border-border space-y-1">
             <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-1.5">
-              <IconCurrencyDollar className="w-3.5 h-3.5 text-[#22C55E]" /> Lifetime Account Value
+              <IconCurrencyDollar className="w-3.5 h-3.5 text-primary" /> Lifetime Account Value
             </div>
             <div className="text-xl font-bold text-foreground">
               {formatAmount(client.total_spent || 0)}
@@ -278,7 +278,7 @@ ${client.notes || ""}`.trim();
           {/* Add Activity Note Form */}
           <div className="p-5 rounded-2xl bg-muted/70 border border-border space-y-3">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <IconPlus className="w-4 h-4 text-[#22C55E]" /> Log Activity or Touchpoint
+              <IconPlus className="w-4 h-4 text-primary" /> Log Activity or Touchpoint
             </h3>
 
             <form onSubmit={handleAddTimelineNote} className="space-y-3">
@@ -297,10 +297,10 @@ ${client.notes || ""}`.trim();
                 value={noteDesc}
                 onChange={(e) => setNoteDesc(e.target.value)}
                 rows={2}
-                className="w-full p-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#22C55E]"
+                className="w-full p-2.5 text-xs bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
 
-              <Button type="submit" disabled={savingNote} size="sm" className="h-8 text-xs font-bold bg-[#22C55E] text-black hover:bg-[#22C55E]/90">
+              <Button type="submit" disabled={savingNote} size="sm" className="h-8 text-xs font-bold">
                 <IconPlus className="w-3.5 h-3.5 mr-1" /> Log Touchpoint
               </Button>
             </form>
@@ -309,7 +309,7 @@ ${client.notes || ""}`.trim();
           {/* Activity Timeline List */}
           <div className="p-6 rounded-2xl bg-muted/70 border border-border space-y-4">
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <IconClock className="w-4 h-4 text-[#22C55E]" /> Activity & Project Timeline
+              <IconClock className="w-4 h-4 text-primary" /> Activity & Project Timeline
             </h2>
 
             <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
@@ -319,7 +319,7 @@ ${client.notes || ""}`.trim();
                   <div
                     className={`absolute -left-[23px] top-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${
                       item.type === "milestone"
-                        ? "bg-[#22C55E]"
+                        ? "bg-primary"
                         : item.type === "meeting"
                         ? "bg-blue-400"
                         : item.type === "invoice"
@@ -346,7 +346,7 @@ ${client.notes || ""}`.trim();
           {/* Active Projects */}
           <div className="p-5 rounded-2xl bg-muted/70 border border-border space-y-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <IconBriefcase className="w-4 h-4 text-[#22C55E]" /> Client Projects & Deliverables
+              <IconBriefcase className="w-4 h-4 text-primary" /> Client Projects & Deliverables
             </h3>
 
             <div className="space-y-2.5">
@@ -356,7 +356,7 @@ ${client.notes || ""}`.trim();
                 relatedWorks.map((work) => (
                   <div key={work.id} className="p-3 rounded-xl bg-background/60 border border-border space-y-1">
                     <div className="text-xs font-bold text-foreground">{work.title}</div>
-                    <div className="text-[10px] text-[#22C55E] font-semibold">{work.category}</div>
+                    <div className="text-[10px] text-primary font-semibold">{work.category}</div>
                   </div>
                 ))
               )}

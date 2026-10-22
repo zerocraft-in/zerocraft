@@ -800,7 +800,7 @@ export default function StudioClientsCRUD() {
         <DialogContent className="bg-background border border-border text-foreground max-w-lg rounded-3xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-              <IconSparkles className="w-4 h-4 text-[#22C55E]" />
+              <IconSparkles className="w-4 h-4 text-primary" />
               {editingClient ? "Edit Client Account" : "Add Client Account"}
             </DialogTitle>
           </DialogHeader>
@@ -822,7 +822,7 @@ export default function StudioClientsCRUD() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="e.g. Alex Morgan"
-                  className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
+                  className="bg-muted border-border text-foreground focus-visible:ring-ring h-10 rounded-xl text-xs"
                 />
               </div>
 
@@ -840,7 +840,7 @@ export default function StudioClientsCRUD() {
                   onChange={(e) =>
                     setFormData({ ...formData, company: e.target.value })
                   }
-                  className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
+                  className="bg-muted border-border text-foreground focus-visible:ring-ring h-10 rounded-xl text-xs"
                 />
               </div>
             </div>
@@ -861,7 +861,7 @@ export default function StudioClientsCRUD() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
+                  className="bg-muted border-border text-foreground focus-visible:ring-ring h-10 rounded-xl text-xs"
                 />
               </div>
 
@@ -879,7 +879,7 @@ export default function StudioClientsCRUD() {
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
-                  className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
+                  className="bg-muted border-border text-foreground focus-visible:ring-ring h-10 rounded-xl text-xs"
                 />
               </div>
             </div>
@@ -895,7 +895,7 @@ export default function StudioClientsCRUD() {
                     val && setFormData({ ...formData, status: val })
                   }
                 >
-                  <SelectTrigger className="bg-muted border-border text-foreground h-10 rounded-xl text-xs focus:ring-[#22C55E]">
+                  <SelectTrigger className="bg-muted border-border text-foreground h-10 rounded-xl text-xs focus:ring-ring">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent className="bg-muted border-border text-foreground text-xs rounded-xl">
@@ -923,7 +923,7 @@ export default function StudioClientsCRUD() {
                       total_spent: Number(e.target.value),
                     })
                   }
-                  className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
+                  className="bg-muted border-border text-foreground focus-visible:ring-ring h-10 rounded-xl text-xs"
                 />
               </div>
             </div>

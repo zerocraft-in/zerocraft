@@ -885,19 +885,19 @@ function MetricCard({
   className?: string;
 }) {
   const cardClasses = {
-    lime: "border-transparent bg-[#151a10] text-[#f5f7ef] ring-0 dark:bg-[#151a10]",
+    lime: "border-border bg-card text-card-foreground ring-0",
     blue: "border-transparent bg-[#ed5b27] text-white ring-0 dark:bg-[#ed5b27]",
     violet: "border-violet-200/70 bg-violet-50 text-violet-950 dark:border-violet-300/10 dark:bg-violet-950/35 dark:text-violet-50",
     orange: "border-border/70 bg-card text-card-foreground",
   };
   const tintClasses = {
-    lime: "bg-lime-300/15 text-[#d5ff4f]",
+    lime: "bg-primary/10 text-primary",
     blue: "bg-white/15 text-white",
     violet: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
     orange: "bg-orange-500/10 text-orange-700 dark:text-orange-300",
   };
   const mutedTextClasses = {
-    lime: "text-white/60",
+    lime: "text-muted-foreground",
     blue: "text-white/75",
     violet: "text-violet-900/60 dark:text-violet-100/60",
     orange: "text-muted-foreground",
@@ -918,7 +918,7 @@ function MetricCard({
         <div className="mt-2 flex items-center justify-between gap-3">
           <p className={`truncate text-xs ${mutedTextClasses[tint]}`}>{detail}</p>
           {trend && trend.some((amount) => amount > 0) && (
-            <span className={`shrink-0 [&_svg]:size-4 ${tint === "lime" ? "text-lime-300" : "text-muted-foreground"}`}>
+            <span className="shrink-0 text-primary [&_svg]:size-4">
               <MiniTrend values={trend} />
             </span>
           )}

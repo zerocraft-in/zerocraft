@@ -772,7 +772,7 @@ export default function StudioWorksCRUD() {
         <DialogContent className="bg-background border border-border text-foreground max-w-lg rounded-3xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-              <IconSparkles className="w-4 h-4 text-[#22C55E]" />
+              <IconSparkles className="w-4 h-4 text-primary" />
               {editingWork ? "Edit Showcase Item" : "Add New Showcase Item"}
             </DialogTitle>
           </DialogHeader>
@@ -793,7 +793,7 @@ export default function StudioWorksCRUD() {
                   setFormData({ ...formData, title: e.target.value })
                 }
                 placeholder="e.g. Apex AI Workspace"
-                className="bg-muted border-border text-foreground placeholder:text-zinc-600 focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-ring h-10 rounded-xl text-xs"
               />
             </div>
 
@@ -808,7 +808,7 @@ export default function StudioWorksCRUD() {
                     val && setFormData({ ...formData, category: val })
                   }
                 >
-                  <SelectTrigger className="bg-muted border-border text-foreground h-10 rounded-xl text-xs focus:ring-[#22C55E]">
+                  <SelectTrigger className="bg-muted border-border text-foreground h-10 rounded-xl text-xs focus:ring-ring">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent className="bg-muted border-border text-foreground text-xs rounded-xl">
@@ -839,7 +839,7 @@ export default function StudioWorksCRUD() {
                     setFormData({ ...formData, client_name: e.target.value })
                   }
                   placeholder="e.g. Vanguard Global"
-                  className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
+                  className="bg-muted border-border text-foreground focus-visible:ring-ring h-10 rounded-xl text-xs"
                 />
               </div>
             </div>
@@ -858,7 +858,7 @@ export default function StudioWorksCRUD() {
                 onChange={(e) =>
                   setFormData({ ...formData, image_url: e.target.value })
                 }
-                className="bg-muted border-border text-foreground focus-visible:ring-[#22C55E] h-10 rounded-xl text-xs"
+                className="bg-muted border-border text-foreground focus-visible:ring-ring h-10 rounded-xl text-xs"
               />
             </div>
 
@@ -877,7 +877,7 @@ export default function StudioWorksCRUD() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Overview of project achievements..."
-                className="w-full p-3 rounded-xl bg-muted border border-border text-foreground placeholder-zinc-600 focus:outline-none focus:border-[#22C55E] text-xs"
+                className="w-full p-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs"
               />
             </div>
 
@@ -900,7 +900,7 @@ export default function StudioWorksCRUD() {
               >
                 <SelectTrigger
                   id="works-status"
-                  className="bg-muted border-border text-foreground h-10 rounded-xl text-xs focus:ring-[#22C55E]"
+                  className="bg-muted border-border text-foreground h-10 rounded-xl text-xs focus:ring-ring"
                 >
                   <SelectValue placeholder="Publication status" />
                 </SelectTrigger>
@@ -919,7 +919,7 @@ export default function StudioWorksCRUD() {
                 onCheckedChange={(c) =>
                   setFormData({ ...formData, featured: !!c })
                 }
-                className="border-border data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-background"
+                className="border-border data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
               />
               <label
                 htmlFor="featuredCheck"
