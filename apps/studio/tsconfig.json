@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -13,12 +17,40 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["../../*"],
-      "@zerocraft/supabase/*": ["../../packages/supabase/src/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@zerocraft/supabase/*": [
+        "../../packages/supabase/src/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "../../types/**/*.d.ts", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "../../types/**/*.d.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "components/auth",
+    "components/store",
+    "components/studio",
+    "components/settings-modal.tsx",
+    "components/theme-toggle.tsx",
+    "components/zeropop-effects.tsx",
+    "components/zeropop-shop.tsx",
+    "components/zeropop-store-page.tsx",
+    "components/providers/auth-provider.tsx",
+    "components/providers/provider.tsx",
+    "components/currency-switcher-combobox.tsx"
+  ]
 }
