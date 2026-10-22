@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
+import { PageState } from "@/components/studio/page-state";
 
 type TeamRole = "admin" | "manager" | "staff" | "client";
 type Member = {
@@ -812,16 +813,11 @@ export default function TeamPage() {
                 ))}
               </tbody>
             </table>
-            {loading && (
-              <div className="p-6 text-sm text-muted-foreground">
-                Loading team members…
-              </div>
-            )}
-            {!loading && !visible.length && (
-              <div className="grid min-h-48 place-items-center p-6 text-sm text-muted-foreground">
-                No matching team members.
-              </div>
-            )}
+            {loading ? (
+              <PageState kind="loading" title="Loading team members" description="Fetching workspace access and role assignments." />
+            ) : !visible.length ? (
+              <PageState kind="empty" title="No matching members" description="Try a different search or invite a new team member." />
+            ) : null}
           </div>
         </CardContent>
       </Card>

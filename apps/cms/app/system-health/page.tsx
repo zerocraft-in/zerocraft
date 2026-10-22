@@ -32,6 +32,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SelectField } from "@/components/ui/select-field";
+import { PageState } from "@/components/studio/page-state";
 
 type CheckStatus = "healthy" | "warning" | "failed" | "unavailable";
 type HealthCheck = {
@@ -508,11 +509,7 @@ export default function SystemHealthPage() {
           </Card>
         ))}
       </section>
-      {!health && loading && (
-        <div className="grid min-h-56 place-items-center text-sm text-muted-foreground">
-          Loading system health…
-        </div>
-      )}
+      {!health && loading && <PageState kind="loading" title="Loading system health" description="Checking services, background jobs, and recent incidents." />}
       {health && (
         <Card>
           <CardHeader>
@@ -708,11 +705,7 @@ export default function SystemHealthPage() {
                     </Badge>
                   </div>
                 ))}
-                {!health.history?.runs.length && (
-                  <p className="text-sm text-muted-foreground">
-                    No recorded runs yet.
-                  </p>
-                )}
+                {!health.history?.runs.length && <PageState kind="empty" title="No diagnostic runs" description="Run diagnostics to create the first system health snapshot." />}
               </div>
             </div>
             <div>
