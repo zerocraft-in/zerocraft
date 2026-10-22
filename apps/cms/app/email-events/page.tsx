@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageState } from "@/components/studio/page-state";
 
 type Event = {
   id: string;
@@ -247,16 +248,11 @@ export default function EmailEventsPage() {
                 ))}
               </tbody>
             </table>
-            {loading && (
-              <div className="p-6 text-sm text-muted-foreground">
-                Loading email logs…
-              </div>
-            )}
-            {!loading && !events.length && (
-              <div className="grid min-h-48 place-items-center p-6 text-sm text-muted-foreground">
-                No email delivery events yet.
-              </div>
-            )}
+            {loading ? (
+              <PageState kind="loading" title="Loading delivery logs" description="Fetching recent email delivery activity." />
+            ) : !events.length ? (
+              <PageState kind="empty" title="No delivery events" description="Email delivery activity will appear here after notifications are sent." />
+            ) : null}
           </div>
         </CardContent>
       </Card>
