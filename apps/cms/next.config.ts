@@ -17,10 +17,28 @@ const supabaseHostname = (() => {
 
 const nextConfig: NextConfig = {
   turbopack: {},
-  experimental: { cpus: 1, webpackBuildWorker: false },
-  ...(releaseDistDirectory ? { distDir: releaseDistDirectory } : {}),
+  experimental: {
+    cpus: 1,
+    workerThreads: false,
+    webpackBuildWorker: false,
+    parallelServerCompiles: false,
+    parallelServerBuildTraces: false,
+    staticGenerationMaxConcurrency: 1,
+    staticGenerationRetryCount: 0,
+  },
+  distDir: releaseDistDirectory || (process.env.VERCEL ? ".next" : ".next-local"),
   ...(releaseDistDirectory
-    ? { experimental: { cpus: 1, webpackBuildWorker: false } }
+    ? {
+        experimental: {
+          cpus: 1,
+          workerThreads: false,
+          webpackBuildWorker: false,
+          parallelServerCompiles: false,
+          parallelServerBuildTraces: false,
+          staticGenerationMaxConcurrency: 1,
+          staticGenerationRetryCount: 0,
+        },
+      }
     : {}),
   outputFileTracingRoot: path.join(configDirectory, "../.."),
   transpilePackages: ["@zerocraft/supabase"],
