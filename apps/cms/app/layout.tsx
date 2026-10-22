@@ -28,7 +28,13 @@ export default function StudioLayout({
             data-theme="light"
           >
             <StudioAppearance>
-              <CmsFrame>{children}</CmsFrame>
+              <React.Suspense
+                fallback={
+                  <div className="min-h-svh bg-background" aria-hidden="true" />
+                }
+              >
+                <CmsFrame>{children}</CmsFrame>
+              </React.Suspense>
               <div id="studio-portals" />
             </StudioAppearance>
           </div>
