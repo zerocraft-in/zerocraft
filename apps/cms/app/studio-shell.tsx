@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   IconArrowUpRight,
@@ -287,7 +288,7 @@ export default function StudioShell({ children, user }: Props) {
             <SheetHeader className="border-b px-1 pb-4 pt-1 text-left">
               <SheetTitle className="flex items-center gap-3">
                 <span className="grid size-9 place-items-center rounded-xl bg-[#151515]">
-                  <img src="/icon.svg" alt="" className="size-6" />
+                  <Image src="/icon.svg" alt="" width={24} height={24} className="size-6" priority />
                 </span>
                 ZeroCraft CMS
               </SheetTitle>
