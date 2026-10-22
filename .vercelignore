@@ -17,6 +17,8 @@ coverage
 *.log
 *.tsbuildinfo
 .git
+.vercel
+**/.vercel
 .github
 docs
 **/public/uploads
