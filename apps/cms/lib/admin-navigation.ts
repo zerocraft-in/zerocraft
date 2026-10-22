@@ -115,17 +115,7 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     icon: IconChartBar,
     links: [
       {
-        label: "Sales",
-        href: ADMIN_ROUTES.operations.reports,
-        icon: IconChartBar,
-      },
-      {
-        label: "Operations",
-        href: ADMIN_ROUTES.operations.reports,
-        icon: IconChartBar,
-      },
-      {
-        label: "Accounting",
+        label: "Reports",
         href: ADMIN_ROUTES.operations.reports,
         icon: IconChartBar,
       },

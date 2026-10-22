@@ -408,7 +408,7 @@ export default function StudioShell({ children, user }: Props) {
           >
             <div
               data-studio-content
-              className="mx-auto flex min-h-full w-full max-w-[1240px] flex-col px-4 pb-8 pt-8 sm:px-6 sm:pb-10 lg:px-10 lg:pt-10 xl:px-12"
+              className="mx-auto flex min-h-full w-full max-w-[1440px] flex-col px-4 pb-8 pt-8 sm:px-6 sm:pb-10 lg:px-10 lg:pt-10 xl:px-14"
             >
               {breadcrumbs.length > 1 && (
                 <Breadcrumb className="mb-3">

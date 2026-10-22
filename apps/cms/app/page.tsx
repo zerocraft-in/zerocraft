@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader, PageShell } from "@/components/studio/page-header";
 import { useStudioOverview } from "./use-studio-overview";
 
 const metricConfig = [
@@ -28,11 +29,22 @@ export default function StudioDashboard() {
   const checkedAtLabel = data?.checkedAt ? new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit" }).format(new Date(data.checkedAt)) : null;
 
   return (
-    <main className="space-y-6 pb-10">
-      <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
-        <div><p className="text-xs font-medium text-muted-foreground">Studio overview</p><h1 className="mt-1 text-3xl font-semibold tracking-tight">Welcome to ZeroCraft</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Manage your works, clients, appointments, and journal from one place.</p></div>
-        <div className="flex items-center gap-2"><Button variant="outline" size="sm" onClick={() => void refresh()} disabled={loading}><IconRefresh className={loading ? "animate-spin" : ""} /> Refresh</Button><Button size="sm" render={<Link href="/works?create=1" />} nativeButton={false}><IconPlus /> New work</Button></div>
-      </header>
+    <PageShell className="space-y-6 pb-10">
+      <PageHeader
+        eyebrow="Studio overview"
+        title="Welcome to ZeroCraft"
+        description="Manage your works, clients, appointments, and journal from one place."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={() => void refresh()} disabled={loading}>
+              <IconRefresh className={loading ? "animate-spin" : ""} /> Refresh
+            </Button>
+            <Button size="sm" render={<Link href="/works?create=1" />} nativeButton={false}>
+              <IconPlus /> New work
+            </Button>
+          </>
+        }
+      />
 
       {error && <div role="alert" className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm"><IconAlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" /><div><p className="font-medium">Couldn’t refresh workspace data</p><p className="mt-1 text-muted-foreground">{error}</p></div></div>}
       {unavailable.length > 0 && <div role="status" className="flex flex-col gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-start gap-3"><IconAlertCircle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" /><div><p className="text-sm font-medium">Some data sources need attention</p><p className="mt-1 text-sm text-muted-foreground">{unavailable.map((item) => item.label).join(", ")} could not be read.</p></div></div><Button variant="outline" size="sm" render={<Link href="/settings" />} nativeButton={false}>Review sources <IconArrowUpRight /></Button></div>}
@@ -54,6 +66,6 @@ export default function StudioDashboard() {
       </section>
 
       <Card><CardHeader className="border-b"><div><CardTitle>Recent activity</CardTitle><CardDescription>Latest updates across your studio</CardDescription></div><CardAction><Badge variant="secondary">{data?.recent?.length ?? 0} updates</Badge></CardAction></CardHeader><CardContent className="divide-y pt-0">{loading ? [1, 2, 3].map((item) => <div key={item} className="flex gap-3 py-4"><Skeleton className="size-9 rounded-lg" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-64" /></div></div>) : data?.recent?.length ? data.recent.slice(0, 6).map((item) => <Link key={item.id} href={item.href} className="flex items-center gap-3 py-4 transition hover:bg-muted/30"><span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"><IconActivity className="size-4 text-muted-foreground" /></span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{item.title}</span><span className="block truncate text-xs text-muted-foreground">{item.detail}</span></span><time dateTime={item.date} className="shrink-0 text-xs text-muted-foreground">{new Date(item.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</time><IconArrowUpRight className="size-4 text-muted-foreground" /></Link>) : <p className="py-8 text-sm text-muted-foreground">No activity has been recorded yet.</p>}</CardContent></Card>
-    </main>
+    </PageShell>
   );
 }
