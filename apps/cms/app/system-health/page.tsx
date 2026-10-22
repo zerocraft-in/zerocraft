@@ -31,6 +31,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SelectField } from "@/components/ui/select-field";
 
 type CheckStatus = "healthy" | "warning" | "failed" | "unavailable";
 type HealthCheck = {
@@ -527,35 +528,9 @@ export default function SystemHealthPage() {
                 placeholder="Search job, recipient, error…"
                 className="h-9 rounded-md border bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring"
               />
-              <select
-                value={failureKind}
-                onChange={(event) => setFailureKind(event.target.value)}
-                className="h-9 rounded-md border bg-background px-3 text-sm"
-              >
-                <option value="all">All sources</option>
-                <option value="automation">Automation</option>
-                <option value="email">Email</option>
-              </select>
-              <select
-                value={failureStatus}
-                onChange={(event) => setFailureStatus(event.target.value)}
-                className="h-9 rounded-md border bg-background px-3 text-sm"
-              >
-                <option value="all">All statuses</option>
-                <option value="open">Open</option>
-                <option value="acknowledged">Acknowledged</option>
-                <option value="resolved">Resolved</option>
-              </select>
-              <select
-                value={failureDays}
-                onChange={(event) => setFailureDays(event.target.value)}
-                className="h-9 rounded-md border bg-background px-3 text-sm"
-              >
-                <option value="1">Last 24 hours</option>
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
-              </select>
+              <SelectField value={failureKind} onValueChange={setFailureKind} options={[{ value: "all", label: "All sources" }, { value: "automation", label: "Automation" }, { value: "email", label: "Email" }]} />
+              <SelectField value={failureStatus} onValueChange={setFailureStatus} options={[{ value: "all", label: "All statuses" }, { value: "open", label: "Open" }, { value: "acknowledged", label: "Acknowledged" }, { value: "resolved", label: "Resolved" }]} />
+              <SelectField value={failureDays} onValueChange={setFailureDays} options={[{ value: "1", label: "Last 24 hours" }, { value: "7", label: "Last 7 days" }, { value: "30", label: "Last 30 days" }, { value: "90", label: "Last 90 days" }]} />
               <label className="flex h-9 items-center gap-2 rounded-md border px-3 text-sm">
                 <input
                   type="checkbox"
@@ -835,15 +810,7 @@ export default function SystemHealthPage() {
                 Uptime, incidents, recovery time, and daily health trends.
               </CardDescription>
             </div>
-            <select
-              value={analyticsDays}
-              onChange={(event) => setAnalyticsDays(event.target.value)}
-              className="h-9 rounded-md border bg-background px-3 text-sm"
-            >
-              <option value="7">7 days</option>
-              <option value="30">30 days</option>
-              <option value="90">90 days</option>
-            </select>
+            <SelectField value={analyticsDays} onValueChange={setAnalyticsDays} options={[{ value: "7", label: "7 days" }, { value: "30", label: "30 days" }, { value: "90", label: "90 days" }]} />
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

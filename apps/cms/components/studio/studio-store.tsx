@@ -20,6 +20,7 @@ import { StoreProductsDataTable } from "@/components/studio/store-products-data-
 import { StoreOverviewDashboard } from "@/components/studio/store-overview-dashboard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SelectField } from "@/components/ui/select-field";
 
 type Category = {
   id: string;
@@ -829,10 +830,7 @@ export default function StudioStore({
                 <>
                   <label>
                     Parent category
-                    <select value={editor.value.category_id} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, category_id: event.target.value } })}>
-                      <option value="">Choose a category</option>
-                      {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
-                    </select>
+                    <SelectField value={editor.value.category_id} onValueChange={(value) => setEditor({ ...editor, value: { ...editor.value, category_id: value } })} options={[{ value: "", label: "Choose a category" }, ...categories.map((category) => ({ value: category.id, label: category.name }))]} />
                   </label>
                   <label>
                     Subcategory name
@@ -909,97 +907,27 @@ export default function StudioStore({
                     </label>
                     <label>
                       Category
-                      <select
-                        value={editor.value.category_id || ""}
-                        onChange={(event) =>
-                          setEditor({
-                            ...editor,
-                            value: {
-                              ...editor.value,
-                              category_id: event.target.value || null,
-                              subcategory_id: null,
-                            },
-                          })
-                        }
-                      >
-                        <option value="">Uncategorized</option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
+                      <SelectField value={editor.value.category_id || ""} onValueChange={(value) => setEditor({ ...editor, value: { ...editor.value, category_id: value || null, subcategory_id: null } })} options={[{ value: "", label: "Uncategorized" }, ...categories.map((category) => ({ value: category.id, label: category.name }))]} />
                     </label>
                     <label>
                       Subcategory
-                      <select
-                        value={editor.value.subcategory_id || ""}
-                        onChange={(event) => setEditor({ ...editor, value: { ...editor.value, subcategory_id: event.target.value || null } })}
-                      >
-                        <option value="">Choose a subcategory</option>
-                        {(categories.find((category) => category.id === editor.value.category_id)?.store_subcategories || []).map((subcategory) => (
-                          <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
-                        ))}
-                      </select>
+                      <SelectField value={editor.value.subcategory_id || ""} onValueChange={(value) => setEditor({ ...editor, value: { ...editor.value, subcategory_id: value || null } })} options={[{ value: "", label: "Choose a subcategory" }, ...(categories.find((category) => category.id === editor.value.category_id)?.store_subcategories || []).map((subcategory) => ({ value: subcategory.id, label: subcategory.name }))]} />
                     </label>
                     <label>
                       Design origin
-                      <select value={editor.value.design_origin} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, design_origin: event.target.value as ProductDraft["design_origin"] } })}>
-                        <option value="original_zerocraft">Original Zerocraft design</option>
-                        <option value="licensed">Licensed design</option>
-                        <option value="fan_inspired">Fan-inspired design</option>
-                      </select>
+                      <SelectField value={editor.value.design_origin} onValueChange={(value) => setEditor({ ...editor, value: { ...editor.value, design_origin: value as ProductDraft["design_origin"] } })} options={[{ value: "original_zerocraft", label: "Original Zerocraft design" }, { value: "licensed", label: "Licensed design" }, { value: "fan_inspired", label: "Fan-inspired design" }]} />
                     </label>
                     <label>
                       Rights status
-                      <select value={editor.value.rights_status} onChange={(event) => setEditor({ ...editor, value: { ...editor.value, rights_status: event.target.value as ProductDraft["rights_status"] } })}>
-                        <option value="not_applicable">Not applicable</option>
-                        <option value="approved_license">Approved license</option>
-                        <option value="review_required">Review required</option>
-                      </select>
+                      <SelectField value={editor.value.rights_status} onValueChange={(value) => setEditor({ ...editor, value: { ...editor.value, rights_status: value as ProductDraft["rights_status"] } })} options={[{ value: "not_applicable", label: "Not applicable" }, { value: "approved_license", label: "Approved license" }, { value: "review_required", label: "Review required" }]} />
                     </label>
                     <label>
                       Product type
-                      <select
-                        value={editor.value.product_type}
-                        onChange={(event) =>
-                          setEditor({
-                            ...editor,
-                            value: {
-                              ...editor.value,
-                              product_type: event.target
-                                .value as ProductDraft["product_type"],
-                              stock:
-                                event.target.value === "digital"
-                                  ? null
-                                  : (editor.value.stock ?? 0),
-                            },
-                          })
-                        }
-                      >
-                        <option value="physical">Physical product</option>
-                        <option value="digital">Digital product</option>
-                      </select>
+                      <SelectField value={editor.value.product_type} onValueChange={(value) => setEditor({ ...editor, value: { ...editor.value, product_type: value as ProductDraft["product_type"], stock: value === "digital" ? null : (editor.value.stock ?? 0) } })} options={[{ value: "physical", label: "Physical product" }, { value: "digital", label: "Digital product" }]} />
                     </label>
                     <label>
                       Visibility
-                      <select
-                        value={editor.value.status}
-                        onChange={(event) =>
-                          setEditor({
-                            ...editor,
-                            value: {
-                              ...editor.value,
-                              status: event.target
-                                .value as ProductDraft["status"],
-                            },
-                          })
-                        }
-                      >
-                        <option value="draft">Draft</option>
-                        <option value="active">Active</option>
-                        <option value="archived">Archived</option>
-                      </select>
+                      <SelectField value={editor.value.status} onValueChange={(value) => setEditor({ ...editor, value: { ...editor.value, status: value as ProductDraft["status"] } })} options={[{ value: "draft", label: "Draft" }, { value: "active", label: "Active" }, { value: "archived", label: "Archived" }]} />
                     </label>
                     <label>
                       Price

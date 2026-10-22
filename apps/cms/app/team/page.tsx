@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select-field";
 
 type TeamRole = "admin" | "manager" | "staff" | "client";
 type Member = {
@@ -569,17 +570,7 @@ export default function TeamPage() {
               placeholder="Full name (optional)"
               aria-label="Invite full name"
             />
-            <select
-              value={inviteRole}
-              onChange={(event) =>
-                setInviteRole(event.target.value as Exclude<TeamRole, "client">)
-              }
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm"
-            >
-              <option value="staff">Staff</option>
-              <option value="manager">Manager</option>
-              <option value="admin">Admin</option>
-            </select>
+            <SelectField value={inviteRole} onValueChange={(value) => setInviteRole(value as Exclude<TeamRole, "client">)} options={[{ value: "staff", label: "Staff" }, { value: "manager", label: "Manager" }, { value: "admin", label: "Admin" }]} />
             <Button type="submit" disabled={inviteBusy}>
               {inviteBusy ? "Sending…" : "Send invitation"}
             </Button>
@@ -677,19 +668,7 @@ export default function TeamPage() {
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="flex flex-wrap items-center gap-3">
-              <select
-                value={permissionMemberId}
-                onChange={(event) => setPermissionMemberId(event.target.value)}
-                className="h-10 min-w-64 rounded-lg border border-input bg-background px-3 text-sm"
-                aria-label="Select team member for permissions"
-              >
-                {members.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.full_name || member.email} ·{" "}
-                    {roleLabels[member.role]}
-                  </option>
-                ))}
-              </select>
+              <SelectField value={permissionMemberId} onValueChange={setPermissionMemberId} className="min-w-64" aria-label="Select team member for permissions" options={members.map((member) => ({ value: member.id, label: `${member.full_name || member.email} · ${roleLabels[member.role]}` }))} />
               <Button
                 type="button"
                 onClick={() => void savePermissions()}
@@ -798,23 +777,7 @@ export default function TeamPage() {
                     </td>
                     <td className="px-5 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <select
-                          aria-label={`Change role for ${member.email}`}
-                          value={member.role}
-                          disabled={saving === member.id}
-                          onChange={(event) =>
-                            void updateRole(
-                              member,
-                              event.target.value as TeamRole,
-                            )
-                          }
-                          className="h-9 rounded-lg border border-input bg-background px-3 text-sm disabled:opacity-60"
-                        >
-                          <option value="admin">Admin</option>
-                          <option value="manager">Manager</option>
-                          <option value="staff">Staff</option>
-                          <option value="client">No studio access</option>
-                        </select>
+                        <SelectField aria-label={`Change role for ${member.email}`} value={member.role} disabled={saving === member.id} onValueChange={(value) => void updateRole(member, value as TeamRole)} options={[{ value: "admin", label: "Admin" }, { value: "manager", label: "Manager" }, { value: "staff", label: "Staff" }, { value: "client", label: "No studio access" }]} />
                         <Button
                           type="button"
                           size="sm"

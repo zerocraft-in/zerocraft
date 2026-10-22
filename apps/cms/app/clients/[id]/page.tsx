@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/studio-controls";
 import { Badge } from "@/components/ui/studio-controls";
 import { Input } from "@/components/ui/studio-controls";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/studio-controls";
+import { SelectField } from "@/components/ui/select-field";
 
 interface TimelineItem {
   id: string;
@@ -288,15 +289,7 @@ ${client.notes || ""}`.trim();
                   onChange={(e) => setNoteTitle(e.target.value)}
                   className="sm:col-span-2 h-9 text-xs bg-background border-border"
                 />
-                <select
-                  value={noteType}
-                  onChange={(e: any) => setNoteType(e.target.value)}
-                  className="h-9 text-xs bg-background border border-border rounded-xl px-2.5 text-foreground"
-                >
-                  <option value="note">Note</option>
-                  <option value="meeting">Meeting Call</option>
-                  <option value="email">Email Touchpoint</option>
-                </select>
+                <SelectField value={noteType} onValueChange={(value) => setNoteType(value as "meeting" | "note" | "email")} className="h-9 text-xs" options={[{ value: "note", label: "Note" }, { value: "meeting", label: "Meeting Call" }, { value: "email", label: "Email Touchpoint" }]} />
               </div>
 
               <textarea
