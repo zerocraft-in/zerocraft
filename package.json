@@ -18,6 +18,7 @@
     "build:cms": "turbo run build --filter=@zerocraft/cms",
     "typecheck": "turbo run typecheck",
     "lint": "eslint .",
+    "lint:cms": "eslint apps/cms --no-cache",
     "verify": "npm run verify:seed",
     "verify:commerce": "node scripts/verify-commerce-schema.mjs",
     "verify:commerce-correctness": "node --experimental-strip-types scripts/verify-commerce-correctness.mjs",
