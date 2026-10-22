@@ -414,7 +414,7 @@ export default function StudioShell({ children, user }: Props) {
                 <Breadcrumb className="mb-3">
                   <BreadcrumbList className="text-xs">
                     {breadcrumbs.map((item, index) => (
-                      <span key={item.href} className="contents">
+                      <span key={`${item.href}-${index}`} className="contents">
                         {index > 0 && <BreadcrumbSeparator />}
                         <BreadcrumbItem>
                           {index === breadcrumbs.length - 1 ? (
