@@ -33,6 +33,7 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
+import { PageState } from "@/components/studio/page-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -671,7 +672,7 @@ export function StoreProductsDataTable({
                   colSpan={table.getVisibleLeafColumns().length}
                   className="h-32 text-center text-muted-foreground"
                 >
-                  Loading products…
+                  <PageState kind="loading" title="Loading products" description="Fetching the latest catalog inventory." className="min-h-28 border-0 rounded-none py-5" />
                 </TableCell>
               </TableRow>
             ) : !configured ? (
@@ -680,15 +681,7 @@ export function StoreProductsDataTable({
                   colSpan={table.getVisibleLeafColumns().length}
                   className="h-40 text-center"
                 >
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="font-medium">
-                      Catalog is waiting for setup
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      Apply the catalog migration to begin managing store
-                      products.
-                    </span>
-                  </div>
+                  <PageState kind="error" title="Catalog setup required" description="Apply the catalog migration to begin managing store products." className="min-h-36 border-0 rounded-none py-5" />
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
@@ -711,18 +704,7 @@ export function StoreProductsDataTable({
                   colSpan={table.getVisibleLeafColumns().length}
                   className="h-28 text-center"
                 >
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="font-medium">
-                      {data.length
-                        ? "No products match this view"
-                        : "No products yet"}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {data.length
-                        ? "Try another search or filter."
-                        : "Add your first product to get started."}
-                    </span>
-                  </div>
+                  <PageState kind="empty" title={data.length ? "No products match this view" : "No products yet"} description={data.length ? "Try another search or filter." : "Add your first product to get started."} className="min-h-28 border-0 rounded-none py-5" />
                 </TableCell>
               </TableRow>
             )}

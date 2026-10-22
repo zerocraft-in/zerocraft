@@ -27,6 +27,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PageState } from "@/components/studio/page-state";
 
 export type OrderStatus = "pending" | "confirmed" | "fulfilling" | "shipped" | "completed" | "cancelled";
 export type StoreOrder = {
@@ -160,7 +161,7 @@ export function OrdersDataTable({ data, loading, onStatusChange, onBulkStatusCha
     <div className="min-h-0 flex-1 overflow-hidden rounded-lg border">
       <Table className="min-w-[1000px]" style={{ width: "100%" }}>
         <TableHeader className="bg-muted/40">{table.getHeaderGroups().map((group) => <TableRow key={group.id}>{group.headers.map((header) => <TableHead key={header.id} className={header.column.id === "select" ? "w-10" : undefined}>{header.isPlaceholder ? null : <table.FlexRender header={header} />}</TableHead>)}</TableRow>)}</TableHeader>
-        <TableBody>{loading ? <TableRow><TableCell colSpan={table.getVisibleLeafColumns().length} className="h-32 text-center text-muted-foreground">Loading orders…</TableCell></TableRow> : table.getRowModel().rows.length ? table.getRowModel().rows.map((row) => <TableRow key={row.id} data-state={row.getIsSelected() ? "selected" : undefined}>{row.getVisibleCells().map((cell) => <TableCell key={cell.id}><table.FlexRender cell={cell} /></TableCell>)}</TableRow>) : <TableRow><TableCell colSpan={table.getVisibleLeafColumns().length} className="h-40 text-center"><div className="flex flex-col items-center gap-1"><span className="font-medium">No orders match this view</span><span className="text-sm text-muted-foreground">Try another search or payment filter.</span></div></TableCell></TableRow>}</TableBody>
+        <TableBody>{loading ? <TableRow><TableCell colSpan={table.getVisibleLeafColumns().length} className="p-0"><PageState kind="loading" title="Loading orders" description="Fetching the latest customer orders." className="min-h-32 border-0 rounded-none py-5" /></TableCell></TableRow> : table.getRowModel().rows.length ? table.getRowModel().rows.map((row) => <TableRow key={row.id} data-state={row.getIsSelected() ? "selected" : undefined}>{row.getVisibleCells().map((cell) => <TableCell key={cell.id}><table.FlexRender cell={cell} /></TableCell>)}</TableRow>) : <TableRow><TableCell colSpan={table.getVisibleLeafColumns().length} className="p-0"><PageState kind="empty" title="No orders match this view" description="Try another search or payment filter." className="min-h-40 border-0 rounded-none py-5" /></TableCell></TableRow>}</TableBody>
       </Table>
     </div>
     <div className="flex flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
