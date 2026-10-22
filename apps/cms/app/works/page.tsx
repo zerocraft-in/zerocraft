@@ -69,6 +69,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Switch } from "@/components/ui/switch";
+import { PageHeader, PageShell } from "@/components/studio/page-header";
 interface WorkItem {
   id: string;
   title: string;
@@ -355,28 +356,8 @@ export default function StudioWorksCRUD() {
     selectedRows.every((id) => works.find((work) => work.id === id)?.featured);
 
   return (
-    <div className="space-y-6 pt-2 font-sans text-foreground antialiased">
-      {/* Top Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-foreground">
-            <IconBriefcase className="size-5 text-muted-foreground" /> Works
-          </h1>
-          <p className="text-xs text-muted-foreground font-normal mt-0.5">
-            Manage portfolio projects, case studies, and studio showcase items.
-          </p>
-        </div>
-
-        <Button
-          variant="default"
-          size="sm"
-          onClick={openCreateModal}
-          className="rounded-xl self-start sm:self-auto"
-        >
-          <IconPlus className="w-4 h-4" />
-          <span>New project</span>
-        </Button>
-      </div>
+    <PageShell className="space-y-6 pt-2 font-sans antialiased">
+      <PageHeader title="Works" description="Manage portfolio projects, case studies, and studio showcase items." actions={<Button size="sm" onClick={openCreateModal}><IconPlus /> New project</Button>} />
 
       {/* Reference-Styled Ultra-Sleek Table Container */}
       <div className="space-y-4">
@@ -968,6 +949,6 @@ export default function StudioWorksCRUD() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

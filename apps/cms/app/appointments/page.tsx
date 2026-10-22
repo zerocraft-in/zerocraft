@@ -55,6 +55,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { PageHeader, PageShell } from "@/components/studio/page-header";
 
 import { sendWhatsAppViaN8n } from "@/lib/n8n";
 import {
@@ -388,29 +389,8 @@ export default function StudioAppointmentsCRUD() {
   };
 
   return (
-    <div className="space-y-6 pt-2 font-sans text-foreground antialiased">
-      {/* Top Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-foreground">
-            <IconCalendar className="size-5 text-muted-foreground" /> Appointments
-          </h1>
-          <p className="text-xs text-muted-foreground font-normal mt-0.5">
-            Schedule studio sessions, product strategy calls, and n8n WhatsApp
-            automations.
-          </p>
-        </div>
-
-        <Button
-          variant="default"
-          size="sm"
-          onClick={openCreateModal}
-          className="self-start rounded-xl sm:self-auto"
-        >
-          <IconPlus className="w-4 h-4" />
-          <span>Book Slot</span>
-        </Button>
-      </div>
+    <PageShell className="space-y-6 pt-2 font-sans antialiased">
+      <PageHeader title="Appointments" description="Schedule studio sessions, product strategy calls, and n8n WhatsApp automations." actions={<Button size="sm" onClick={openCreateModal}><IconPlus /> Book slot</Button>} />
 
       {/* n8n Status Alert */}
       {n8nStatusMessage && (
@@ -1043,6 +1023,6 @@ export default function StudioAppointmentsCRUD() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }
