@@ -25,6 +25,7 @@ const pageRoutes = [
 ];
 
 const apiRoutes = [
+  ["/api/health", "app/api/health/route.ts"],
   ["/api/studio/me", "app/api/studio/me/route.ts"],
   ["/api/studio/team", "app/api/studio/team/route.ts"],
   ["/api/studio/audit-logs", "app/api/studio/audit-logs/route.ts"],

@@ -30,4 +30,5 @@ jobs:
       - run: npm ci
       - run: npm run verify:release
       - run: npm run build:cms:release
+      - run: npm run smoke:cms:build
 

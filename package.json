@@ -31,6 +31,7 @@
     "verify:release": "node scripts/release/check-migrations.mjs && npm run test:rbac && npm run test:cms-routes && npm run typecheck --workspace=@zerocraft/cms",
     "test:cms-routes": "node scripts/release/check-cms-routes.mjs",
     "smoke:cms": "node scripts/release/smoke-cms.mjs",
+    "smoke:cms:build": "node scripts/release/smoke-cms-build.mjs",
     "verify:seed": "node scripts/verify-seed-commerce.mjs",
     "seed": "npm run seed:commerce",
     "seed:commerce": "node scripts/seed-commerce.mjs",

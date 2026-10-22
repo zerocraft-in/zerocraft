@@ -5,6 +5,7 @@ import { getSupabasePublicConfig } from "@zerocraft/supabase/config";
 const PUBLIC_PATHS = new Set([
   "/login",
   "/auth/callback",
+  "/api/health",
   // Vercel Cron authenticates this endpoint with its bearer secret at the route level.
   "/api/studio/notifications/reports/worker",
 ]);
@@ -53,8 +54,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
+  // Public endpoints must remain reachable even when the authentication
+  // provider is degraded. This also makes the readiness probe meaningful.
+  if (PUBLIC_PATHS.has(pathname)) return NextResponse.next({ request });
+
   const { response, user } = await sessionFor(request);
-  if (PUBLIC_PATHS.has(pathname)) return response;
   if (user) return response;
 
   if (pathname.startsWith("/api/")) {
