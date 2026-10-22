@@ -202,7 +202,7 @@ export default function StorefrontPage() {
           {Array.from({ length: 3 }, (_, index) => (
             <span key={index}>
               ★ First day first show &nbsp; ★ Free shipping above ₹999 &nbsp; ★
-              Tamil + Malayalam drops weekly &nbsp; ★ Code FIRSTSHOW10 for 10%
+              Tamil + Malayalam drops weekly &nbsp; ★ Original studio drops every week
               off &nbsp;{" "}
             </span>
           ))}
