@@ -3,6 +3,12 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "ZEROCRAFT_TRANSACTIONAL_CHECKOUT_ENABLED",
+        "ZEROCRAFT_CUSTOMIZATION_REGISTRATION_ENABLED",
+        "ZEROCRAFT_MANUAL_PAYMENTS_ENABLED"
+      ],
       "outputs": [".next/**", "!.next/cache/**", ".next-local/**", "!.next-local/cache/**"]
     },
     "dev": {

@@ -1,6 +1,6 @@
 import Bundles from "@/components/sections/Bundles";
 import Categories from "@/components/sections/Categories";
-import Faq from "@/components/sections/Faq";
+import Faq from "@/components/sections/FAQ";
 import Hero from "@/components/sections/Hero";
 import LanguagePanels from "@/components/sections/LanguagePanels";
 import Newsletter from "@/components/sections/Newsletter";
