@@ -1,19 +1,14 @@
 import Link from "next/link";
-import ZeroPopStorePage from "@/components/zeropop-store-page";
-
-export default function StoreNotFound() {
+export default function NotFound() {
   return (
-    <ZeroPopStorePage
-      eyebrow="404 / Interval break"
-      title="Scene not"
-      accent="found."
-    >
-      <div className="zeropop-page-panel">
-        <p>This route is not part of the current ZEROPOP edit.</p>
-        <Link href="/store" className="zeropop-page-link">
-          Back to the storefront →
-        </Link>
-      </div>
-    </ZeroPopStorePage>
+    <div className="storefront-container checkout-state">
+      <h1 className="storefront-display">Scene not found</h1>
+      <p style={{ margin: "16px 0 28px", color: "var(--mute)" }}>
+        This page left before the interval.
+      </p>
+      <Link href="/shop" className="storefront-button storefront-button--primary">
+        Back to the shop
+      </Link>
+    </div>
   );
 }

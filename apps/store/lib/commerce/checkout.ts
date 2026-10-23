@@ -27,7 +27,7 @@ export interface CheckoutRequest {
   items: CheckoutLineRequest[];
   address: CheckoutAddress;
   delivery: "standard" | "express" | "overnight";
-  paymentMethod: "cod";
+  paymentMethod: "cod" | "upi_qr" | "bank_transfer";
 }
 
 const ADDRESS_FIELDS = ["fullName", "street", "city", "state", "postalCode", "country", "phone"] as const;
@@ -59,7 +59,7 @@ export function parseCheckoutRequest(value: unknown): { ok: true; data: Checkout
   }
   if (!String(address.country).trim().match(/^[A-Za-z]{2,3}$/)) return { ok: false, error: "Use a valid delivery country." };
   if (!(["standard", "express", "overnight"] as const).includes(value.delivery as CheckoutRequest["delivery"])) return { ok: false, error: "Choose a supported delivery method." };
-  if (value.paymentMethod !== "cod") return { ok: false, error: "The selected payment method is not supported." };
+  if (!( ["cod", "upi_qr", "bank_transfer"] as const).includes(value.paymentMethod as CheckoutRequest["paymentMethod"])) return { ok: false, error: "The selected payment method is not supported." };
 
   const items: CheckoutLineRequest[] = [];
   for (const raw of value.items) {
@@ -86,7 +86,7 @@ export function parseCheckoutRequest(value: unknown): { ok: true; data: Checkout
       items,
       address: Object.fromEntries(ADDRESS_FIELDS.map((field) => [field, String(address[field]).trim()])) as unknown as CheckoutAddress,
       delivery: value.delivery as CheckoutRequest["delivery"],
-      paymentMethod: "cod",
+      paymentMethod: value.paymentMethod as CheckoutRequest["paymentMethod"],
     },
   };
 }

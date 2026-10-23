@@ -48,9 +48,9 @@
     "components/studio",
     "components/settings-modal.tsx",
     "components/theme-toggle.tsx",
-    "components/zeropop-effects.tsx",
-    "components/zeropop-shop.tsx",
-    "components/zeropop-store-page.tsx",
+    "components/zerocraft-effects.tsx",
+    "components/zerocraft-shop.tsx",
+    "components/zerocraft-store-page.tsx",
     "components/providers/auth-provider.tsx",
     "components/providers/provider.tsx",
     "components/currency-switcher-combobox.tsx"

@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   },
   distDir: process.env.VERCEL ? ".next" : ".next-local",
   outputFileTracingRoot: path.join(__dirname, "../.."),
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }],
+  },
   transpilePackages: ["@zerocraft/supabase"],
   async rewrites() {
     return [

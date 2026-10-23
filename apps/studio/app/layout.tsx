@@ -16,6 +16,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(domainOrigin("studio")),
+  alternates: { canonical: "/" },
   title: {
     default: "Zerocraft Studio — Creative & Digital Studio",
     template: "%s | Zerocraft Studio",
@@ -24,6 +25,20 @@ export const metadata: Metadata = {
   authors: [{ name: "Zerocraft Studio", url: studio.url }],
   creator: "Zerocraft Studio",
   robots: { index: true, follow: true },
+  openGraph: {
+    title: "Zerocraft Studio — Creative & Digital Studio",
+    description: studio.description,
+    url: domainOrigin("studio"),
+    siteName: "Zerocraft Studio",
+    type: "website",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Zerocraft Studio" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Zerocraft Studio — Creative & Digital Studio",
+    description: studio.description,
+    images: ["/og-image.jpg"],
+  },
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
   },

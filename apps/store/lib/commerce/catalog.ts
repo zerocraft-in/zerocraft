@@ -97,6 +97,10 @@ export type PaginatedProducts = {
   total: number;
 };
 
+function safeCatalogImage(value: string | null | undefined) {
+  return value && !value.includes("placehold.co") && !value.includes("via.placeholder") ? value : "/og-image.jpg";
+}
+
 type ProductRow = {
   id: string;
   slug: string;
@@ -157,6 +161,22 @@ function toMoney(row: ProductRow) {
 
 function mapProduct(row: ProductRow): CatalogProduct {
   const money = toMoney(row);
+  const variants = (row.variants ?? []).filter((variant) => variant.is_active !== false).map((variant) => {
+    const currency = resolveCurrencyCode(variant.currency_code, money.currency);
+    const variantMoney = resolveCatalogMoney({ currency, price: variant.price, pricePaise: variant.price_paise });
+    return {
+      id: variant.id,
+      label: variant.label,
+      sku: variant.sku,
+      options: normalizeVariantOptions(variant.options),
+      price: variantMoney.amount,
+      pricePaise: variantMoney.amountPaise,
+      currency: variantMoney.currency,
+      stock: variant.stock,
+    } satisfies CatalogVariant;
+  });
+  const colorValues = [...new Set(variants.map((variant) => variant.options.color).filter(Boolean))];
+  const sizeValues = [...new Set(variants.map((variant) => variant.options.size).filter(Boolean))];
   const category = firstRelation(row.category);
   const subcategory = firstRelation(row.subcategory);
   const images = (row.media ?? [])
@@ -188,32 +208,19 @@ function mapProduct(row: ProductRow): CatalogProduct {
     originalPrice: money.originalPrice,
     pricePaise: money.pricePaise,
     currency: money.currency,
-    stock: row.stock ?? 0,
+    stock: variants.length ? variants.reduce((total, variant) => total + Math.max(0, variant.stock ?? 0), 0) : row.stock ?? 0,
     rating: 0,
     reviewCount: 0,
     tags: [],
-    colors: [],
-    sizes: [],
+    colors: colorValues.map((name) => ({ name, hex: "#1b1b1b" })),
+    sizes: sizeValues,
     sku: row.sku,
     shippingBadge: "Made to order",
     isNew: Date.now() - new Date(row.created_at).getTime() < 30 * 24 * 60 * 60 * 1000,
     isSale: money.originalPrice > money.price,
     images,
     specifications: [],
-    variants: (row.variants ?? []).filter((variant) => variant.is_active !== false).map((variant) => {
-      const currency = resolveCurrencyCode(variant.currency_code, money.currency);
-      const variantMoney = resolveCatalogMoney({ currency, price: variant.price, pricePaise: variant.price_paise });
-      return {
-        id: variant.id,
-        label: variant.label,
-        sku: variant.sku,
-        options: normalizeVariantOptions(variant.options),
-        price: variantMoney.amount,
-        pricePaise: variantMoney.amountPaise,
-        currency: variantMoney.currency,
-        stock: variant.stock,
-      };
-    }),
+    variants,
   };
 }
 
@@ -282,7 +289,7 @@ export async function getCategories(): Promise<CatalogCategory[]> {
   return (data ?? []).map((row) => {
     const value = row as unknown as { id: string; name: string; slug: string; description: string; image_url: string; store_products?: { count: number }[] };
     const subcategories = ((row as any).store_subcategories ?? []).filter((sub: any) => sub.is_active).map((sub: any) => ({ id: sub.id, categoryId: sub.category_id, name: sub.name, slug: sub.slug, description: sub.description, image: sub.image_url, itemCount: sub.store_products?.[0]?.count ?? 0 }));
-    return { id: value.id, name: value.name, slug: value.slug, description: value.description, image: value.image_url, itemCount: subcategories.reduce((total: number, subcategory: CatalogSubcategory) => total + subcategory.itemCount, 0), subcategories };
+    return { id: value.id, name: value.name, slug: value.slug, description: value.description, image: safeCatalogImage(value.image_url), itemCount: subcategories.reduce((total: number, subcategory: CatalogSubcategory) => total + subcategory.itemCount, 0), subcategories };
   }).filter((category) => category.subcategories.length > 0);
 }
 
@@ -297,7 +304,7 @@ export async function getCollections(): Promise<CatalogCollection[]> {
   if (error) throw new Error(`Collection query failed: ${error.message}`);
   return (data ?? []).map((row) => {
     const value = row as unknown as { id: string; name: string; slug: string; tagline: string; description: string; image_url: string };
-    return { id: value.id, name: value.name, slug: value.slug, tagline: value.tagline, description: value.description, image: value.image_url };
+    return { id: value.id, name: value.name, slug: value.slug, tagline: value.tagline, description: value.description, image: safeCatalogImage(value.image_url) };
   });
 }
 

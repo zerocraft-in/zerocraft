@@ -7,7 +7,8 @@ const requiredTables = [
   'store_inventory_levels', 'store_inventory_movements', 'customer_addresses',
   'store_carts', 'store_cart_items', 'store_wishlists', 'store_wishlist_items',
   'store_order_items', 'store_customization_templates', 'storefront_sections',
-  'storefront_banners', 'store_audit_logs',
+  'storefront_banners', 'store_audit_logs', 'store_bundles', 'store_bundle_items', 'store_payment_methods',
+  'store_payment_attempts', 'store_payment_submissions',
 ];
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

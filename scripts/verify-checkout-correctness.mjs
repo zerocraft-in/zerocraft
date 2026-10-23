@@ -16,8 +16,10 @@ assert.equal(parsed.ok, true, "valid INR-shaped request parses");
 if (parsed.ok) assert.equal(canonicalCheckoutPayload(parsed.data), canonicalCheckoutPayload({ ...parsed.data, idempotencyKey: "different-key" }), "fingerprint excludes idempotency key");
 assert.equal(parseCheckoutRequest({ ...base, items: [{ ...base.items[0], price: 1 }] }).ok, false, "client price is rejected");
 assert.equal(parseCheckoutRequest({ ...base, paymentMethod: "card" }).ok, false, "unsupported payment is rejected");
+assert.equal(parseCheckoutRequest({ ...base, paymentMethod: "upi_qr" }).ok, true, "UPI manual payment parses");
+assert.equal(parseCheckoutRequest({ ...base, paymentMethod: "bank_transfer" }).ok, true, "bank transfer manual payment parses");
 assert.equal(parseCheckoutRequest({ ...base, items: [{ ...base.items[0], quantity: 21 }] }).ok, false, "excessive quantity is rejected");
 assert.equal(parseCheckoutRequest({ ...base, items: [{ ...base.items[0], productId: "prod-1" }] }).ok, false, "static product IDs are rejected");
 assert.equal(parseCheckoutRequest({ ...base, items: [{ ...base.items[0], customizationReference: `${id}/bad.txt` }] }).ok, true, "reference is syntax-bounded and ownership is server-side");
-console.log("Checkout correctness checks passed: 6");
+console.log("Checkout correctness checks passed: 8");
 

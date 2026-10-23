@@ -32,9 +32,9 @@ Dashboard, works, blogs, clients, and appointments pages have copy/layout or sty
 
 ## Deleted public assets
 
-The current tree deletes legacy brand assets, store art, product mockups, public images, patterns, wordmarks, and `zeropop-storefront.html` under `apps/cms/public`.
+The current tree deletes legacy brand assets, store art, product mockups, public images, patterns, wordmarks, and the legacy store storefront under `apps/cms/public`.
 
-This deletion set has a release-blocking verification concern: active CMS store components still reference paths such as `/brand/zeropop-logo-header.svg`, `/images/products/posterized-art-print-mockup.png`, and `/patterns/craft-pattern.svg`. Unless those components are removed from the runtime path or the assets are restored/replaced, storefront requests can return 404s.
+This deletion set has a release-blocking verification concern: active CMS store components still reference paths such as `/brand/zerocraft-logo-header.svg`, `/images/products/posterized-art-print-mockup.png`, and `/patterns/craft-pattern.svg`. Unless those components are removed from the runtime path or the assets are restored/replaced, storefront requests can return 404s.
 
 ## Reference material
 

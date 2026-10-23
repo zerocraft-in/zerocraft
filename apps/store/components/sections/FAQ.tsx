@@ -1,52 +1,47 @@
-import RotatingWords from "@/components/ui/RotatingWords";
-import StudioGlyph from "@/components/ui/StudioGlyph";
-
-const questions = [
+const Q = [
   [
-    "What services does Zerocraft Studio offer?",
-    "We work across branding, graphic design, UI/UX, website and app development, photography, video production, and motion design.",
+    "Are these official film posters?",
+    "No. Padam Club posters are original, film-inspired artworks and typography designs. We are not affiliated with any film, actor or studio.",
   ],
   [
-    "How do I start a project?",
-    "Reach out with a brief overview of your idea, goals, and requirements. We'll discuss your vision, define the scope, and plan the next steps.",
+    "What is the tee fabric and fit?",
+    "Tees are heavy cotton with a soft hand feel. Check the size guide inside each product. For an oversized fit, go one size up.",
   ],
   [
-    "Can we collaborate remotely?",
-    "Yes. We're based in Tenkasi, Tamil Nadu, and welcome remote collaborations with clients from different locations.",
+    "How long does delivery take?",
+    "Orders are dispatched in 2–4 working days. Delivery usually takes 3–5 days across India after dispatch.",
   ],
   [
-    "How are project costs and timelines determined?",
-    "Every project has unique requirements. Pricing and timelines are based on scope, complexity, deliverables, and the level of creative and technical work involved.",
+    "Can I return or exchange?",
+    "Yes, unused items can be returned or exchanged within 7 days. Digital downloads are non-refundable once delivered.",
   ],
   [
-    "Do you take on smaller projects?",
-    "We consider projects of different sizes, from individual creative deliverables to complete brand and digital experiences.",
+    "How do digital products work?",
+    "You get an instant download link after payment. Files are for personal use only.",
   ],
 ];
-export default function FAQ() {
+export default function Faq() {
   return (
-    <section
-      className="section studio-faq"
-      id="faq"
-      aria-labelledby="faq-heading"
-    >
-      <div className="container-site studio-faq__layout">
-        <div>
-          <span className="studio-eyebrow studio-eyebrow--section">A little clarity</span>
-          <h2 id="faq-heading" className="studio-heading" aria-label="Good questions. Clear answers.">
-            Good questions.
-            <br />
-            <RotatingWords words={["Clear answers.", "Honest answers.", "Useful answers."]} className="studio-accent" />
-          </h2>
+    <section style={{ paddingTop: 0 }}>
+      <div className="storefront-container">
+        <div
+          className="storefront-section-heading"
+          style={{ justifyContent: "center", textAlign: "center" }}
+        >
+          <div>
+            <div className="storefront-kicker storefront-mono" style={{ justifyContent: "center" }}>
+              Doubts?
+            </div>
+            <h2 className="storefront-display reveal-on-scroll">
+              Quick <em>answers.</em>
+            </h2>
+          </div>
         </div>
-        <div>
-          {questions.map(([question, answer]) => (
-            <details key={question}>
-              <summary>
-                {question}
-                <span className="studio-faq__icon" aria-hidden="true"><StudioGlyph variant="plus" size={15} className="studio-faq__glyph--plus" /><StudioGlyph variant="close" size={15} className="studio-faq__glyph--close" /></span>
-              </summary>
-              <p>{answer}</p>
+        <div className="faq-list reveal-on-scroll">
+          {Q.map(([q, a]) => (
+            <details key={q}>
+              <summary>{q}</summary>
+              <p>{a}</p>
             </details>
           ))}
         </div>

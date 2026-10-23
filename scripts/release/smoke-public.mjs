@@ -17,7 +17,7 @@ async function check(name, url, expectedStatus, pattern) {
 
 await check("studio root", `${bases.studio}/`, 200, /Ideas made bold/i);
 await check("studio www alias", `${bases.www}/`, 200, /Ideas made bold/i);
-await check("store home", `${bases.store}/`, 200, /ZEROPOP|South Indian/i);
+await check("store home", `${bases.store}/`, 200, /ZEROCRAFT|South Indian/i);
 await check("cms readiness", `${bases.admin}/api/health`, 200, /zerocraft-cms/i);
 await check("cms protected dashboard", `${bases.admin}/`, 307);
 await check("cms worker secret boundary", `${bases.admin}/api/studio/notifications/reports/worker`, 401);

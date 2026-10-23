@@ -47,10 +47,13 @@ for (const staleRoute of ["/studio", "/transactions", "/subscriptions", "/disput
   assert(!navigation.includes(`href: "${staleRoute}"`), `navigation still exposes stale route ${staleRoute}`);
 }
 
-const placeholderRoutes = ["channels", "devices", "disputes", "integrations", "scheduling", "subscriptions", "time-tracking", "transactions", "whats-new"];
+const placeholderRoutes = ["channels", "devices", "disputes", "integrations", "scheduling", "subscriptions", "time-tracking", "whats-new"];
 for (const route of placeholderRoutes) {
   const source = readFileSync(join(cms, "app", route, "page.tsx"), "utf8");
   assert(source.includes("ComingSoonPage"), `${route}: placeholder route must use the honest ComingSoonPage state`);
 }
+
+const transactionsSource = readFileSync(join(cms, "app", "transactions", "page.tsx"), "utf8");
+assert(transactionsSource.includes("ManualPaymentsReview"), "transactions: manual payments review route is missing");
 
 console.log("CMS route contract checks passed.");

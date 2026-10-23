@@ -1,6 +1,10 @@
-import Link from "next/link";
-import ZeroPopStorePage from "@/components/zeropop-store-page";
-
+import type { Metadata } from "next";
+import CheckoutClient from "@/components/sections/CheckoutClient";
+export const metadata: Metadata = { title: "Checkout" };
 export default function CheckoutPage() {
-  return <ZeroPopStorePage eyebrow="Final frame" title="Secure" accent="checkout."><div className="zeropop-page-panel"><h2>Checkout is ready.</h2><p>Review your cart and delivery details before the order is placed.</p><Link href="/store/cart" className="zeropop-page-link">Review cart →</Link></div></ZeroPopStorePage>;
+  return (
+    <div className="storefront-container">
+      <CheckoutClient />
+    </div>
+  );
 }

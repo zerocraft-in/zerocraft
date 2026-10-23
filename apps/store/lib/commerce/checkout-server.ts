@@ -17,6 +17,7 @@ export type CheckoutResult = {
   items: unknown[];
   createdAt: string;
   replayed: boolean;
+  paymentAttemptId?: string;
 };
 
 export class CheckoutError extends Error {
@@ -51,6 +52,9 @@ async function verifyCustomizationReferences(supabase: Awaited<ReturnType<typeof
 
 export async function executeTransactionalCheckout(request: CheckoutRequest): Promise<CheckoutResult> {
   if (!transactionalCheckoutEnabled()) throw new CheckoutError("CHECKOUT_PENDING_DEPLOYMENT", "Secure checkout is not enabled until its approved database migration is deployed.", 503);
+  if (request.paymentMethod !== "cod" && process.env.ZEROCRAFT_MANUAL_PAYMENTS_ENABLED !== "true") {
+    throw new CheckoutError("MANUAL_PAYMENTS_PENDING_DEPLOYMENT", "Manual payment methods are not enabled yet.", 503);
+  }
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new CheckoutError("UNAUTHORIZED", "Sign in before checkout.", 401);
@@ -60,11 +64,12 @@ export async function executeTransactionalCheckout(request: CheckoutRequest): Pr
   if (!serviceUrl || !serviceKey) throw new CheckoutError("CHECKOUT_UNAVAILABLE", "Secure checkout is temporarily unavailable.", 503);
   const serviceClient = createServiceClient(serviceUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const fingerprint = createHash("sha256").update(canonicalCheckoutPayload(request)).digest("hex");
-  const { data, error } = await serviceClient.rpc("create_transactional_checkout", {
+  const { data, error } = await serviceClient.rpc("create_transactional_checkout_with_payment", {
     p_customer_id: user.id,
     p_idempotency_key: request.idempotencyKey,
     p_request_fingerprint: fingerprint,
     p_checkout: { items: request.items, address: request.address, delivery: request.delivery, paymentMethod: request.paymentMethod },
+    p_payment_method: request.paymentMethod,
   });
   if (error || !data || typeof data !== "object") {
     const message = error?.message ?? "Checkout could not be completed.";
@@ -87,5 +92,6 @@ export async function executeTransactionalCheckout(request: CheckoutRequest): Pr
     items: Array.isArray(result.items) ? result.items : [],
     createdAt: String(result.created_at),
     replayed: Boolean(result.replayed),
+    paymentAttemptId: result.payment_attempt_id ? String(result.payment_attempt_id) : undefined,
   };
 }

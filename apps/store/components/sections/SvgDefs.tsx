@@ -1,0 +1,13 @@
+export default function SvgDefs() {
+  return (
+    <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+      <defs>
+        <filter id="gr"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" /><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .8 0" /></filter>
+        <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="10" stdDeviation="9" floodColor="#1a0a04" floodOpacity=".4" /></filter>
+        <linearGradient id="wl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#EDE3C8" /><stop offset="1" stopColor="#D5C49C" /></linearGradient>
+        <clipPath id="cc"><circle cx="200" cy="240" r="55" /></clipPath>
+        <clipPath id="cm"><rect x="115" y="235" width="170" height="125" /></clipPath>
+      </defs>
+    </svg>
+  );
+}
