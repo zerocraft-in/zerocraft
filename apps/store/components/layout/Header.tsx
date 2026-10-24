@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { FooterLogo, HeaderLogo } from "./InlineBranding";
+import { Logo } from "./InlineBranding";
 
 export default function Header() {
   const { count, openCart, catalog } = useStore();
@@ -14,12 +14,12 @@ export default function Header() {
           className="site-header__brand"
           aria-label="Zerocraft home"
         >
-          <FooterLogo />
-          <HeaderLogo />
+          <Logo />
         </Link>
-        <nav className="site-header__nav">
-          {categories.slice(0, 5).map((c) => (
-            <Link key={c} href={`/shop?cat=${c}`}>
+        <nav className="site-header__nav" aria-label="Main navigation">
+          <Link href="/shop">Shop all</Link>
+          {categories.map((c) => (
+            <Link key={c} href={`/shop?cat=${encodeURIComponent(c)}`}>
               {c}
             </Link>
           ))}
@@ -40,6 +40,22 @@ export default function Header() {
             >
               <circle cx="10.8" cy="10.8" r="6.8" />
               <path d="m16 16 4.2 4.2" />
+            </svg>
+          </Link>
+          <Link
+            href="/account"
+            className="site-header__icon site-header__profile"
+            aria-label="Your account"
+            title="Your account"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+              fill="none"
+            >
+              <circle cx="12" cy="8" r="3.5" />
+              <path d="M5 20a7 7 0 0 1 14 0" />
             </svg>
           </Link>
           <button

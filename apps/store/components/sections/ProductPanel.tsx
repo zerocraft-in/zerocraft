@@ -31,7 +31,8 @@ export default function ProductPanel({
   const [pin, setPin] = useState("");
   const [msg, setMsg] = useState("");
   const apparel = p.c === "Tees" || p.c === "Hoodies";
-  const H = (h1 ? "h1" : "h3") as "h1";
+  const onSale = p.o > p.pr;
+  const H = h1 ? "h1" : "h3";
   return (
     <>
       <div className="storefront-kicker storefront-mono">
@@ -39,15 +40,21 @@ export default function ProductPanel({
         {p.l ? " · " + LG[p.l] : ""}
       </div>
       <H className="storefront-display product-title">{p.n}</H>
-      <div className="storefront-mono">
-        ★ {p.r} · {Math.round(p.r * 23)} reviews
-      </div>
+      {p.reviewCount !== undefined && p.reviewCount > 0 && (
+        <div className="storefront-mono">
+          ★ {p.r} · {p.reviewCount} reviews
+        </div>
+      )}
       <div className="product-price" style={{ margin: "14px 0" }}>
         <b style={{ fontSize: 44 }}>{R(p.pr)}</b>
-        <s>{R(p.o)}</s>
-        <span className="storefront-mono" style={{ color: "var(--red)" }}>
-          Save {R(p.o - p.pr)}
-        </span>
+        {onSale && (
+          <>
+            <s>{R(p.o)}</s>
+            <span className="storefront-mono" style={{ color: "var(--red)" }}>
+              Save {R(p.o - p.pr)}
+            </span>
+          </>
+        )}
       </div>
       <p className="product-description">
         {p.ty === "digi"

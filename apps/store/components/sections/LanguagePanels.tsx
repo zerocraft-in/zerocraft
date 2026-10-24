@@ -5,8 +5,8 @@ import { LG } from "@/lib/format";
 import { useStore } from "@/lib/store";
 
 const PANELS = [
-  { k: "ta", cls: "is-tinted", tag: "Kollywood vibes", nt: "தமிழ்", ids: [8, 10] },
-  { k: "ml", cls: "is-light", tag: "Mollywood vibes", nt: "മലയാളം", ids: [11, 12] },
+  { k: "ta", cls: "is-tinted", tag: "Kollywood vibes", nt: "தமிழ்" },
+  { k: "ml", cls: "is-light", tag: "Mollywood vibes", nt: "മലയാളം" },
 ];
 
 export default function LanguagePanels() {
@@ -25,31 +25,36 @@ export default function LanguagePanels() {
           </div>
         </div>
         <div className="language-grid">
-          {PANELS.map((x) => (
-            <Link
-              key={x.k}
-              href={`/shop?lang=${x.k}`}
-              className={`language-card ${x.cls} reveal-on-scroll`}
-            >
-              <div className="language-card__posters">
-                {x.ids.map((id, i) => (
-                  <svg
-                    key={id}
-                    viewBox="0 0 300 400"
-                    dangerouslySetInnerHTML={{
-                      __html: posterInner(products[id], `l${x.k}${i}`),
-                    }}
-                  />
-                ))}
-              </div>
-              <div className="storefront-mono">{x.tag}</div>
-              <h3 className="storefront-display">{LG[x.k]}</h3>
-              <span className="storefront-script">{x.nt}</span>
-              <em className="storefront-mono">
-                Shop {products.filter((p) => p.l === x.k).length} designs →
-              </em>
-            </Link>
-          ))}
+          {PANELS.map((x) => {
+            const languageProducts = products.filter((product) => product.l === x.k);
+            return (
+              <Link
+                key={x.k}
+                href={`/shop?lang=${x.k}`}
+                className={`language-card ${x.cls} reveal-on-scroll`}
+              >
+                {languageProducts.length > 0 && (
+                  <div className="language-card__posters">
+                    {languageProducts.slice(0, 2).map((product, i) => (
+                      <svg
+                        key={product.id}
+                        viewBox="0 0 300 400"
+                        dangerouslySetInnerHTML={{
+                          __html: posterInner(product, `l${x.k}${i}`),
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+                <div className="storefront-mono">{x.tag}</div>
+                <h3 className="storefront-display">{LG[x.k]}</h3>
+                <span className="storefront-script">{x.nt}</span>
+                <em className="storefront-mono">
+                  Shop {languageProducts.length} designs →
+                </em>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -6,7 +6,7 @@ import { R, unitPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 
 export default function CheckoutClient() {
-  const { catalog: products, items, subtotal, discount, total, clear, notify } = useStore();
+  const { catalog: products, items, subtotal, discount, total, clear, notify, ready } = useStore();
   const [order, setOrder] = useState("");
   const [f, setF] = useState({ name: "", phone: "", address: "", pin: "" });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
@@ -14,6 +14,12 @@ export default function CheckoutClient() {
   if (order) return (
     <div className="checkout-state"><div className="storefront-kicker storefront-mono" style={{ justifyContent: "center" }}>Order confirmed</div><h1 className="storefront-display">Admit one ✓</h1>
       <p style={{ margin: "16px 0 28px", color: "var(--mute)" }}>Order {order} is booked. This is a demo checkout, no payment was taken.</p><Link href="/shop" className="storefront-button storefront-button--primary">Keep shopping</Link></div>
+  );
+  if (!ready) return (
+    <div className="checkout-state" aria-live="polite">
+      <span className="storefront-kicker storefront-mono">Restoring your cart</span>
+      <p style={{ marginTop: 12, color: "var(--mute)" }}>Just a moment while we load your items.</p>
+    </div>
   );
   if (!items.length) return (
     <div className="checkout-state"><h1 className="storefront-display">Your cart is empty</h1><p style={{ margin: "16px 0 28px", color: "var(--mute)" }}>Pick a scene first.</p><Link href="/shop" className="storefront-button storefront-button--primary">Browse the shop</Link></div>

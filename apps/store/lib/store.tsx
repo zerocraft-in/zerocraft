@@ -14,6 +14,7 @@ import { unitPrice } from "@/lib/format";
 
 export interface CartItem {
   id: number;
+  slug: string;
   size: string;
   qty: number;
   bundle?: boolean;
@@ -21,7 +22,7 @@ export interface CartItem {
 interface Store {
   catalog: Product[];
   items: CartItem[];
-  wish: number[];
+  ready: boolean;
   coupon: boolean;
   cartOpen: boolean;
   quick: number | null;
@@ -34,7 +35,6 @@ interface Store {
   inc: (i: number) => void;
   dec: (i: number) => void;
   remove: (i: number) => void;
-  toggleWish: (id: number) => void;
   applyCoupon: (code: string) => boolean;
   clear: () => void;
   openCart: () => void;
@@ -49,9 +49,40 @@ export const useStore = () => {
   return s;
 };
 
+function restoreCartItems(items: unknown, catalog: Product[]): CartItem[] {
+  if (!Array.isArray(items)) return [];
+
+  return items.flatMap((item: unknown) => {
+    if (!item || typeof item !== "object") return [];
+    const saved = item as Partial<CartItem>;
+    if (
+      !Number.isSafeInteger(saved.id) ||
+      typeof saved.size !== "string" ||
+      !Number.isSafeInteger(saved.qty) ||
+      (saved.qty ?? 0) < 1 ||
+      (saved.bundle !== undefined && typeof saved.bundle !== "boolean")
+    ) {
+      return [];
+    }
+
+    const id = typeof saved.slug === "string"
+      ? catalog.findIndex((product) => product.slug === saved.slug)
+      : saved.id!;
+    const product = catalog[id];
+    if (!product || (typeof saved.slug === "string" && id < 0)) return [];
+
+    return [{
+      id,
+      slug: product.slug,
+      size: saved.size,
+      qty: saved.qty!,
+      ...(saved.bundle === undefined ? {} : { bundle: saved.bundle }),
+    }];
+  });
+}
+
 export function StoreProvider({ children, catalog = [] }: { children: ReactNode; catalog?: Product[] }) {
   const [items, setItems] = useState<CartItem[]>([]);
-  const [wish, setWish] = useState<number[]>([]);
   const [coupon, setCoupon] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [quick, setQuick] = useState<number | null>(null);
@@ -60,23 +91,36 @@ export function StoreProvider({ children, catalog = [] }: { children: ReactNode;
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem("padam-store") || "{}");
-      if (s.items) setItems(s.items);
-      if (s.wish) setWish(s.wish);
-      if (s.coupon) setCoupon(true);
-    } catch {}
-    setReady(true);
-  }, []);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      try {
+        const saved: unknown = JSON.parse(localStorage.getItem("padam-store") || "{}");
+        if (saved && typeof saved === "object") {
+          const state = saved as { items?: unknown; coupon?: unknown };
+          setItems(restoreCartItems(state.items, catalog));
+          setCoupon(state.coupon === true);
+        }
+      } catch (error) {
+        console.warn("Unable to restore store cart from local storage.", error);
+      }
+      setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [catalog]);
   useEffect(() => {
     if (ready)
       try {
         localStorage.setItem(
           "padam-store",
-          JSON.stringify({ items, wish, coupon }),
+          JSON.stringify({ items, coupon }),
         );
-      } catch {}
-  }, [items, wish, coupon, ready]);
+      } catch (error) {
+        console.warn("Unable to persist store cart to local storage.", error);
+      }
+  }, [items, coupon, ready]);
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -98,15 +142,20 @@ export function StoreProvider({ children, catalog = [] }: { children: ReactNode;
   }, []);
   const add = useCallback(
     (id: number, size = "", bundle = false, quiet = false) => {
+      const product = catalog[id];
+      if (!product) {
+        notify("This product is no longer available");
+        return;
+      }
       setItems((a) => {
         const k = a.find(
           (x) => x.id === id && x.size === size && !!x.bundle === bundle,
         );
         return k
           ? a.map((x) => (x === k ? { ...x, qty: x.qty + 1 } : x))
-          : [...a, { id, size, qty: 1, bundle }];
+          : [...a, { id, slug: product.slug, size, qty: 1, bundle }];
       });
-      if (!quiet) notify(`${catalog[id]?.n ?? "Product"} added to cart`);
+      if (!quiet) notify(`${product.n} added to cart`);
     },
     [catalog, notify],
   );
@@ -119,11 +168,6 @@ export function StoreProvider({ children, catalog = [] }: { children: ReactNode;
       ),
     );
   const remove = (i: number) => setItems((a) => a.filter((_, k) => k !== i));
-  const toggleWish = (id: number) => {
-    const on = wish.includes(id);
-    setWish(on ? wish.filter((x) => x !== id) : [...wish, id]);
-    notify(on ? "Removed from wishlist" : "Saved to wishlist");
-  };
   const applyCoupon = (code: string) => {
     if (code.trim().toUpperCase() === COUPON.code) {
       setCoupon(true);
@@ -147,7 +191,7 @@ export function StoreProvider({ children, catalog = [] }: { children: ReactNode;
   const value: Store = {
     catalog,
     items,
-    wish,
+    ready,
     coupon,
     cartOpen,
     quick,
@@ -160,7 +204,6 @@ export function StoreProvider({ children, catalog = [] }: { children: ReactNode;
     inc,
     dec,
     remove,
-    toggleWish,
     applyCoupon,
     clear,
     notify,

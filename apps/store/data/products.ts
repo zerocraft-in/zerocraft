@@ -17,6 +17,7 @@ export interface Product {
   sub: string;
   bd: string; // badge
   r: number; // rating
+  reviewCount?: number;
   l?: Lang;
   col?: string | number;
   bg?: string;

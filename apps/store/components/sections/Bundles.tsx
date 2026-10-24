@@ -26,12 +26,13 @@ export default function Bundles() {
   }, []);
   const displayBundles = (remoteBundles ?? bundles)
     .map((bundle) => {
+      const expectedItemCount = bundle.items.length;
       const items =
         "items" in bundle && typeof bundle.items[0] === "number"
-          ? (bundle.items as number[]).map((id) => ({
-              product: products[id],
-              quantity: 1,
-            }))
+          ? (bundle.items as number[])
+              .map((id) => products[id])
+              .filter((product): product is (typeof products)[number] => Boolean(product))
+              .map((product) => ({ product, quantity: 1 }))
           : (bundle as ApiBundle).items
               .map((item) => ({
                 product: products.find(
@@ -47,9 +48,9 @@ export default function Bundles() {
                   quantity: number;
                 } => Boolean(item.product),
               );
-      return { ...bundle, items };
+      return { ...bundle, items, isComplete: items.length === expectedItemCount };
     })
-    .filter((bundle) => bundle.items.length > 0);
+    .filter((bundle) => bundle.isComplete && bundle.items.length > 0);
   return (
     <section id="storefront-bundles">
       <div className="storefront-container">

@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { getProductBySlug, getProducts } from "@/lib/commerce/catalog";
 import {
   catalogProductToStoreProduct,
-  catalogProductsToStoreProducts,
 } from "@/lib/commerce/storefront-product";
 import Art from "@/components/sections/Art";
 import ProductPanel from "@/components/sections/ProductPanel";
@@ -48,11 +47,11 @@ export default async function ProductPage({
       )
     : null;
   if (!p || !product) notFound();
-  const related = catalogProductsToStoreProducts(
-    allProducts.filter((item) => item.categorySlug === product.categorySlug),
-  )
-    .filter((x) => x.slug !== p.slug)
-    .slice(0, 4);
+  const related = allProducts
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => item.categorySlug === product.categorySlug && item.slug !== p.slug)
+    .slice(0, 4)
+    .map(({ item, index }) => catalogProductToStoreProduct(item, index));
   return (
     <div className="storefront-container">
       <div className="product-breadcrumb storefront-mono">

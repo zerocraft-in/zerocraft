@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Art from "./Art";
 import ProductPanel from "./ProductPanel";
 import type { Product } from "@/data/products";
@@ -9,7 +9,11 @@ export default function QuickView() {
   const { quick, closeAll, catalog: products } = useStore();
   const p = quick !== null ? products[quick] : null;
   const [last, setLast] = useState<Product | null>(null);
-  useEffect(() => { if (p) setLast(p); }, [p]);
+  const [previousQuick, setPreviousQuick] = useState<number | null>(null);
+  if (quick !== previousQuick) {
+    setPreviousQuick(quick);
+    if (p) setLast(p);
+  }
   const show = p ?? last;
   return (
     <div className={"quick-view-modal" + (p ? " is-active" : "")} role="dialog" aria-modal="true" aria-hidden={!p}>

@@ -6,38 +6,25 @@ import { LG, R, defaultSize, offPercent } from "@/lib/format";
 import { useStore } from "@/lib/store";
 
 export default function ProductCard({ p }: { p: Product }) {
-  const { wish, toggleWish, add, openQuick } = useStore();
-  const saved = wish.includes(p.id);
+  const { add, openCart, openQuick } = useStore();
+  const hasVariants = Boolean(p.z?.length);
+  const onSale = p.o > p.pr;
   return (
     <article className="product-card reveal-on-scroll">
-      <div
+      <button
+        type="button"
         className="product-card__image"
-        role="button"
-        tabIndex={0}
         aria-label={`Quick view ${p.n}`}
+        aria-haspopup="dialog"
         onClick={() => openQuick(p.id)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            openQuick(p.id);
-          }
-        }}
       >
         <Art p={p} />
         {p.bd && <span className="product-card__badge storefront-mono">{p.bd}</span>}
-        <span className="product-card__discount storefront-mono">−{offPercent(p)}%</span>
+        {onSale && (
+          <span className="product-card__discount storefront-mono">−{offPercent(p)}%</span>
+        )}
         {p.l && <span className="product-card__language storefront-mono">{LG[p.l]}</span>}
-        <button
-          className={"product-card__wishlist" + (saved ? " is-active" : "")}
-          aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleWish(p.id);
-          }}
-        >
-          {saved ? "♥" : "♡"}
-        </button>
-      </div>
+      </button>
       <div className="product-card__details">
         <small className="storefront-mono">{p.sub}</small>
         <h3>
@@ -46,10 +33,21 @@ export default function ProductCard({ p }: { p: Product }) {
         <div className="product-card__footer">
           <div className="product-price">
             <b>{R(p.pr)}</b>
-            <s>{R(p.o)}</s>
+            {onSale && <s>{R(p.o)}</s>}
           </div>
-          <button className="product-card__add" onClick={() => add(p.id, defaultSize(p))}>
-            + Add
+          <button
+            type="button"
+            className="product-card__add"
+            onClick={() => {
+              if (hasVariants) {
+                openQuick(p.id);
+                return;
+              }
+              add(p.id, defaultSize(p));
+              openCart();
+            }}
+          >
+            {hasVariants ? "View options" : "Add to bag"}
           </button>
         </div>
         {p.bd === "Limited" && (

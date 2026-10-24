@@ -11,13 +11,30 @@ export default function Hero() {
   const [si, setSi] = useState(0);
   const hover = useRef(false);
   const ref = useRef<HTMLDivElement>(null);
-  const N = slides.length;
+  const fallbackDescriptions = [
+    "Original designs for your everyday first-day-first-show feeling.",
+    "Find a favorite for your wall, your wardrobe, or your next gift.",
+    "A little cinema-inspired character for the everyday.",
+    "Made for fans, collectors, and the stories that stay with us.",
+    "Discover the latest from the Zerocraft catalog.",
+  ];
+  const featuredSlides = slides.filter(([id]) => Boolean(products[id]));
+  const heroSlides = featuredSlides.length > 1
+    ? featuredSlides
+    : products.slice(0, 5).map((product, index) => [
+        product.id,
+        fallbackDescriptions[index % fallbackDescriptions.length],
+      ] as [number, string]);
+  const N = heroSlides.length;
   useEffect(() => {
+    if (N < 2) return;
     const t = setInterval(() => {
       if (!hover.current) setSi((i) => (i + 1) % N);
     }, 5500);
     return () => clearInterval(t);
   }, [N]);
+
+  if (!N) return null;
 
   return (
     <div
@@ -34,7 +51,7 @@ export default function Hero() {
       }}
     >
       <div className="hero-overlay is-tinted" />
-      {slides.map(([id], i) => (
+      {heroSlides.map(([id], i) => (
         <div
           key={id}
           className={"storefront-hero__background" + (i === si ? " is-active" : "")}
@@ -43,9 +60,9 @@ export default function Hero() {
           }}
         />
       ))}
-      {slides.map(([id, d], i) => {
+      {heroSlides.map(([id, d], i) => {
         const p = products[id],
-          o = products[slides[(i + 1) % N][0]];
+          o = products[heroSlides[(i + 1) % N][0]];
         return (
           <div
             key={id}

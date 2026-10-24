@@ -4,12 +4,30 @@ const R = [
   ["Poster print quality is theatre-lobby level. Ordered the fan pack for my brother too.", "Arun, Bengaluru", "Both"],
 ];
 export default function Reviews() {
+  const cards = (ariaHidden = false) => R.map(([text, name, language]) => (
+    <article className="review-card" key={`${name}-${ariaHidden ? "duplicate" : "review"}`} aria-hidden={ariaHidden}>
+      <span className="review-stars storefront-mono" role="img" aria-label="5 out of 5 stars">★★★★★</span>
+      <p>{text}</p>
+      <div className="storefront-mono"><span>{name}</span><span>{language}</span></div>
+    </article>
+  ));
+
   return (
-    <section><div className="storefront-container">
-      <div className="storefront-section-heading"><div><div className="storefront-kicker storefront-mono">Fan reviews</div><h2 className="storefront-display reveal-on-scroll">Houseful <em>reviews.</em></h2></div></div>
-      <div className="review-grid reveal-on-scroll">
-        {R.map(([t, n, l]) => <div className="review-card" key={n}><span className="review-stars storefront-mono">★★★★★</span><p>{t}</p><div className="storefront-mono"><span>{n}</span><span>{l}</span></div></div>)}
+    <section className="reviews-section">
+      <div className="storefront-container">
+        <div className="storefront-section-heading">
+          <div>
+            <div className="storefront-kicker storefront-mono">Fan reviews</div>
+            <h2 className="storefront-display reveal-on-scroll">Houseful <em>reviews.</em></h2>
+          </div>
+        </div>
       </div>
-    </div></section>
+      <div className="review-marquee" role="region" aria-label="Customer reviews">
+        <div className="review-marquee__track">
+          <div className="review-marquee__group">{cards()}</div>
+          <div className="review-marquee__group" aria-hidden="true">{cards(true)}</div>
+        </div>
+      </div>
+    </section>
   );
 }

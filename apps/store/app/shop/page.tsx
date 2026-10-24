@@ -3,7 +3,8 @@ import Shop from "@/components/sections/Shop";
 
 export const metadata: Metadata = {
   title: "Shop all",
-  description: "Tees, hoodies, posters, frames and digital art.",
+  description:
+    "Browse the full Zerocraft drop: original tees, hoodies, posters, frames, accessories, and digital art.",
 };
 
 export default async function ShopPage({
@@ -13,20 +14,19 @@ export default async function ShopPage({
 }) {
   const sp = await searchParams;
   return (
-    <section style={{ paddingTop: 50 }}>
+    <section className="shop-page">
       <div className="storefront-container">
         <div className="storefront-section-heading">
           <div>
             <div className="storefront-kicker storefront-mono">
-              The full drop
+              Frequency 01 / Full catalog
             </div>
-            <h1
-              className="storefront-display"
-              style={{ fontSize: "clamp(44px,7vw,100px)" }}
-            >
-              Shop{" "}
-              <em style={{ fontStyle: "normal", color: "var(--red)" }}>all.</em>
+            <h1 className="storefront-display shop-page__title">
+              Shop the <em>drop.</em>
             </h1>
+            <p className="shop-page__intro">
+              Every original. One frequency. Find your next favorite.
+            </p>
           </div>
         </div>
         <Shop
