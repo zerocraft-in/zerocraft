@@ -1,0 +1,7 @@
+{
+  "name": "@zerocraft/tailwind-config",
+  "version": "0.1.0",
+  "private": true,
+  "exports": { "./tailwind.config": "./tailwind.config.ts" },
+  "devDependencies": { "tailwindcss": "^4.3.3" }
+}
