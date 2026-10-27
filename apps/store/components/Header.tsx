@@ -21,7 +21,10 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const isHomePage = pathname === '/';
   const isProductPage = pathname.startsWith('/product/');
+  const isCartPage = pathname === '/cart';
+  const isLightPage = pathname.startsWith('/shop') || pathname.startsWith('/policies/') || pathname === '/faq' || pathname === '/customize';
 
   useEffect(() => {
     const updateHeader = () => setScrolled(window.scrollY > 24);
@@ -35,9 +38,9 @@ export default function Header() {
   }, [menuOpen, searchOpen]);
 
   return <>
-    <header id="site-header" className={`site-header ${isProductPage ? 'site-header--product' : ''} ${scrolled || menuOpen ? 'site-header--scrolled' : ''}`} data-page-context={isProductPage ? 'product' : 'store'} data-scrolled={scrolled || menuOpen ? 'true' : 'false'}>
+    <header id="site-header" className={`site-header ${isHomePage ? 'site-header--home' : ''} ${isLightPage ? 'site-header--light' : ''} ${isProductPage ? 'site-header--product' : ''} ${isCartPage ? 'site-header--cart' : ''} ${scrolled || menuOpen ? 'site-header--scrolled' : ''}`} data-page-context={isProductPage ? 'product' : isCartPage ? 'cart' : 'store'} data-scrolled={scrolled || menuOpen ? 'true' : 'false'}>
       <div className="site-container site-header__inner">
-        <Link href="/" className="site-header__logo" aria-label="ZeroCraft home"><Logo size={42} /></Link>
+        <Link href="/" className="site-header__logo" aria-label="ZeroCraft home"><Logo size={42} color={isLightPage ? '#C23B22' : '#EFB033'} /></Link>
         <nav className="site-header__desktop-nav" aria-label="Main navigation">
           {NAVIGATION_LINKS.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
         </nav>

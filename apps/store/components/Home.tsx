@@ -5,6 +5,7 @@ import ProductCard from './ProductCard';
 import NewsForm from './NewsForm';
 import { Burst, Clap, Corn, PosterFrame, Reel, ProductTile } from './Graphics';
 import { getProduct, inr, products } from '@/lib/products';
+import Customize from './Customize';
 
 const stars = Array.from({ length: 5 });
 
@@ -196,9 +197,10 @@ export default function Home() {
             <div><span className="mono gold">Fan reviews</span><h2>Houseful <span className="yel-l">reviews.</span></h2></div>
             <div className="mono score"><b>4.8</b><span>Rated by<br />10K+ fans</span></div>
           </div>
-          <div className="rvgrid">
-            {REVIEWS.map((r) => (
-              <figure key={r.no} className="vt" style={{ ['--pg' as string]: '#17464C' }}>
+          <div className="rv-marquee" aria-label="Fan reviews">
+            <div className="rv-marquee__track">
+            {[...REVIEWS, ...REVIEWS].map((r, i) => (
+              <figure key={`${r.no}-${i}`} className="vt" style={{ ['--pg' as string]: '#17464C' }}>
                 <div className="stamp">Verified<br />fan</div>
                 <figcaption className="mono tag" style={{ background: r.band, color: r.ink }}>{r.label}</figcaption>
                 <div className="stars" aria-label="5 out of 5 stars">{stars.map((_, i) => <Icon key={i} name="star" size={18} fill="currentColor" />)}</div>
@@ -208,6 +210,7 @@ export default function Home() {
                 <div className="stub"><div><div className="mono red-t">Admit one</div><div className="mono who">No. {r.no} · {r.seat}</div></div><div className="barcode" aria-hidden="true" /></div>
               </figure>
             ))}
+            </div>
           </div>
         </div>
       </section>

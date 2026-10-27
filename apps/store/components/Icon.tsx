@@ -42,7 +42,7 @@ const PATHS: Record<string, React.ReactNode> = {
   trash: <path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13" />,
   check: <path d="m5 12 5 5 9-10" />,
   pin: <path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12h.01" />,
-  'arrow-up': <path d="M12 19V5M6 11l6-6 6 6" />,
+  "arrow-up": <path d="M12 19V5M6 11l6-6 6 6" />,
   instagram: (
     <>
       <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
@@ -56,7 +56,9 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="m10 9 5 3-5 3Z" />
     </>
   ),
-  facebook: <path d="M14 21v-8h2.7l.4-3H14V8.1c0-.9.3-1.6 1.7-1.6h1.8V3.8c-.3 0-1.3-.1-2.4-.1-2.5 0-4.2 1.5-4.2 4.3V10H8v3h2.9v8" />,
+  facebook: (
+    <path d="M14 21v-8h2.7l.4-3H14V8.1c0-.9.3-1.6 1.7-1.6h1.8V3.8c-.3 0-1.3-.1-2.4-.1-2.5 0-4.2 1.5-4.2 4.3V10H8v3h2.9v8" />
+  ),
 };
 
 export default function Icon({

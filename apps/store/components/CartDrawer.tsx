@@ -47,23 +47,27 @@ export default function CartDrawer() {
             <ul className="lines">
               {lines.map((l) => {
                 const p = getProduct(l.slug);
-                if (!p) return null;
+                const title = p?.name ?? l.product?.title;
+                const price = p?.price ?? l.product?.price ?? 0;
+                if (!title) return null;
                 return (
                   <li key={l.slug + l.size} className="line">
-                    <Link href={`/product/${p.slug}`} onClick={() => setOpen(false)} className="thumb"><ProductTile art={p.art} /></Link>
+                    <Link href={`/product/${l.slug}`} onClick={() => setOpen(false)} className="thumb">
+                      {p ? <ProductTile art={p.art} /> : l.product?.image ? <img src={l.product.image} alt="" /> : null}
+                    </Link>
                     <div className="li-body">
-                      <b>{p.name}</b>
+                      <b>{title}</b>
                       <span className="mono muted">Size {l.size}</span>
                       <div className="li-row">
-                        <div className="qty" role="group" aria-label={`Quantity for ${p.name}`}>
+                        <div className="qty" role="group" aria-label={`Quantity for ${title}`}>
                           <button aria-label="Decrease" onClick={() => setQty(l.slug, l.size, l.qty - 1)}><Icon name="minus" size={14} /></button>
                           <span>{l.qty}</span>
                           <button aria-label="Increase" onClick={() => setQty(l.slug, l.size, l.qty + 1)}><Icon name="plus" size={14} /></button>
                         </div>
-                        <b>{inr(p.price * l.qty)}</b>
+                        <b>{inr(price * l.qty)}</b>
                       </div>
                     </div>
-                    <button className="rm" aria-label={`Remove ${p.name}`} onClick={() => remove(l.slug, l.size)}><Icon name="trash" size={18} /></button>
+                    <button className="rm" aria-label={`Remove ${title}`} onClick={() => remove(l.slug, l.size)}><Icon name="trash" size={18} /></button>
                   </li>
                 );
               })}
@@ -71,6 +75,7 @@ export default function CartDrawer() {
             <div className="panel-f">
               <div className="sum-row"><span>Subtotal</span><b>{inr(subtotal)}</b></div>
               <p className="muted small">Shipping and coupon are calculated in the cart.</p>
+              <button type="button" className="btn block" onClick={() => alert('Connect your payment gateway (Razorpay or Stripe) here.')}>Checkout Â· {inr(subtotal)}</button>
               <Link className="btn k block" href="/cart" onClick={() => setOpen(false)}>View cart</Link>
             </div>
           </>
