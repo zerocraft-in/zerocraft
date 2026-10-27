@@ -67,7 +67,7 @@ async function exchangeToken(body: URLSearchParams) {
     throw new GmailError(
       payload.error === "invalid_grant"
         ? "Google rejected this authorization. Reconnect the Gmail account."
-        : "Google OAuth could not be completed.",
+        : `Google OAuth could not be completed (${payload.error || "unknown_error"}).`,
       response.status,
       code,
     );

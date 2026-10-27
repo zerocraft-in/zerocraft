@@ -90,6 +90,10 @@ export async function GET(request: NextRequest) {
     const codeName = error instanceof GmailError
       ? error.code
       : error instanceof Error ? error.name : "oauth_failed";
+    console.error("Gmail OAuth callback failed", {
+      code: codeName,
+      message: error instanceof Error ? error.message : "Unknown OAuth callback error",
+    });
     try {
       await recordGmailAudit(access.access.supabase, {
         actorId: access.access.user.id,
