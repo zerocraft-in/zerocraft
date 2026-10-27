@@ -12,6 +12,13 @@ import { CmsFrame } from "./cms-frame";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
+// The CMS is an authenticated dashboard. Its pages read browser/session state
+// and load Supabase data after sign-in, so they must never be prerendered during
+// the production build (which otherwise fails on dashboard routes such as
+// /appointments).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function StudioLayout({
   children,
 }: {
