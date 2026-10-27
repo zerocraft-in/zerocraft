@@ -48,7 +48,10 @@ export async function proxy(request: NextRequest) {
   const isLegacyStudioRoute =
     pathname === "/studio" || pathname.startsWith("/studio/");
 
-  if (isLegacyStudioRoute) {
+  const isEmailWorkspaceRoute =
+    pathname === "/studio/email" || pathname.startsWith("/studio/email/");
+
+  if (isLegacyStudioRoute && !isEmailWorkspaceRoute) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.replace(/^\/studio(?=\/|$)/, "") || "/";
     return NextResponse.redirect(url, 308);

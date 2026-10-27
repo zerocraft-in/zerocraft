@@ -4,6 +4,7 @@ export const ADMIN_ROUTES = {
     // The CMS is mounted at the domain root. `/studio` remains a legacy redirect.
     overview: "/",
     works: "/works",
+    email: "/studio/email",
     clients: "/clients",
     appointments: "/appointments",
     blogs: "/blogs",

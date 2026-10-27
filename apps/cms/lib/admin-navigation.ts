@@ -56,6 +56,7 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     icon: IconBriefcase,
     links: [
       { label: "Works", href: ADMIN_ROUTES.studio.works, icon: IconBriefcase },
+      { label: "Email", href: ADMIN_ROUTES.studio.email, icon: IconMail },
       { label: "Clients", href: ADMIN_ROUTES.studio.clients, icon: IconUsers },
       {
         label: "Appointments",
@@ -213,6 +214,7 @@ export function getAdminNavigationForWorkspace(
 const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
   "/": "dashboard.read",
   "/works": "content.read",
+  "/studio/email": "email.read",
   "/blogs": "content.read",
   "/clients": "clients.read",
   "/appointments": "appointments.read",

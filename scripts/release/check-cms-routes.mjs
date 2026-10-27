@@ -12,6 +12,7 @@ const pageRoutes = [
   ["/blogs", "app/blogs/page.tsx"],
   ["/clients", "app/clients/page.tsx"],
   ["/appointments", "app/appointments/page.tsx"],
+  ["/studio/email", "app/studio/email/page.tsx"],
   ["/team", "app/team/page.tsx"],
   ["/store", "app/store/page.tsx"],
   ["/store/products", "app/store/products/page.tsx"],

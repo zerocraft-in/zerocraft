@@ -12,6 +12,7 @@ export const STUDIO_PERMISSIONS = [
   "notifications.read", "notifications.manage", "automations.read", "automations.manage",
   "audit.read", "audit.write", "team.read", "team.manage", "settings.manage",
   "billing.read", "billing.manage", "system_health.read", "system_health.manage",
+  "email.read", "email.manage",
 ] as const;
 export type StudioPermission = (typeof STUDIO_PERMISSIONS)[number];
 
