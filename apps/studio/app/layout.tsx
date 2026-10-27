@@ -75,6 +75,10 @@ export default function RootLayout({
       className={cn("scroll-smooth")}
     >
       <head>
+        <meta
+          name="google-site-verification"
+          content="9nd1k2g6f9wABS8ydGlCCtZscr3ANpxLrmi8YVSkWDI"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
