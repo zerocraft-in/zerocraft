@@ -13,6 +13,88 @@
   position: relative;
 }
 
+.studio-policy-page {
+  min-height: 70vh;
+  padding: 9rem 1.5rem 7rem;
+}
+
+.studio-policy-page__inner {
+  width: min(100%, 52rem);
+  margin: 0 auto;
+}
+
+.studio-policy-page__back {
+  display: inline-block;
+  margin-bottom: 5rem;
+  color: var(--muted, currentColor);
+  font-size: 0.8rem;
+}
+
+.studio-policy-page h1 {
+  margin: 0.75rem 0 1.25rem;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.studio-policy-page__intro {
+  max-width: 36rem;
+  font-size: 1.25rem;
+  line-height: 1.55;
+}
+
+.studio-policy-page__updated {
+  margin-top: 1.5rem;
+  color: var(--muted, currentColor);
+  font-size: 0.78rem;
+}
+
+.studio-policy-page__sections {
+  display: grid;
+  gap: 2.75rem;
+  margin-top: 5rem;
+}
+
+.studio-policy-page__sections section {
+  border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  padding-top: 1.25rem;
+}
+
+.studio-policy-page__sections h2 {
+  margin: 0 0 0.9rem;
+  font-size: 1.35rem;
+}
+
+.studio-policy-page__sections p,
+.studio-policy-page__sections li,
+.studio-policy-page__contact {
+  max-width: 44rem;
+  color: var(--muted, currentColor);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.studio-policy-page__sections p + p {
+  margin-top: 0.9rem;
+}
+
+.studio-policy-page__sections ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.studio-policy-page__contact {
+  margin-top: 4rem;
+}
+
+.studio-policy-page__contact a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 /* Keep full-bleed sections inside the viewport on narrow screens. */
 .site-main,
 .hero,

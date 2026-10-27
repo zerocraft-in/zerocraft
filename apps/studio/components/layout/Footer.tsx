@@ -14,6 +14,11 @@ const navigation = [
   { label: "Contact", href: "/contact" },
 ];
 
+const legalNavigation = [
+  { label: "Privacy policy", href: "/policies/privacy" },
+  { label: "Terms of service", href: "/policies/terms" },
+];
+
 export default function Footer() {
   const backToTop = () => {
     const lenis = (window as unknown as { lenis?: Lenis }).lenis;
@@ -114,6 +119,16 @@ export default function Footer() {
                     Start a project <ArrowIcon direction="up-right" size={12} />
                   </Link>
                 </li>
+              </ul>
+            </div>
+            <div className="footer__links-col">
+              <span className="footer__links-title">Legal</span>
+              <ul className="footer__links-list">
+                {legalNavigation.map((item) => (
+                  <li key={item.href}>
+                    <Link href={item.href}>{item.label}</Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </nav>
