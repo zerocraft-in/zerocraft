@@ -1,4 +1,5 @@
 {
+  "ignoreCommand": "npx turbo query affected --packages=@zerocraft/cms --exit-code",
   "crons": [
     {
       "path": "/api/studio/notifications/reports/worker",
