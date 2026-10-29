@@ -122,7 +122,11 @@ export default function IntegrationsPage() {
       if (!response.ok) throw new Error(payload.error || "Disconnect could not be completed.");
       setEnabled((current) => ({ ...current, [selectedApp.id]: false }));
       setConnectionMessage("Integration disconnected.");
-      setHealth((current) => current ? Object.fromEntries(Object.entries(current).map(([key, value]) => [key, key === provider || (provider === "ga4" && key === "ga4") ? { ...value, status: "not_configured" } : value])) : current);
+      const healthResponse = await fetch("/api/studio/integrations/health", { cache: "no-store" });
+      if (healthResponse.ok) {
+        const healthPayload = await healthResponse.json() as { providers?: Record<string, { status: string; email?: string | null }> };
+        setHealth(healthPayload.providers || null);
+      }
     } catch (cause) {
       setConnectionError(cause instanceof Error ? cause.message : "Disconnect could not be completed.");
     } finally {

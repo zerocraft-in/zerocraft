@@ -66,7 +66,7 @@ export async function DELETE(request: Request) {
 
   try {
     const service = createServiceClient();
-    const { error } = await service.from("studio_integrations").update({ status: "error", enabled: false, last_verified_at: null, last_error: null, metadata: {}, updated_by: access.user.id, updated_at: new Date().toISOString() }).eq("provider", provider);
+    const { error } = await service.from("studio_integrations").update({ status: "error", enabled: false, encrypted_credentials: null, last_verified_at: null, last_error: null, metadata: {}, updated_by: access.user.id, updated_at: new Date().toISOString() }).eq("provider", provider);
     if (error) throw error;
     return Response.json({ disconnected: true, provider }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
