@@ -3,6 +3,8 @@ import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import RouteTransition from "@/components/providers/RouteTransition";
 import ScrollProgress from "@/components/providers/ScrollProgress";
+import LeadTracking from "@/components/providers/LeadTracking";
+import GoogleAnalytics from "@/components/providers/GoogleAnalytics";
 
 export default function SiteLayout({
   children,
@@ -12,6 +14,8 @@ export default function SiteLayout({
   return (
     <SmoothScroll>
       <div id="zerocraft">
+        <LeadTracking />
+        <GoogleAnalytics />
         <Navbar />
         <ScrollProgress />
         <RouteTransition>{children}</RouteTransition>

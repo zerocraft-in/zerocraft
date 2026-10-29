@@ -3,12 +3,9 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Icon from './Icon';
 import { useCart } from './CartProvider';
-import type { Product } from '@/lib/products';
 import type { CatalogProduct } from '@/lib/commerce/catalog';
 
-type AddableProduct = Product | CatalogProduct;
-
-export default function AddPanel({ product }: { product: AddableProduct }) {
+export default function AddPanel({ product }: { product: CatalogProduct }) {
   const { add } = useCart();
   const router = useRouter();
   const [size, setSize] = useState(product.sizes.length === 1 ? product.sizes[0] : '');
@@ -16,8 +13,8 @@ export default function AddPanel({ product }: { product: AddableProduct }) {
   const [err, setErr] = useState(false);
   const [pin, setPin] = useState('');
   const [eta, setEta] = useState('');
-  const categorySlug = 'categorySlug' in product ? product.categorySlug : product.cat;
-  const isPoster = categorySlug === 'posters' || categorySlug === 'frames';
+  const categorySlug = product.categorySlug;
+  const isPoster = categorySlug === 'posters' || categorySlug === 'photo-frames';
 
   const guard = () => { if (!size) { setErr(true); return false; } return true; };
   const check = (e: React.FormEvent) => {
@@ -39,9 +36,9 @@ export default function AddPanel({ product }: { product: AddableProduct }) {
           <span>{qty}</span>
           <button type="button" aria-label="Increase" onClick={() => setQty(Math.min(10, qty + 1))}><Icon name="plus" size={16} /></button>
         </div>
-        <button className="btn grow" onClick={() => guard() && add(product.slug, size, qty)}><Icon name="bag" /> Add to cart</button>
+        <button className="btn grow" onClick={() => guard() && add(product.slug, size, qty, true, { title: product.title, price: product.price, currency: product.currency, image: product.images[0] })}><Icon name="bag" /> Add to cart</button>
       </div>
-      <button className="btn k block" onClick={() => { if (guard()) { add(product.slug, size, qty, false); router.push('/cart'); } }}>Buy now</button>
+      <button className="btn k block" onClick={() => { if (guard()) { add(product.slug, size, qty, false, { title: product.title, price: product.price, currency: product.currency, image: product.images[0] }); router.push('/cart'); } }}>Buy now</button>
       <form className="pin" onSubmit={check}>
         <label className="mono" htmlFor="pin"><Icon name="pin" size={16} /> Check delivery</label>
         <div><input id="pin" inputMode="numeric" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="PIN code" /><button className="btn o sm" type="submit">Check</button></div>

@@ -104,8 +104,8 @@ Use the CSS tokens instead of introducing one-off colors for new storefront UI. 
 - `components/Home.tsx`: homepage composition and section IDs.
 - `components/Header.tsx`: sticky navigation, mobile menu, search trigger, and cart trigger.
 - `components/SearchOverlay.tsx`: modal search UI and result semantics.
-- `components/ProductCard.tsx`: product card markup and product data attributes.
-- `components/ProductBits.tsx`: quick-add behavior.
+- `components/CatalogProductCard.tsx`: Supabase catalog card, variant picker, and quick-add behavior.
+- `lib/commerce/catalog.ts`: server-only Supabase catalog queries and row-to-domain mapping.
 - `components/AddPanel.tsx`: product size, quantity, cart, purchase, and delivery controls.
 - `components/CartDrawer.tsx` and `components/CartProvider.tsx`: cart presentation and state.
 - `components/NewsForm.tsx`: newsletter form semantics.

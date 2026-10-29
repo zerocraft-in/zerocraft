@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import PolicyPage, { type PolicySection } from "@/components/PolicyPage";
+import { studioMetadata } from "@/lib/studio-metadata";
 
-export const metadata: Metadata = {
-  title: "Privacy policy",
-  description: "How Zerocraft Studio collects and uses information.",
-};
+export const metadata = studioMetadata(
+  "Privacy Policy — Zerocraft Studio",
+  "Read how Zerocraft Studio, founded by Manimaran in Tenkasi, India, collects and uses information.",
+  "/policies/privacy",
+);
 
 const sections: PolicySection[] = [
   {
@@ -40,7 +41,7 @@ const sections: PolicySection[] = [
   {
     title: "Contact",
     paragraphs: [
-      "For privacy questions or requests, email hello@zerocraft.in. Zerocraft Studio is based in Tenkasi, Tamil Nadu, India.",
+      "For privacy questions or requests, email hello@zerocraft.in. Zerocraft Studio is based at South Street, Arunasalampatti, Kadayam - 627415, Tenkasi District, Tamil Nadu, India.",
     ],
   },
 ];

@@ -12,15 +12,17 @@ function isProvider(value: unknown): value is Provider {
 }
 
 function safeIntegration(row: Record<string, unknown>) {
+  const provider = row.provider as string;
+  const environmentConfigured = provider === "gemini" && Boolean(process.env.GEMINI_API_KEY?.trim());
   return {
-    provider: row.provider,
+    provider,
     displayName: row.display_name,
-    status: row.status,
-    enabled: row.enabled,
+    status: environmentConfigured ? "connected" : row.status,
+    enabled: environmentConfigured || Boolean(row.enabled),
     lastVerifiedAt: row.last_verified_at,
     lastError: row.last_error,
     metadata: row.metadata || {},
-    hasCredentials: Boolean(row.encrypted_credentials),
+    hasCredentials: environmentConfigured || Boolean(row.encrypted_credentials),
     updatedAt: row.updated_at,
   };
 }

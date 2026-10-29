@@ -16,6 +16,11 @@ const views: Record<string, { title: string; description: string; detail: string
     description: "Follow up with customers who left checkout before placing an order.",
     detail: "Checkout sessions are not currently persisted by this store, so abandoned checkouts are not available yet.",
   },
+  "purchase-orders": {
+    title: "Purchase orders",
+    description: "Track supplier purchase orders and incoming stock for the store.",
+    detail: "Purchase order tracking is ready for the Shopify-style navigation and will show supplier records when procurement data is connected.",
+  },
 };
 
 export default async function OrderViewPage({ params }: { params: Promise<{ view: string }> }) {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Marquee from "@/components/Marquee";
-import CatalogProductCard from "@/components/CatalogProductCard";
+import InfiniteProductGrid from "@/components/InfiniteProductGrid";
 import { getCategories, getProducts } from "@/lib/commerce/catalog";
 
 export const metadata = { title: "Shop all | ZeroCraft" };
@@ -31,7 +31,7 @@ export default async function Shop({
   const [{ products, total }, categories] = await Promise.all([
     getProducts({
       page: 1,
-      pageSize: 48,
+      pageSize: 12,
       categorySlug,
       query: query || undefined,
       sort: backendSort,
@@ -111,11 +111,14 @@ export default async function Shop({
             {total} {total === 1 ? "item" : "items"}
           </p>
           {products.length ? (
-            <div className="pgrid">
-              {products.map((product) => (
-                <CatalogProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <InfiniteProductGrid
+              key={`${categorySlug ?? "all"}:${query}:${backendSort}`}
+              initialProducts={products}
+              total={total}
+              categorySlug={categorySlug}
+              query={query || undefined}
+              sort={backendSort}
+            />
           ) : (
             <div className="empty-s">
               <h2>No shows found</h2>

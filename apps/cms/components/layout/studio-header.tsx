@@ -9,7 +9,7 @@ import {
   IconHelpCircle,
   IconLogout,
   IconSettings,
-  IconUsersPlus,
+  IconSparkles,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,8 @@ type StudioHeaderProps = {
   onOpenSearch: () => void;
   onToggleNotices: () => void;
   onSignOut: () => void;
+  onOpenCommandCenter: () => void;
+  sidebarOpen: boolean;
 };
 
 export function StudioHeader({
@@ -45,11 +47,13 @@ export function StudioHeader({
   email,
   isSigningOut,
   onSignOut,
+  onOpenCommandCenter,
+  sidebarOpen,
 }: StudioHeaderProps) {
   const initials = (user.name || "Z").slice(0, 2).toUpperCase();
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex h-[56px] items-center gap-3 border-b border-border/80 bg-background px-3 text-foreground backdrop-blur-xl sm:px-4">
-      <div className="flex min-w-0 shrink-0 items-center gap-2 lg:w-[280px]">
+    <header className="fixed inset-x-0 top-0 z-50 flex h-[56px] items-center gap-3 border-b border-border/80 bg-background px-3 text-foreground backdrop-blur-xl sm:px-4 lg:hidden">
+      <div className={`flex min-w-0 shrink-0 items-center gap-2 transition-[width] duration-200 ${sidebarOpen ? "lg:w-[216px]" : "lg:w-16"}`}>
         <Button
           variant="ghost"
           size="icon"
@@ -68,7 +72,7 @@ export function StudioHeader({
             <img src="/icon.svg" alt="" className="size-5" />
           </span>
         </Link>
-        <div className="min-w-0 border-l border-border pl-3">
+        <div className={`min-w-0 border-l border-border pl-3 ${sidebarOpen ? "" : "lg:hidden"}`}>
           <p className="hidden text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:block">
             Workspace
           </p>
@@ -94,6 +98,7 @@ export function StudioHeader({
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger
+            id="studio-quick-create-trigger"
             render={
               <Button
                 variant="ghost"
@@ -113,6 +118,12 @@ export function StudioHeader({
               Create something new
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="min-h-10 rounded-xl"
+              render={<Link href="/quick-create" />}
+            >
+              Open quick create
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="min-h-10 rounded-xl"
               render={<Link href="/works?create=1" />}
@@ -160,6 +171,15 @@ export function StudioHeader({
         <Button
           variant="ghost"
           size="icon"
+          className="size-9 rounded-xl border-0 bg-muted text-foreground shadow-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={onOpenCommandCenter}
+          aria-label="Open studio command center"
+        >
+          <IconSparkles className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           className="relative size-9 rounded-xl border-0 bg-muted text-foreground shadow-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
           onClick={onToggleNotices}
           aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}
@@ -172,6 +192,7 @@ export function StudioHeader({
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger
+            id="studio-profile-trigger"
             render={
               <Button
                 variant="ghost"

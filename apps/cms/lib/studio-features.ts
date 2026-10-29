@@ -6,6 +6,7 @@ export const STUDIO_FEATURE_KEYS = [
   "automation",
   "analytics",
   "search_console",
+  "assistant",
 ] as const;
 
 export type StudioFeatureKey = (typeof STUDIO_FEATURE_KEYS)[number];
@@ -23,8 +24,9 @@ export const STUDIO_FEATURES: readonly StudioFeature[] = [
   { key: "commerce", name: "Commerce", description: "Store, catalogue, inventory and orders.", enabled: true },
   { key: "email", name: "Email workspace", description: "Inbox, drafts and studio email delivery.", enabled: true },
   { key: "automation", name: "Automation hub", description: "Triggers, webhooks, retries and notifications.", enabled: true },
-  { key: "analytics", name: "Growth & analytics", description: "GA4, Search Console and attribution reporting.", enabled: false },
+  { key: "analytics", name: "Growth & analytics", description: "GA4, Search Console and attribution reporting.", enabled: true },
   { key: "search_console", name: "Search Console", description: "Search queries, indexing signals and sitemap health.", enabled: true },
+  { key: "assistant", name: "AI command center", description: "Text, voice and natural-language workspace navigation.", enabled: true },
 ];
 
 export function isStudioFeatureKey(value: unknown): value is StudioFeatureKey {

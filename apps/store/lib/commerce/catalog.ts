@@ -257,6 +257,10 @@ export async function getProducts(query: ProductQuery = {}): Promise<PaginatedPr
     else if (query.sort === "price-desc") request = request.order("price_paise", { ascending: false, nullsFirst: false });
     else if (query.sort === "title") request = request.order("title", { ascending: true });
     else request = request.order("created_at", { ascending: false });
+    // Every sort needs a unique tie-breaker. Without it, products sharing the
+    // same timestamp/price/title can move between offset pages and be repeated
+    // or skipped while the user infinite-scrolls.
+    request = request.order("id", { ascending: true });
     return request.range(from, to);
   };
   const { data, error, count } = await buildRequest();

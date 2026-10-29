@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import Icon from './Icon';
 import Marquee from './Marquee';
-import ProductCard from './ProductCard';
+import CatalogProductCard from './CatalogProductCard';
 import NewsForm from './NewsForm';
-import { Burst, Clap, Corn, PosterFrame, Reel, ProductTile } from './Graphics';
-import { getProduct, inr, products } from '@/lib/products';
+import { Burst, Clap, Corn, PosterFrame, Reel } from './Graphics';
+import { getProducts } from '@/lib/commerce/catalog';
+import { formatMoney } from '@/lib/products';
 import Customize from './Customize';
 
 const stars = Array.from({ length: 5 });
@@ -15,9 +16,12 @@ const REVIEWS = [
   { band: 'var(--ink)', ink: 'var(--paper)', label: 'Poster · Bengaluru', quote: 'Poster print quality is theatre-lobby level. Ordered the fan pack for my brother too.', who: 'Arun · Bengaluru', no: '0003', seat: 'Row F · Seat 21' },
 ];
 
-export default function Home() {
-  const trending = ['adipoli-mode-tee', 'interval-break-tee', 'midnight-show-hoodie', 'first-show-tote-bag', 'chaya-kada-poster', 'marina-beach-frame', 'mazha-zerocraft-tee', 'kerala-backwaters-hoodie'].map((s) => getProduct(s)!);
-  const packs = ['fan-pack', 'mallu-mode-pack', 'frame-it-pack'].map((s) => getProduct(s)!);
+export default async function Home() {
+  const [{ products: trending }, { products: featured }, { products: posters }] = await Promise.all([
+    getProducts({ pageSize: 8, sort: 'newest' }),
+    getProducts({ page: 2, pageSize: 3, sort: 'newest' }),
+    getProducts({ pageSize: 3, categorySlug: 'posters', sort: 'newest' }),
+  ]);
   const tones = ['var(--ink)', 'var(--red)', 'var(--teal2)'];
 
   return (
@@ -108,7 +112,7 @@ export default function Home() {
             <div><span className="mono red-t">Now trending</span><h2 id="trending-products-title">First day. <em>First show.</em></h2><p className="muted">Fresh picks for your next favourite.</p></div>
             <Link className="btn o" href="/shop">View all <Icon name="arrow" /></Link>
           </div>
-          <div className="pgrid trending-products-grid">{trending.map((p, index) => <div className={`trending-product-item trending-product-item--${index + 1}`} key={p.slug}><span className="trending-product-item__number">0{index + 1}</span><ProductCard p={p} /></div>)}</div>
+          {trending.length ? <div className="pgrid trending-products-grid">{trending.map((product, index) => <div className={`trending-product-item trending-product-item--${index + 1}`} key={product.id}><span className="trending-product-item__number">{String(index + 1).padStart(2, '0')}</span><CatalogProductCard product={product} /></div>)}</div> : <p className="muted">New products will appear here when they are published in Studio.</p>}
         </div>
       </section>
 
@@ -120,20 +124,20 @@ export default function Home() {
       {/* FAN PACKS */}
       <section className="sec">
         <div className="wrap">
-          <div className="hd"><div><span className="mono red-t">Combo offers</span><h2>Fan packs. <em>Save 15%.</em></h2></div></div>
-          <div className="packs">
-            {packs.map((p, i) => (
-              <div key={p.slug} className="tk pack-c" style={{ background: tones[i], ['--pg' as string]: '#F0E2C3' }}>
-                <Link href={`/product/${p.slug}`} className="pack-img"><ProductTile art={p.art} /></Link>
+          <div className="hd"><div><span className="mono red-t">From the catalog</span><h2>More to <em>discover.</em></h2></div></div>
+          {featured.length ? <div className="packs">
+            {featured.map((product, i) => (
+              <div key={product.id} className="tk pack-c" style={{ background: tones[i], ['--pg' as string]: '#F0E2C3' }}>
+                <Link href={`/product/${product.slug}`} className="pack-img"><img src={product.images[0] ?? '/og-image.jpg'} alt={product.title} /></Link>
                 <div className="pack-b">
-                  <span className="mono gold">Save 15%</span>
-                  <h3>{p.name}</h3>
-                  <p>{p.blurb}</p>
-                  <div className="pack-f"><div className="pr big">{inr(p.price)} <s>{inr(p.mrp)}</s></div><Link className="btn y sm" href={`/product/${p.slug}`}>Pick size</Link></div>
+                  <span className="mono gold">{product.category}</span>
+                  <h3>{product.title}</h3>
+                  <p>{product.shortDescription}</p>
+                  <div className="pack-f"><div className="pr big">{formatMoney(product.price, product.currency)} {product.originalPrice > product.price && <s>{formatMoney(product.originalPrice, product.currency)}</s>}</div><Link className="btn y sm" href={`/product/${product.slug}`}>View product</Link></div>
                 </div>
               </div>
             ))}
-          </div>
+          </div> : <p className="muted">More products will appear here as the catalog grows.</p>}
         </div>
       </section>
 
@@ -143,21 +147,17 @@ export default function Home() {
         <Burst className="dec burst-d" fill="#EFB033" />
         <div className="wrap">
           <div className="hd"><div><span className="mono gold">Now showing</span><h2>Posters at the <span className="yel-l">box office.</span></h2></div><Link className="btn o" href="/shop?cat=posters">All posters <Icon name="arrow" /></Link></div>
-          <div className="show">
-            {['chaya-kada-poster', 'midnight-show-poster', 'kuthu-night-poster'].map((s, i) => {
-              const p = getProduct(s)!;
-              const v = (p.art as { poster: 1 | 2 | 3 }).poster;
-              return (
-                <div key={s} className="show-c">
-                  <Link href={`/product/${s}`}><PosterFrame v={v} className="show-p" /></Link>
+          {posters.length ? <div className="show">
+            {posters.map((product, i) => (
+                <div key={product.id} className="show-c">
+                  <Link href={`/product/${product.slug}`}><img src={product.images[0] ?? '/og-image.jpg'} alt={product.title} className="show-p" /></Link>
                   <div className="tk show-t" style={{ background: i === 1 ? 'var(--yel)' : 'var(--paper)', ['--pg' as string]: '#1C1411' }}>
-                    <div><div className="mono red-t">{['Show 09:30 PM · Hall 1', 'Show 12:00 AM · Hall 2', 'First day first show'][i]}</div><div className="ttl2">{p.name.replace(' Poster', '')}</div></div>
-                    <Link className="btn k sm" href={`/product/${s}`}>{inr(p.price)}</Link>
+                    <div><div className="mono red-t">{product.subcategory || product.category}</div><div className="ttl2">{product.title.replace(' Poster', '')}</div></div>
+                    <Link className="btn k sm" href={`/product/${product.slug}`}>{formatMoney(product.price, product.currency)}</Link>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+            ))}
+          </div> : <p className="muted">Published posters will appear here.</p>}
         </div>
       </section>
 

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import PolicyPage, { type PolicySection } from "@/components/PolicyPage";
+import { studioMetadata } from "@/lib/studio-metadata";
 
-export const metadata: Metadata = {
-  title: "Terms of service",
-  description: "Terms for using Zerocraft Studio websites and tools.",
-};
+export const metadata = studioMetadata(
+  "Terms of Service — Zerocraft Studio",
+  "Terms for using Zerocraft Studio websites and connected tools.",
+  "/policies/terms",
+);
 
 const sections: PolicySection[] = [
   {

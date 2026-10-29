@@ -43,11 +43,9 @@ export type AdminNavigationGroup = {
 };
 
 export type StudioNavigationRole = "admin" | "manager" | "staff";
-export type AdminWorkspaceTab = "studio" | "store";
-
 export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
   {
-    label: "Overview",
+    label: "Home",
     href: ADMIN_ROUTES.overview,
     icon: IconHome,
     links: [
@@ -61,9 +59,15 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     links: [
       { label: "CRM overview", href: ADMIN_ROUTES.studio.crm, icon: IconUsers, feature: "crm" },
       { label: "Content studio", href: ADMIN_ROUTES.studio.content, icon: IconPhoto, feature: "content" },
+      { label: "Metaobjects", href: ADMIN_ROUTES.studio.metaobjects, icon: IconDatabase, feature: "content" },
+      { label: "Files", href: ADMIN_ROUTES.studio.files, icon: IconPhoto, feature: "content" },
+      { label: "Menus", href: ADMIN_ROUTES.studio.menus, icon: IconFileText, feature: "content" },
+      { label: "Blog posts", href: ADMIN_ROUTES.studio.blogPosts, icon: IconFileText, feature: "content" },
       { label: "Works", href: ADMIN_ROUTES.studio.works, icon: IconBriefcase, feature: "content" },
       { label: "Email", href: ADMIN_ROUTES.studio.email, icon: IconMail, feature: "email" },
       { label: "Clients", href: ADMIN_ROUTES.studio.clients, icon: IconUsers, feature: "crm" },
+      { label: "Segments", href: ADMIN_ROUTES.studio.segments, icon: IconUsers, feature: "crm" },
+      { label: "Companies", href: ADMIN_ROUTES.studio.companies, icon: IconUsers, feature: "crm" },
       { label: "Leads", href: ADMIN_ROUTES.studio.leads, icon: IconUsers, feature: "crm" },
       { label: "Projects", href: ADMIN_ROUTES.studio.projects, icon: IconBriefcase, feature: "content" },
       {
@@ -104,11 +108,6 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
         href: ADMIN_ROUTES.store.inventory,
         icon: IconDatabase, feature: "commerce",
       },
-      {
-        label: "Customization",
-        href: ADMIN_ROUTES.store.customization,
-        icon: IconSettings, feature: "commerce",
-      },
     ],
   },
   {
@@ -125,13 +124,18 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
   },
   {
     label: "Insights",
-    href: ADMIN_ROUTES.operations.reports,
+    href: ADMIN_ROUTES.operations.analytics,
     icon: IconChartBar,
     links: [
       {
         label: "Reports",
-        href: ADMIN_ROUTES.operations.reports,
-        icon: IconChartBar, feature: "analytics",
+        href: ADMIN_ROUTES.operations.reportLibrary,
+        icon: IconChartBar,
+      },
+      {
+        label: "Live View",
+        href: ADMIN_ROUTES.operations.liveView,
+        icon: IconChartBar,
       },
       {
         label: "Growth & attribution",
@@ -210,35 +214,6 @@ export const ADMIN_NAVIGATION_LINKS = ADMIN_NAVIGATION.flatMap(
   (group) => group.links,
 );
 
-export function getAdminWorkspaceTab(pathname: string): AdminWorkspaceTab {
-  const storePrefixes = [
-    "/store",
-    "/media-library",
-    "/orders",
-    "/transactions",
-    "/subscriptions",
-    "/disputes",
-    "/reports",
-  ];
-  return storePrefixes.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  )
-    ? "store"
-    : "studio";
-}
-
-export function getAdminNavigationForWorkspace(
-  navigation: readonly AdminNavigationGroup[],
-  workspace: AdminWorkspaceTab,
-) {
-  const storeGroups = new Set(["Store", "Payments & invoices", "Insights"]);
-  return navigation.filter((group) =>
-    workspace === "store"
-      ? storeGroups.has(group.label)
-      : !storeGroups.has(group.label),
-  );
-}
-
 export function getAdminNavigationForFeatures(
   navigation: readonly AdminNavigationGroup[],
   enabledFeatures: ReadonlySet<StudioFeatureKey>,
@@ -261,10 +236,16 @@ const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
   "/": "dashboard.read",
   "/crm": "clients.read",
   "/content": "content.read",
+  "/content/metaobjects": "content.read",
+  "/content/files": "content.read",
+  "/content/menus": "content.read",
+  "/content/blog-posts": "content.read",
   "/works": "content.read",
   "/studio/email": "email.read",
   "/blogs": "content.read",
   "/clients": "clients.read",
+  "/customers/segments": "clients.read",
+  "/customers/companies": "clients.read",
   "/leads": "clients.read",
   "/projects": "content.read",
   "/appointments": "appointments.read",
@@ -274,13 +255,15 @@ const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
   "/store/bin": "catalog.read",
   "/media-library": "catalog.read",
   "/store/inventory": "inventory.read",
-  "/store/customization": "catalog.read",
   "/channels": "catalog.read",
   "/orders": "orders.read",
   "/transactions": "billing.read",
   "/subscriptions": "billing.read",
   "/disputes": "billing.read",
   "/reports": "reports.read",
+  "/analytics": "reports.read",
+  "/reports/library": "reports.read",
+  "/analytics/live-view": "reports.read",
   "/growth": "reports.read",
   "/search-console": "reports.read",
   "/scheduling": "appointments.read",
@@ -368,6 +351,42 @@ export function isAdminNavigationGroupActive(
 }
 
 export function getAdminBreadcrumbs(pathname: string) {
+  if (
+    pathname === ADMIN_ROUTES.operations.analytics ||
+    pathname === ADMIN_ROUTES.operations.reportLibrary ||
+    pathname === ADMIN_ROUTES.operations.liveView
+  ) {
+    const analyticsLink =
+      pathname === ADMIN_ROUTES.operations.analytics
+        ? { label: "Analytics", href: ADMIN_ROUTES.operations.analytics, icon: IconChartBar }
+        : ADMIN_NAVIGATION_LINKS.find((item) => item.href === pathname);
+    if (analyticsLink) {
+      return pathname === ADMIN_ROUTES.operations.analytics
+        ? [analyticsLink]
+        : [
+            { label: "Analytics", href: ADMIN_ROUTES.operations.analytics, icon: IconChartBar },
+            analyticsLink,
+          ];
+    }
+  }
+  if (
+    pathname === ADMIN_ROUTES.studio.segments ||
+    pathname === ADMIN_ROUTES.studio.companies
+  ) {
+    const customerLink = ADMIN_NAVIGATION_LINKS.find(
+      (item) => item.href === pathname,
+    );
+    if (customerLink) {
+      return [
+        {
+          label: "Customers",
+          href: ADMIN_ROUTES.studio.clients,
+          icon: IconUsers,
+        },
+        customerLink,
+      ];
+    }
+  }
   const group = ADMIN_NAVIGATION.find((item) =>
     isAdminNavigationGroupActive(pathname, item),
   );

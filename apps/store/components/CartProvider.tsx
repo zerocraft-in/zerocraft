@@ -4,7 +4,7 @@ import type React from 'react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { COUPON, FREE_SHIP, SHIP_FEE, getProduct } from '@/lib/products';
+import { COUPON, FREE_SHIP, SHIP_FEE } from '@/lib/products';
 
 export type CartLineProduct = {
   title: string;
@@ -109,7 +109,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 export function useCart() {
   const { lines, coupon, open, setOpen, add, setQty, remove, applyCoupon, clearCoupon } = useCartStore();
   const count = lines.reduce((total, line) => total + line.qty, 0);
-  const subtotal = lines.reduce((total, line) => total + (line.product?.price ?? getProduct(line.slug)?.price ?? 0) * line.qty, 0);
+  const subtotal = lines.reduce((total, line) => total + (line.product?.price ?? 0) * line.qty, 0);
   const discount = coupon ? Math.round(subtotal * 0.1) : 0;
   const afterDiscount = subtotal - discount;
   const shipping = subtotal === 0 || afterDiscount >= FREE_SHIP ? 0 : SHIP_FEE;

@@ -1,6 +1,8 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import ArrowIcon from "@/components/ui/ArrowIcon";
+import { studio, studioWhatsAppUrl } from "@/lib/studio-config";
+import { trackLeadEvent } from "@/lib/lead-tracking";
 export default function ProjectBrief() {
   const [prepared, setPrepared] = useState(false);
   const [completion, setCompletion] = useState(0);
@@ -24,6 +26,7 @@ export default function ProjectBrief() {
       if (!field.reportValidity()) return;
     }
     const data = new FormData(event.currentTarget);
+    trackLeadEvent("project_brief_submitted", { service: String(data.get("service")), timeline: String(data.get("timeline") || "") });
     const body = `Hello Zerocraft,\n\nI'm ${data.get("name")}.\nEmail: ${data.get("email")}\nInterested in: ${data.get("service")}\nTimeline: ${data.get("timeline") || "To discuss"}\n\n${data.get("message")}\n`;
     window.location.href = `mailto:hello@zerocraft.in?subject=${encodeURIComponent(`Project enquiry: ${data.get("service")}`)}&body=${encodeURIComponent(body)}`;
     setPrepared(true);
@@ -37,10 +40,19 @@ export default function ProjectBrief() {
           <br />
           <span>you have in mind.</span>
         </h2>
-        <a className="studio-contact__email" href="mailto:hello@zerocraft.in">
+        <a className="studio-contact__email" href="mailto:hello@zerocraft.in" onClick={() => trackLeadEvent("email_click", { placement: "contact" })}>
           hello@zerocraft.in <ArrowIcon direction="up-right" size={13} />
         </a>
-        <p>Tenkasi, Tamil Nadu, India</p>
+        <address>{studio.address.formatted}</address>
+        <a
+          className="studio-contact__email"
+          href={studioWhatsAppUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackLeadEvent("whatsapp_click", { placement: "contact" })}
+        >
+          WhatsApp / {studio.whatsapp.display} <ArrowIcon direction="up-right" size={13} />
+        </a>
         <a
           href="https://instagram.com/studio.zerocraft"
           target="_blank"
@@ -127,9 +139,20 @@ export default function ProjectBrief() {
         </button>
         <p role="status">
           {prepared
-            ? "Your email app has been requested. No message has been sent. If no email app opens, send your brief directly to hello@zerocraft.in."
+            ? "Your email app has been requested. No message has been sent. If no email app opens, use WhatsApp or email us directly."
             : ""}
         </p>
+        {prepared ? (
+          <a
+            className="studio-contact__email"
+            href={studioWhatsAppUrl("Hi Zerocraft, I prepared a project brief and would like to discuss it.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackLeadEvent("whatsapp_click", { placement: "brief-fallback" })}
+          >
+            Continue on WhatsApp <ArrowIcon direction="up-right" size={13} />
+          </a>
+        ) : null}
       </form>
     </section>
   );

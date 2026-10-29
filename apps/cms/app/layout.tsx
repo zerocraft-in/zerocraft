@@ -21,8 +21,10 @@ export const revalidate = 0;
 
 export default function StudioLayout({
   children,
+  modal,
 }: {
   children: React.ReactNode;
+  modal: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -40,7 +42,10 @@ export default function StudioLayout({
                   <div className="min-h-svh bg-background" aria-hidden="true" />
                 }
               >
-                <CmsFrame>{children}</CmsFrame>
+                <CmsFrame>
+                  {children}
+                  {modal}
+                </CmsFrame>
               </React.Suspense>
               <div id="studio-portals" />
             </StudioAppearance>

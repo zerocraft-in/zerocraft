@@ -2,9 +2,9 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 import Icon from './Icon';
-import { ProductTile, Clap } from './Graphics';
+import { Clap } from './Graphics';
 import { useCart } from './CartProvider';
-import { FREE_SHIP, getProduct, inr } from '@/lib/products';
+import { FREE_SHIP, formatMoney, inr } from '@/lib/products';
 
 export function Progress({ amount }: { amount: number }) {
   const left = Math.max(0, FREE_SHIP - amount);
@@ -46,14 +46,13 @@ export default function CartDrawer() {
             <Progress amount={subtotal - discount} />
             <ul className="lines">
               {lines.map((l) => {
-                const p = getProduct(l.slug);
-                const title = p?.name ?? l.product?.title;
-                const price = p?.price ?? l.product?.price ?? 0;
+                const title = l.product?.title;
+                const price = l.product?.price ?? 0;
                 if (!title) return null;
                 return (
                   <li key={l.slug + l.size} className="line">
                     <Link href={`/product/${l.slug}`} onClick={() => setOpen(false)} className="thumb">
-                      {p ? <ProductTile art={p.art} /> : l.product?.image ? <img src={l.product.image} alt="" /> : null}
+                      {l.product?.image ? <img src={l.product.image} alt="" /> : null}
                     </Link>
                     <div className="li-body">
                       <b>{title}</b>
@@ -64,7 +63,7 @@ export default function CartDrawer() {
                           <span>{l.qty}</span>
                           <button aria-label="Increase" onClick={() => setQty(l.slug, l.size, l.qty + 1)}><Icon name="plus" size={14} /></button>
                         </div>
-                        <b>{inr(price * l.qty)}</b>
+                        <b>{formatMoney(price * l.qty, l.product?.currency)}</b>
                       </div>
                     </div>
                     <button className="rm" aria-label={`Remove ${title}`} onClick={() => remove(l.slug, l.size)}><Icon name="trash" size={18} /></button>

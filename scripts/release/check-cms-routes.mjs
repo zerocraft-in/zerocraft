@@ -71,7 +71,7 @@ for (const staleRoute of ["/studio", "/transactions", "/subscriptions", "/disput
   assert(!navigation.includes(`href: "${staleRoute}"`), `navigation still exposes stale route ${staleRoute}`);
 }
 
-const placeholderRoutes = ["channels", "devices", "disputes", "scheduling", "subscriptions", "time-tracking", "whats-new"];
+const placeholderRoutes = ["channels", "disputes", "scheduling", "subscriptions", "time-tracking", "whats-new"];
 for (const route of placeholderRoutes) {
   const source = readFileSync(join(cms, "app", route, "page.tsx"), "utf8");
   assert(source.includes("ComingSoonPage"), `${route}: placeholder route must use the honest ComingSoonPage state`);

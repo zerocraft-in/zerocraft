@@ -55,6 +55,13 @@ export default function About({ showLink = true }: { showLink?: boolean }) {
                 curiosity, creativity, and attention to detail.
               </p>
             </Reveal>
+            <Reveal delay={0.34}>
+              <p className="section-desc">
+                Founded and led by Manimaran, Zerocraft brings a founder-led
+                point of view to every brief — personal enough to care deeply,
+                considered enough to build work that lasts.
+              </p>
+            </Reveal>
             <Reveal delay={0.35}>
               <p className="section-desc">
                 We believe meaningful creative work is not just about how

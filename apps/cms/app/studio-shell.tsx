@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,8 +16,8 @@ import {
   IconRefresh,
   IconSearch,
   IconSettings,
+  IconSparkles,
 } from "@tabler/icons-react";
-import { StudioMotion } from "@/components/studio/studio-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -48,7 +49,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -58,7 +59,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { StudioSidebar } from "@/components/layout/studio-sidebar";
-import { StudioHeader } from "@/components/layout/studio-header";
 import {
   supabase,
   type StudioNotification,
@@ -69,15 +69,14 @@ import {
 import {
   getAdminNavigationForRole,
   getAdminNavigationForFeatures,
-  getAdminNavigationForWorkspace,
   getAdminRoutePermission,
   getAdminRouteFeature,
   getAdminBreadcrumbs,
-  getAdminWorkspaceTab,
   isAdminNavigationGroupActive,
   isAdminRouteActive,
 } from "@/lib/admin-navigation";
 import { STUDIO_FEATURES, type StudioFeatureKey } from "@/lib/studio-features";
+import { StudioCommandCenter } from "@/components/studio/studio-command-center";
 const quickActions = [
   { label: "New work", href: "/works?create=1", icon: IconBriefcase },
   { label: "New article", href: "/blogs?create=1", icon: IconFileText },
@@ -97,6 +96,7 @@ export default function StudioShell({ children, user }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
   const [noticesOpen, setNoticesOpen] = useState(false);
@@ -104,23 +104,30 @@ export default function StudioShell({ children, user }: Props) {
   const [noticesLoading, setNoticesLoading] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [collapsedTriggerSuppressed, setCollapsedTriggerSuppressed] =
+    useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [permissions, setPermissions] = useState<string[] | null>(null);
   const [features, setFeatures] = useState<Record<StudioFeatureKey, boolean>>(
-    () => Object.fromEntries(STUDIO_FEATURES.map((feature) => [feature.key, feature.enabled])) as Record<StudioFeatureKey, boolean>,
+    () =>
+      Object.fromEntries(
+        STUDIO_FEATURES.map((feature) => [feature.key, feature.enabled]),
+      ) as Record<StudioFeatureKey, boolean>,
   );
   const navigation = useMemo(
-    () => getAdminNavigationForFeatures(
-      getAdminNavigationForRole(user.role, permissions),
-      new Set(Object.entries(features).filter(([, enabled]) => enabled).map(([key]) => key as StudioFeatureKey)),
-    ),
+    () =>
+      getAdminNavigationForFeatures(
+        getAdminNavigationForRole(user.role, permissions),
+        new Set(
+          Object.entries(features)
+            .filter(([, enabled]) => enabled)
+            .map(([key]) => key as StudioFeatureKey),
+        ),
+      ),
     [user.role, permissions, features],
   );
-  const workspaceTab = getAdminWorkspaceTab(pathname);
-  const workspaceNavigation = useMemo(
-    () => getAdminNavigationForWorkspace(navigation, workspaceTab),
-    [navigation, workspaceTab],
-  );
+  const workspaceNavigation = useMemo(() => navigation, [navigation]);
   const navigationLinks = useMemo(
     () => workspaceNavigation.flatMap((group) => group.links),
     [workspaceNavigation],
@@ -149,15 +156,28 @@ export default function StudioShell({ children, user }: Props) {
   const unread = notices.filter((item) => !item.read).length;
   const latestNotices = notices.slice(0, 6);
   const breadcrumbs = getAdminBreadcrumbs(pathname);
-  const pageTitle =
-    breadcrumbs.at(-1)?.label ||
-    (pathname === "/" ? "Overview" : "ZeroCraft CMS");
+  const isLiveView = pathname === "/analytics/live-view";
+  useEffect(() => {
+    const savedSidebarState = window.localStorage.getItem(
+      "zerocraft-sidebar-open",
+    );
+    if (savedSidebarState === "true" || savedSidebarState === "false") {
+      setSidebarOpen(savedSidebarState === "true");
+    }
+  }, []);
+  useEffect(() => {
+    window.localStorage.setItem("zerocraft-sidebar-open", String(sidebarOpen));
+  }, [sidebarOpen]);
   useEffect(() => {
     let current = true;
     const onFeatureChange = (event: Event) => {
-      const detail = (event as CustomEvent<{ key?: string; enabled?: boolean }>).detail;
+      const detail = (event as CustomEvent<{ key?: string; enabled?: boolean }>)
+        .detail;
       if (!detail?.key || typeof detail.enabled !== "boolean") return;
-      setFeatures((value) => ({ ...value, [detail.key as StudioFeatureKey]: detail.enabled }));
+      setFeatures((value) => ({
+        ...value,
+        [detail.key as StudioFeatureKey]: detail.enabled,
+      }));
     };
     window.addEventListener("studio-feature-change", onFeatureChange);
     void fetch("/api/studio/me", { cache: "no-store" })
@@ -171,9 +191,19 @@ export default function StudioShell({ children, user }: Props) {
     void fetch("/api/studio/features", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) return;
-        const payload = await response.json() as { features?: Array<{ feature_key: StudioFeatureKey; enabled: boolean }> };
+        const payload = (await response.json()) as {
+          features?: Array<{ feature_key: StudioFeatureKey; enabled: boolean }>;
+        };
         if (current && Array.isArray(payload.features)) {
-          setFeatures((value) => ({ ...value, ...Object.fromEntries(payload.features!.map((feature) => [feature.feature_key, feature.enabled])) }));
+          setFeatures((value) => ({
+            ...value,
+            ...Object.fromEntries(
+              payload.features!.map((feature) => [
+                feature.feature_key,
+                feature.enabled,
+              ]),
+            ),
+          }));
         }
       })
       .catch(() => undefined);
@@ -253,7 +283,11 @@ export default function StudioShell({ children, user }: Props) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === "k"
+      ) {
         event.preventDefault();
         setSearchOpen((open) => {
           if (!open) {
@@ -263,8 +297,17 @@ export default function StudioShell({ children, user }: Props) {
           return !open;
         });
       }
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "k"
+      ) {
+        event.preventDefault();
+        setCommandCenterOpen((open) => !open);
+      }
       if (event.key === "Escape") {
         setSearchOpen(false);
+        setCommandCenterOpen(false);
         setNoticesOpen(false);
         setMobileMenuOpen(false);
       }
@@ -305,8 +348,20 @@ export default function StudioShell({ children, user }: Props) {
   }
 
   return (
-    <SidebarProvider>
-      <div className="relative isolate h-dvh w-full overflow-hidden bg-background text-foreground selection:bg-primary/20">
+    <SidebarProvider
+      open={sidebarOpen}
+      onOpenChange={(nextOpen) => {
+        setSidebarOpen(nextOpen);
+        setCollapsedTriggerSuppressed(!nextOpen);
+      }}
+      style={
+        {
+          "--sidebar-width": "216px",
+          "--sidebar-width-icon": "64px",
+        } as CSSProperties
+      }
+    >
+      <div className="relative isolate flex h-dvh w-full overflow-hidden text-foreground ">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetContent
             side="left"
@@ -315,7 +370,14 @@ export default function StudioShell({ children, user }: Props) {
             <SheetHeader className="border-b px-1 pb-4 pt-1 text-left">
               <SheetTitle className="flex items-center gap-3">
                 <span className="grid size-9 place-items-center rounded-xl bg-[#151515]">
-                  <Image src="/icon.svg" alt="" width={24} height={24} className="size-6" priority />
+                  <Image
+                    src="/icon.svg"
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="size-6"
+                    priority
+                  />
                 </span>
                 ZeroCraft CMS
               </SheetTitle>
@@ -400,45 +462,26 @@ export default function StudioShell({ children, user }: Props) {
         <StudioSidebar
           pathname={pathname}
           navigation={workspaceNavigation}
-          workspaceTab={workspaceTab}
-        />
-
-        <StudioHeader
-          title={pageTitle}
-          user={{ name: user.name, role: user.role }}
-          email={user.email}
-          isSigningOut={isSigningOut}
-          unread={unread}
-          noticesOpen={noticesOpen}
-          onOpenMobileMenu={() => setMobileMenuOpen(true)}
+          collapsed={!sidebarOpen}
           onOpenSearch={openSearch}
-          onToggleNotices={() => setNoticesOpen((open) => !open)}
-          onSignOut={() => void signOut()}
+          collapsedTriggerSuppressed={collapsedTriggerSuppressed}
+          onCollapsedTriggerReveal={() => setCollapsedTriggerSuppressed(false)}
         />
 
         {/* Main content */}
-        <div className="absolute bottom-0 right-0 top-[56px] min-h-0 overflow-hidden lg:left-[280px]">
+        <SidebarInset className={isLiveView ? "min-h-0 min-w-0 overflow-hidden p-0" : "min-h-0 min-w-0 overflow-hidden p-2"}>
           <div
             role="main"
             tabIndex={0}
             aria-label="Studio content"
             data-studio-scroll
-            className="
-            relative z-10
-            h-full w-full min-h-0 min-w-0
-            overflow-y-auto
-            overscroll-y-contain
-            outline-none
-            [scrollbar-width:none]
-            [-ms-overflow-style:none]
-            [&::-webkit-scrollbar]:hidden
-          "
+            className={isLiveView ? "relative z-10 h-full w-full min-h-0 min-w-0 overflow-hidden bg-background outline-none" : "relative z-10 h-full w-full min-h-0 min-w-0 overflow-y-auto overscroll-y-contain outline-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-xl border border-border/70 bg-muted"}
           >
             <div
               data-studio-content
-              className="mx-auto flex min-h-full w-full max-w-[1440px] flex-col px-4 pb-8 pt-8 sm:px-6 sm:pb-10 lg:px-10 lg:pt-10 xl:px-14"
+              className={isLiveView ? "flex h-full min-h-0 w-full flex-col" : "my-3 mx-auto flex min-h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)] flex-col px-4 pb-8 pt-8 shadow-sm sm:my-4 sm:min-h-[calc(100%-2rem)] sm:w-[calc(100%-2rem)] sm:px-6 sm:pb-10 lg:px-10 lg:pt-10 xl:px-14"}
             >
-              {breadcrumbs.length > 1 && (
+              {!isLiveView && breadcrumbs.length > 1 && (
                 <Breadcrumb className="mb-3">
                   <BreadcrumbList className="text-xs">
                     {breadcrumbs.map((item, index) => (
@@ -458,10 +501,10 @@ export default function StudioShell({ children, user }: Props) {
                   </BreadcrumbList>
                 </Breadcrumb>
               )}
-              <StudioMotion>{children}</StudioMotion>
+              {children}
             </div>
           </div>
-        </div>
+        </SidebarInset>
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {errorMessage && (
@@ -730,6 +773,26 @@ export default function StudioShell({ children, user }: Props) {
             </div>
           </DialogContent>
         </Dialog>
+        {features.assistant !== false && (
+          <>
+            <button
+              type="button"
+              onClick={() => setCommandCenterOpen(true)}
+              className="fixed bottom-5 left-1/2 z-[70] -translate-x-1/2 rounded-full border border-primary/30 bg-primary px-4 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:-translate-y-0.5 hover:bg-primary/90"
+              aria-label="Open Zerocraft assistant"
+            >
+              <IconSparkles className="size-4" />
+              <span className="hidden sm:inline">Ask Zerocraft</span>
+              <kbd className="hidden rounded border border-primary-foreground/20 px-1.5 py-0.5 text-[10px] text-primary-foreground/75 md:inline">
+                ⌘⇧K
+              </kbd>
+            </button>
+            <StudioCommandCenter
+              open={commandCenterOpen}
+              onOpenChange={setCommandCenterOpen}
+            />
+          </>
+        )}
       </div>
     </SidebarProvider>
   );

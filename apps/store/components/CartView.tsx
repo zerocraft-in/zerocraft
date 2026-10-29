@@ -2,10 +2,10 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import Icon from './Icon';
-import { Clap, ProductTile, Burst } from './Graphics';
+import { Clap, Burst } from './Graphics';
 import { Progress } from './CartDrawer';
 import { useCart } from './CartProvider';
-import { COUPON, getProduct, inr } from '@/lib/products';
+import { COUPON, formatMoney, inr } from '@/lib/products';
 
 export default function CartView() {
   const { lines, setQty, remove, subtotal, discount, shipping, total, coupon, applyCoupon, clearCoupon } = useCart();
@@ -28,26 +28,25 @@ export default function CartView() {
         <Progress amount={subtotal - discount} />
         <ul className="lines big">
           {lines.map((l) => {
-            const p = getProduct(l.slug);
-            const title = p?.name ?? l.product?.title;
-            const price = p?.price ?? l.product?.price ?? 0;
+            const title = l.product?.title;
+            const price = l.product?.price ?? 0;
             if (!title) return null;
             return (
               <li key={l.slug + l.size} className="line">
                 <Link href={`/product/${l.slug}`} className="thumb">
-                  {p ? <ProductTile art={p.art} /> : l.product?.image ? <img src={l.product.image} alt="" /> : null}
+                  {l.product?.image ? <img src={l.product.image} alt="" /> : null}
                 </Link>
                 <div className="li-body">
                   <Link href={`/product/${l.slug}`}><b>{title}</b></Link>
                   <span className="mono muted">Size {l.size}</span>
-                  <span className="small muted">{inr(price)} each</span>
+                  <span className="small muted">{formatMoney(price, l.product?.currency)} each</span>
                   <div className="li-row">
                     <div className="qty" role="group" aria-label={`Quantity for ${title}`}>
                       <button aria-label="Decrease" onClick={() => setQty(l.slug, l.size, l.qty - 1)}><Icon name="minus" size={14} /></button>
                       <span>{l.qty}</span>
                       <button aria-label="Increase" onClick={() => setQty(l.slug, l.size, l.qty + 1)}><Icon name="plus" size={14} /></button>
                     </div>
-                    <b>{inr(price * l.qty)}</b>
+                    <b>{formatMoney(price * l.qty, l.product?.currency)}</b>
                   </div>
                 </div>
                 <button className="rm" aria-label={`Remove ${title}`} onClick={() => remove(l.slug, l.size)}><Icon name="trash" size={18} /></button>

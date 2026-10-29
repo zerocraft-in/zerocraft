@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import type Lenis from "lenis";
-import { studio, studioSocials } from "@/lib/studio-config";
+import { studio, studioSocials, studioWhatsAppUrl } from "@/lib/studio-config";
 import Container from "@/components/ui/Container";
 import ArrowIcon from "@/components/ui/ArrowIcon";
+import { trackLeadEvent } from "@/lib/lead-tracking";
 
 const navigation = [
   { label: "Home", href: "/" },
@@ -76,7 +77,7 @@ export default function Footer() {
               <br />
               Crafted with purpose.
             </p>
-            <p className="footer__location">Tenkasi, Tamil Nadu, India</p>
+            <address className="footer__location">{studio.address.formatted}</address>
           </div>
           <nav className="footer__links" aria-label="Footer navigation">
             <div className="footer__links-col">
@@ -113,6 +114,11 @@ export default function Footer() {
               <ul className="footer__links-list">
                 <li>
                   <a href={`mailto:${studio.email}`}>{studio.email}</a>
+                </li>
+                <li>
+                  <a href={studioWhatsAppUrl()} target="_blank" rel="noopener noreferrer" onClick={() => trackLeadEvent("whatsapp_click", { placement: "footer" })}>
+                    WhatsApp <ArrowIcon direction="up-right" size={12} />
+                  </a>
                 </li>
                 <li>
                   <Link href="/contact">

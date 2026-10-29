@@ -8,6 +8,7 @@ import {
   safeObjectKey,
   validateStorageFile,
 } from "@/lib/storage/server";
+import { isR2Configured, putR2Object, deleteR2Object } from "@/lib/r2/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,21 +65,34 @@ export async function POST(request: Request) {
   if (!product) return errorResponse("Product not found.", 404);
   const { data: existing, error: existingError } = await client.supabase.from("store_product_media").select("sort_order").eq("product_id", productId).order("sort_order", { ascending: false }).limit(1);
   if (existingError) return errorResponse("Product media could not be loaded.", 503);
-  const storagePath = safeObjectKey(`products/${productId}`, extension);
-  const { error: uploadError } = await storage.storage.from(PRODUCT_MEDIA_BUCKET).upload(storagePath, file, { contentType: file.type, upsert: false });
-  if (uploadError) return errorResponse(uploadErrorMessage(uploadError), 502);
-  const { data: publicUrl } = storage.storage.from(PRODUCT_MEDIA_BUCKET).getPublicUrl(storagePath);
+  const storagePath = safeObjectKey(isR2Configured() ? "products" : `products/${productId}`, extension);
+  let persistedPath = storagePath;
+  let publicUrl: string;
+  if (isR2Configured()) {
+    try {
+      const uploaded = await putR2Object({ sourcePath: storagePath, body: new Uint8Array(await file.arrayBuffer()), contentType: file.type });
+      persistedPath = uploaded.storagePath;
+      publicUrl = uploaded.publicUrl;
+    } catch (error) {
+      return errorResponse(error instanceof Error ? error.message : "Cloudflare R2 rejected the image.", 502);
+    }
+  } else {
+    const { error: uploadError } = await storage.storage.from(PRODUCT_MEDIA_BUCKET).upload(storagePath, file, { contentType: file.type, upsert: false });
+    if (uploadError) return errorResponse(uploadErrorMessage(uploadError), 502);
+    publicUrl = storage.storage.from(PRODUCT_MEDIA_BUCKET).getPublicUrl(storagePath).data.publicUrl;
+  }
   const { data: media, error: mediaError } = await client.supabase.from("store_product_media").insert({
     product_id: productId,
-    storage_path: storagePath,
-    public_url: publicUrl.publicUrl,
+    storage_path: persistedPath,
+    public_url: publicUrl,
     alt_text: typeof altText === "string" ? altText.trim() : product.slug,
     media_type: "image",
     sort_order: existing?.[0] ? existing[0].sort_order + 1 : 0,
     is_primary: !existing?.[0],
   }).select("id,storage_path,public_url,alt_text,sort_order,media_type,is_primary").single();
   if (mediaError) {
-    await storage.storage.from(PRODUCT_MEDIA_BUCKET).remove([storagePath]);
+    if (persistedPath.startsWith("r2/")) await deleteR2Object(persistedPath);
+    else await storage.storage.from(PRODUCT_MEDIA_BUCKET).remove([storagePath]);
     return errorResponse("The product image metadata could not be saved.", 503);
   }
   refreshProduct(product.slug);
@@ -132,8 +146,12 @@ export async function DELETE(request: Request) {
   if (!media || !isProductMediaPath(media.storage_path, body.productId)) return errorResponse("Product media not found.", 404);
   const { data: remaining, error: deleteError } = await client.supabase.from("store_product_media").delete().eq("id", body.mediaId).eq("product_id", body.productId).select("id");
   if (deleteError || !remaining?.length) return errorResponse("The image metadata could not be removed; the storage object was retained.", 503);
-  const { error: storageError } = await storage.storage.from(PRODUCT_MEDIA_BUCKET).remove([media.storage_path]);
-  if (storageError) return errorResponse("Image metadata was removed, but the storage object could not be removed. Retry cleanup.", 502);
+  if (media.storage_path.startsWith("r2/")) {
+    try { await deleteR2Object(media.storage_path); } catch { return errorResponse("Image metadata was removed, but the R2 object could not be removed. Retry cleanup.", 502); }
+  } else {
+    const { error: storageError } = await storage.storage.from(PRODUCT_MEDIA_BUCKET).remove([media.storage_path]);
+    if (storageError) return errorResponse("Image metadata was removed, but the storage object could not be removed. Retry cleanup.", 502);
+  }
   const { data: afterDelete, error: remainingError } = await client.supabase.from("store_product_media").select("id,is_primary").eq("product_id", body.productId).order("sort_order", { ascending: true }).limit(1);
   if (remainingError) return errorResponse("The image was removed, but primary-image verification failed.", 503);
   if (afterDelete?.[0]) {

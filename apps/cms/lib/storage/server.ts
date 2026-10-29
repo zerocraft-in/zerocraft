@@ -62,11 +62,12 @@ export async function requireCustomerStorageClient() {
 }
 
 export function isProductMediaPath(path: string, productId: string) {
-  const [root, ownerId, fileName, ...extra] = path.split("/");
-  return root === "products"
-    && ownerId === productId
-    && extra.length === 0
-    && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/i.test(fileName ?? "");
+  const parts = path.startsWith("r2/") ? path.split("/").slice(1) : path.split("/");
+  const filePattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/i;
+  if (parts[0] === "assets" && parts[1] === "products") return parts.length === 3 && filePattern.test(parts[2] ?? "");
+  if (parts[0] === "assets" && parts[1] === "library") return parts.length === 3 && filePattern.test(parts[2] ?? "");
+  if (parts[0] === "library") return parts.length === 2 && filePattern.test(parts[1] ?? "");
+  return parts[0] === "products" && parts[1] === productId && parts.length === 3 && filePattern.test(parts[2] ?? "");
 }
 
 export function isCustomerCustomizationPath(path: string, userId: string) {

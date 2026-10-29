@@ -15,6 +15,12 @@ const supabaseHostname = (() => {
   }
 })();
 
+const mediaHostname = (() => {
+  const value = process.env.CLOUDFLARE_R2_PUBLIC_BASE_URL;
+  if (!value) return null;
+  try { return new URL(value).hostname; } catch { return null; }
+})();
+
 const nextConfig: NextConfig = {
   turbopack: {},
   experimental: {
@@ -56,6 +62,9 @@ const nextConfig: NextConfig = {
               pathname: "/storage/v1/object/public/**",
             },
           ]
+        : []),
+      ...(mediaHostname
+        ? [{ protocol: "https" as const, hostname: mediaHostname, pathname: "/**" }]
         : []),
     ],
   },

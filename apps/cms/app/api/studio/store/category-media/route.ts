@@ -6,6 +6,7 @@ import {
   safeObjectKey,
   validateStorageFile,
 } from "@/lib/storage/server";
+import { isR2Configured, putR2Object } from "@/lib/r2/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +38,14 @@ export async function POST(request: Request) {
     ? createServiceClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
     : client.supabase;
   const storagePath = safeObjectKey("categories", extension);
+  if (isR2Configured()) {
+    try {
+      const uploaded = await putR2Object({ sourcePath: storagePath, body: new Uint8Array(await file.arrayBuffer()), contentType: file.type });
+      return Response.json({ publicUrl: uploaded.publicUrl, storagePath: uploaded.storagePath }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
+    } catch (error) {
+      return errorResponse(error instanceof Error ? error.message : "Cloudflare R2 rejected the image.", 502);
+    }
+  }
   const { error } = await storage.storage.from(PRODUCT_MEDIA_BUCKET).upload(storagePath, file, {
     contentType: file.type,
     upsert: false,

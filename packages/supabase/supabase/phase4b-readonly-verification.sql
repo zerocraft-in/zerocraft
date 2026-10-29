@@ -26,7 +26,7 @@ where n.nspname = 'public'
   and c.relname in (
     'profiles', 'store_orders', 'store_order_items', 'store_customizations',
     'store_checkout_requests', 'store_product_media', 'store_inventory_levels',
-    'store_inventory_movements', 'store_integrations'
+    'store_inventory_movements', 'studio_integrations'
   )
 order by table_name;
 
@@ -53,7 +53,7 @@ where n.nspname = 'public'
     'store_inventory_movements', 'store_inventory_reservations',
     'store_orders', 'store_order_items', 'store_checkout_requests',
     'store_customizations', 'store_customization_templates',
-    'store_integrations'
+    'studio_integrations'
   )
 order by object_name;
 
@@ -82,7 +82,7 @@ where n.nspname in ('public', 'storage')
     p.tablename in (
       'profiles', 'store_orders', 'store_order_items', 'store_customizations',
       'store_checkout_requests', 'store_product_media', 'store_inventory_levels',
-      'store_inventory_movements', 'store_integrations'
+      'store_inventory_movements', 'studio_integrations'
     )
     or (n.nspname = 'storage' and p.tablename = 'objects')
   )

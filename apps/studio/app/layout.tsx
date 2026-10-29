@@ -22,8 +22,13 @@ export const metadata: Metadata = {
     template: "%s | Zerocraft Studio",
   },
   description: studio.description,
-  authors: [{ name: "Zerocraft Studio", url: studio.url }],
-  creator: "Zerocraft Studio",
+  authors: [
+    { name: "Manimaran", url: studio.url },
+    { name: "Zerocraft Studio", url: studio.url },
+  ],
+  creator: "Manimaran",
+  publisher: "Zerocraft Studio",
+  category: "Design and Technology",
   robots: { index: true, follow: true },
   openGraph: {
     title: "Zerocraft Studio — Creative & Digital Studio",
@@ -31,16 +36,29 @@ export const metadata: Metadata = {
     url: domainOrigin("studio"),
     siteName: "Zerocraft Studio",
     type: "website",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Zerocraft Studio" }],
+    images: [
+      {
+        url: "/android-chrome-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "Zerocraft Studio",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Zerocraft Studio — Creative & Digital Studio",
     description: studio.description,
-    images: ["/og-image.jpg"],
+    images: ["/android-chrome-512x512.png"],
   },
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/favicon.ico"],
   },
 };
 
@@ -51,14 +69,38 @@ const jsonLd = {
   name: "Zerocraft Studio",
   url: studio.url,
   logo: `${studio.url}/icon.svg`,
-  image: `${studio.url}/og-image.jpg`,
+  image: `${studio.url}/android-chrome-512x512.png`,
   description: studio.description,
   email: studio.email,
+  telephone: `+${studio.whatsapp.number}`,
+  priceRange: "$$$",
+  areaServed: [
+    { "@type": "Country", name: "India" },
+    { "@type": "Place", name: "Tamil Nadu" },
+  ],
+  serviceType: [
+    "Brand strategy",
+    "Visual identity",
+    "Digital design",
+    "Web development",
+    "Photography and film",
+    "Motion design",
+  ],
+  founder: {
+    "@type": "Person",
+    "@id": `${studio.url}/#manimaran`,
+    name: "Manimaran",
+    jobTitle: "Founder & Creative Lead",
+    worksFor: { "@id": `${studio.url}/#organization` },
+  },
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Tenkasi",
-    addressRegion: "Tamil Nadu",
-    addressCountry: "IN",
+    streetAddress: studio.address.streetAddress,
+    addressLocality: studio.address.addressLocality,
+    postalCode: studio.address.postalCode,
+    addressRegion: studio.address.addressRegion,
+    addressCountry: studio.address.addressCountry,
+    addressDistrict: studio.address.district,
   },
   sameAs: studioSocials.map((link) => link.url),
 };
@@ -69,11 +111,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn("scroll-smooth")}
-    >
+    <html lang="en" suppressHydrationWarning className={cn("scroll-smooth")}>
       <head>
         <meta
           name="google-site-verification"

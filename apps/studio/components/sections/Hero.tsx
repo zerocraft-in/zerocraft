@@ -5,6 +5,8 @@ import type Lenis from "lenis";
 import BadgeButton from "@/components/ui/BadgeButton";
 import ArrowIcon from "@/components/ui/ArrowIcon";
 import RotatingWords from "@/components/ui/RotatingWords";
+import { studioWhatsAppUrl } from "@/lib/studio-config";
+import { trackLeadEvent } from "@/lib/lead-tracking";
 
 const words = ["extraordinary.", "meaningful.", "memorable."];
 
@@ -72,6 +74,9 @@ export default function Hero() {
         </p>
         <div className="hero__actions">
           <BadgeButton href="/contact" text="START A PROJECT" />
+          <a className="hero__work-link" href={studioWhatsAppUrl()} target="_blank" rel="noopener noreferrer" onClick={() => trackLeadEvent("whatsapp_click", { placement: "hero" })}>
+            CHAT ON WHATSAPP <ArrowIcon direction="up-right" size={12} />
+          </a>
           <a className="hero__work-link" href="#works" onClick={explore}>
             EXPLORE OUR WORK <ArrowIcon direction="up-right" size={12} />
           </a>

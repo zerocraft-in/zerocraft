@@ -1,6 +1,7 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { requireStudioPermission } from "@/lib/studio-auth";
 import { PRODUCT_MEDIA_BUCKET } from "@/lib/storage/server";
+import { deleteR2Object, r2PublicUrl } from "@/lib/r2/server";
 import { isSameOrigin } from "@/lib/request-origin";
 import { revalidatePath } from "next/cache";
 
@@ -40,10 +41,21 @@ async function purgeExpiredAssets(supabase: StudioSupabase) {
   const storage = storageClient(supabase) as typeof supabase;
   for (let index = 0; index < expired.length; index += 100) {
     const batch = expired.slice(index, index + 100);
-    const { error: storageError } = await storage.storage
-      .from(PRODUCT_MEDIA_BUCKET)
-      .remove(batch.map((asset) => asset.storage_path));
-    if (storageError) throw new Error("Expired gallery files could not be permanently removed.");
+    const r2Assets = batch.filter((asset) => asset.storage_path.startsWith("r2/"));
+    const supabaseAssets = batch.filter((asset) => !asset.storage_path.startsWith("r2/"));
+    for (const asset of r2Assets) {
+      try {
+        await deleteR2Object(asset.storage_path);
+      } catch {
+        throw new Error("Expired gallery files could not be permanently removed.");
+      }
+    }
+    if (supabaseAssets.length) {
+      const { error: storageError } = await storage.storage
+        .from(PRODUCT_MEDIA_BUCKET)
+        .remove(supabaseAssets.map((asset) => asset.storage_path));
+      if (storageError) throw new Error("Expired gallery files could not be permanently removed.");
+    }
     const { error: deleteError } = await supabase
       .from("store_recycle_bin_assets")
       .delete()
@@ -101,9 +113,11 @@ export async function GET() {
     const storage = storageClient(access.supabase);
     const recycledAssets = (assets.data || []).map((asset) => ({
       ...asset,
-      url: storage.storage
-        .from(PRODUCT_MEDIA_BUCKET)
-        .getPublicUrl(asset.storage_path).data.publicUrl,
+      url: asset.storage_path.startsWith("r2/")
+        ? r2PublicUrl(asset.storage_path)
+        : storage.storage
+            .from(PRODUCT_MEDIA_BUCKET)
+            .getPublicUrl(asset.storage_path).data.publicUrl,
     }));
 
     return Response.json(
