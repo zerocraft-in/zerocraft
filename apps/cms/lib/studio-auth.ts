@@ -2,6 +2,7 @@ import "server-only";
 
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@zerocraft/supabase/server";
+import { studioSessionIsRevoked } from "@/lib/studio-sessions";
 
 export const STUDIO_ROLES = ["admin", "manager", "staff"] as const;
 export type StudioRole = (typeof STUDIO_ROLES)[number];
@@ -36,6 +37,9 @@ export async function requireStudioAccess(): Promise<StudioAccess | StudioDenied
   const role = profile?.role as StudioRole | undefined;
   if (error || !role || !STUDIO_ROLES.includes(role) || profile?.is_active === false) {
     return { ok: false, response: Response.json({ error: "Studio access required." }, { status: 403, headers: { "Cache-Control": "private, no-store" } }) };
+  }
+  if (await studioSessionIsRevoked(user.id)) {
+    return { ok: false, response: Response.json({ error: "This CMS session was revoked. Sign in again." }, { status: 401, headers: { "Cache-Control": "private, no-store" } }) };
   }
 
   return { ok: true, supabase, user, role };

@@ -2,6 +2,7 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { useAuthStore } from "@/store/useAuthStore";
 import StudioShell from "./studio-shell";
 
@@ -21,6 +22,14 @@ export function CmsFrame({ children }: { children: React.ReactNode }) {
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => { if (active) setProfileRole(payload?.role || null); })
       .catch(() => { if (active) setProfileRole(null); });
+    void fetch("/api/studio/sessions", { cache: "no-store" })
+      .then(async (response) => {
+        if (response.status === 401) {
+          await createClient().auth.signOut();
+          if (active) window.location.assign("/login");
+        }
+      })
+      .catch(() => undefined);
     return () => { active = false; };
   }, [user?.id]);
 
