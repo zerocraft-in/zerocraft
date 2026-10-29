@@ -31,14 +31,27 @@ export async function GET(request: NextRequest) {
   if (!access.ok) return access.response;
   try {
     const service = createServiceClient();
-    const id = sessionCookieId(request);
+    let id = sessionCookieId(request);
     const metadata = requestDeviceMetadata(request);
     const now = new Date().toISOString();
-    const { data: existing, error: existingError } = await service.from("studio_sessions").select(sessionFields).eq("id", id).eq("user_id", access.user.id).maybeSingle();
+    let { data: existing, error: existingError } = await service.from("studio_sessions").select(sessionFields).eq("id", id).eq("user_id", access.user.id).maybeSingle();
     if (existingError) throw existingError;
     if (existing?.revoked_at) {
       const response = denied("This session has been revoked. Sign in again to continue.", 401);
       return clearStudioSessionCookie(response, secureRequest(request));
+    }
+    // The CMS frame and a page can initialize in parallel on a fresh browser.
+    // Reuse a very recent matching session so that startup cannot register the
+    // same device twice while both requests are setting the cookie.
+    if (!existing) {
+      let recentQuery = service.from("studio_sessions").select(sessionFields).eq("user_id", access.user.id).eq("user_agent", metadata.userAgent).is("revoked_at", null).gte("last_seen_at", new Date(Date.now() - 2 * 60 * 1000).toISOString()).order("last_seen_at", { ascending: false }).limit(1);
+      recentQuery = metadata.ipAddress ? recentQuery.eq("ip_address", metadata.ipAddress) : recentQuery.is("ip_address", null);
+      const { data: recent, error: recentError } = await recentQuery.maybeSingle();
+      if (recentError) throw recentError;
+      if (recent) {
+        id = recent.id;
+        existing = recent;
+      }
     }
     if (existing) {
       const { error } = await service.from("studio_sessions").update({ last_seen_at: now, updated_at: now, user_agent: metadata.userAgent, ip_address: metadata.ipAddress }).eq("id", id).eq("user_id", access.user.id);
