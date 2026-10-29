@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -59,6 +60,7 @@ import {
 type Subcategory = {
   id: string;
   category_id: string;
+  deleted_at?: string | null;
   name: string;
   slug: string;
   description: string;
@@ -69,6 +71,7 @@ type Subcategory = {
 
 type Category = {
   id: string;
+  deleted_at?: string | null;
   name: string;
   slug: string;
   description: string;
@@ -231,12 +234,16 @@ export default function StoreCategoriesManager() {
     };
   }, []);
 
-  const categories = data?.categories ?? noCategories;
+  const categories = (data?.categories ?? noCategories).filter(
+    (category) => !category.deleted_at,
+  );
   const products = data?.products ?? noProducts;
   const rows = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return categories.flatMap((category) => {
-      const children = category.store_subcategories ?? [];
+      const children = (category.store_subcategories ?? []).filter(
+        (subcategory) => !subcategory.deleted_at,
+      );
       const categoryMatches =
         !needle || category.name.toLowerCase().includes(needle);
       const matchingChildren = children.filter(
@@ -454,7 +461,7 @@ export default function StoreCategoriesManager() {
       });
       const result = await response.json();
       if (!response.ok)
-        throw new Error(result.error || "The category could not be archived.");
+        throw new Error(result.error || "The category could not be moved to Recently deleted.");
       setArchiveTarget(null);
       setEditor(null);
       await load();
@@ -462,7 +469,7 @@ export default function StoreCategoriesManager() {
       setError(
         cause instanceof Error
           ? cause.message
-          : "The category could not be archived.",
+          : "The category could not be moved to Recently deleted.",
       );
     } finally {
       setBusy(false);
@@ -487,14 +494,14 @@ export default function StoreCategoriesManager() {
         const result = await response.json();
         if (!response.ok)
           throw new Error(
-            result.error || "The selected categories could not be archived.",
+            result.error || "The selected categories could not be moved to Recently deleted.",
           );
       }
-      const archivedCount = selectedKeys.size;
+      const deletedCount = selectedKeys.size;
       setSelectedKeys(new Set());
       setBulkArchiveOpen(false);
       setToast(
-        `${archivedCount} ${archivedCount === 1 ? "category" : "categories"} archived.`,
+        `${deletedCount} ${deletedCount === 1 ? "category" : "categories"} moved to Recently deleted.`,
       );
       await load();
       window.setTimeout(() => setToast(""), 4000);
@@ -502,7 +509,7 @@ export default function StoreCategoriesManager() {
       setError(
         cause instanceof Error
           ? cause.message
-          : "The selected categories could not be archived.",
+          : "The selected categories could not be moved to Recently deleted.",
       );
     } finally {
       setBusy(false);
@@ -655,17 +662,27 @@ export default function StoreCategoriesManager() {
           </p>
         </div>
 
-        <Button
-          variant="default"
-          size="sm"
-          onClick={() => {
-            window.location.href = "/store/categories/new";
-          }}
-          disabled={!data?.configured}
-          className="rounded-xl self-start sm:self-auto"
-        >
-          <span>Add category</span>
-        </Button>
+        <div className="flex gap-2 self-start sm:self-auto">
+          <Button
+            nativeButton={false}
+            render={<Link href="/store/bin" />}
+            variant="outline"
+            size="sm"
+          >
+            Recycle bin
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => {
+              window.location.href = "/store/categories/new";
+            }}
+            disabled={!data?.configured}
+            className="rounded-xl"
+          >
+            <span>Add category</span>
+          </Button>
+        </div>
       </div>
 
       {error && !editor && (
@@ -909,7 +926,7 @@ export default function StoreCategoriesManager() {
                         setArchiveTarget({ id: item.id, kind, name: item.name })
                       }
                     >
-                      Archive
+                      Move to recycle bin
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -1707,11 +1724,12 @@ export default function StoreCategoriesManager() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Archive “{archiveTarget?.name}”?
+              Move “{archiveTarget?.name}” to Recently deleted?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This removes it from the active storefront while keeping its
-              history. You can restore it later by editing the database record.
+              {archiveTarget?.kind === "category"
+                ? "The category and its active subcategories will be hidden. Product assignments stay intact while in the bin; restore the tree within 15 days. After that, the category is removed and its products are unassigned."
+                : "This subcategory will be hidden and can be restored within 15 days."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1721,7 +1739,7 @@ export default function StoreCategoriesManager() {
               onClick={() => void archive()}
               className="bg-red-600 text-white hover:bg-red-700"
             >
-              <IconTrash size={16} /> {busy ? "Archiving…" : "Archive"}
+              <IconTrash size={16} /> {busy ? "Moving…" : "Move to bin"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1733,12 +1751,13 @@ export default function StoreCategoriesManager() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Archive {selectedKeys.size} selected{" "}
+              Move {selectedKeys.size} selected{" "}
               {selectedKeys.size === 1 ? "category" : "categories"}?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Selected categories will be removed from the active catalog.
-              Products remain in your catalog and can be reassigned later.
+              Selected categories and their active subcategories will be hidden
+              and can be restored together within 15 days. Product assignments
+              stay intact until the category expires, then are cleared.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1748,7 +1767,7 @@ export default function StoreCategoriesManager() {
               onClick={() => void archiveSelected()}
               className="bg-red-600 text-white hover:bg-red-700"
             >
-              <IconTrash size={16} /> {busy ? "Archiving…" : "Archive selected"}
+              <IconTrash size={16} /> {busy ? "Moving…" : "Move to bin"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

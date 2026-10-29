@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import {
@@ -30,6 +31,7 @@ import {
   IconEdit,
   IconPackage,
   IconSearch,
+  IconRestore,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
@@ -37,6 +39,16 @@ import { PageState } from "@/components/studio/page-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -62,6 +74,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatStoreMoney } from "@/lib/currency";
 
 export type StoreProduct = {
   id: string;
@@ -80,6 +93,9 @@ export type StoreProduct = {
   currency: string;
   stock: number | null;
   image_url: string;
+  deleted_at: string | null;
+  purge_after: string | null;
+  deleted_from_status: "draft" | "active" | "archived" | null;
   store_product_media?: {
     id: string;
     storage_path: string;
@@ -111,6 +127,8 @@ type TableMeta = {
   canManageCatalog: boolean;
   onEdit: (product: StoreProduct) => void;
   onDelete: (product: StoreProduct) => void;
+  onRestore: (product: StoreProduct) => void;
+  onBulkDelete?: (products: StoreProduct[]) => void | Promise<void>;
   onBulkStatus?: (
     products: StoreProduct[],
     status: "active" | "archived",
@@ -131,17 +149,6 @@ const features = tableFeatures({
 });
 type ProductTableFeatures = typeof features;
 const column = createColumnHelper<ProductTableFeatures, StoreProduct>();
-
-const money = (amount: number, currency: string) => {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency || "USD",
-    }).format(amount);
-  } catch {
-    return `${currency || "USD"} ${amount.toFixed(2)}`;
-  }
-};
 
 function availableStock(product: StoreProduct) {
   if (product.product_type === "digital") return null;
@@ -212,6 +219,9 @@ const productColumns = column.columns([
     cell: ({ row, table }) => {
       const meta = table.options.meta as TableMeta;
       if (!meta.canManageCatalog) return null;
+      if (row.original.deleted_at) {
+        return <span className="text-muted-foreground">—</span>;
+      }
       return (
         <span className="text-muted-foreground">
           {meta.categories.find((item) => item.id === row.original.category_id)
@@ -232,8 +242,12 @@ const productColumns = column.columns([
   }),
   column.accessor("status", {
     header: "Status",
-    cell: ({ getValue }) => {
+    cell: ({ getValue, row }) => {
       const status = getValue();
+      if (row.original.deleted_at) {
+        const daysLeft = Math.max(0, Math.ceil((new Date(row.original.purge_after || row.original.deleted_at).getTime() - Date.now()) / 86400000));
+        return <Badge variant="destructive">Deleted · {daysLeft}d left</Badge>;
+      }
       return (
         <Badge
           variant={status === "active" ? "default" : "secondary"}
@@ -249,7 +263,7 @@ const productColumns = column.columns([
     header: ({ column }) => <SortHeader column={column} label="Price" />,
     cell: ({ row }) => (
       <span className="font-medium tabular-nums">
-        {money(Number(row.original.price), row.original.currency)}
+        {formatStoreMoney(Number(row.original.price))}
       </span>
     ),
     sortFn: "alphanumeric",
@@ -291,6 +305,20 @@ const productColumns = column.columns([
     cell: ({ row, table }) => {
       const meta = table.options.meta as TableMeta;
       if (!meta.canManageCatalog) return null;
+      if (row.original.deleted_at) {
+        return (
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => meta.onRestore(row.original)}
+            >
+              <IconRestore /> Restore
+            </Button>
+          </div>
+        );
+      }
       return (
         <div className="flex justify-end gap-1">
           <Button
@@ -306,7 +334,7 @@ const productColumns = column.columns([
             type="button"
             size="icon-sm"
             variant="ghost"
-            aria-label={`Delete ${row.original.title}`}
+            aria-label={`Move ${row.original.title} to Recently deleted`}
             onClick={() => meta.onDelete(row.original)}
           >
             <IconTrash />
@@ -354,6 +382,8 @@ export function StoreProductsDataTable({
   configured,
   onEdit,
   onDelete,
+  onRestore,
+  onBulkDelete,
   onBulkStatus,
 }: {
   data: StoreProduct[];
@@ -366,23 +396,35 @@ export function StoreProductsDataTable({
   configured: boolean;
   onEdit: (product: StoreProduct) => void;
   onDelete: (product: StoreProduct) => void;
+  onRestore: (product: StoreProduct) => void;
+  onBulkDelete?: (products: StoreProduct[]) => void | Promise<void>;
   onBulkStatus?: (
     products: StoreProduct[],
     status: "active" | "archived",
   ) => void;
 }) {
-  const [search, setSearch] = React.useState("");
-  const [typeFilter, setTypeFilter] = React.useState("all");
-  const [statusFilter, setStatusFilter] = React.useState("all");
-  const [categoryFilter, setCategoryFilter] = React.useState("all");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.get("q") || "";
+  const typeFilter = ["physical", "digital"].includes(searchParams.get("type") || "") ? searchParams.get("type")! : "all";
+  const statusFilter = ["active", "draft", "archived", "deleted"].includes(searchParams.get("status") || "") ? searchParams.get("status")! : "all";
+  const requestedCategory = searchParams.get("category") || "all";
+  const categoryFilter = requestedCategory === "all" || categories.some((category) => category.id === requestedCategory) ? requestedCategory : "all";
+  const requestedPage = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
+  const requestedPageSize = Number.parseInt(searchParams.get("limit") || "10", 10);
+  const pageSize = [10, 20, 50].includes(requestedPageSize) ? requestedPageSize : 10;
   const tableRef = React.useRef<HTMLDivElement>(null);
   const [pagination, setPagination] = React.useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 6,
+    pageIndex: requestedPage - 1,
+    pageSize,
   });
+  const [removeConfirmation, setRemoveConfirmation] = React.useState<StoreProduct[] | null>(null);
+  const [removePending, setRemovePending] = React.useState(false);
+  const retainedData = statusFilter === "deleted" ? data.filter((product) => product.deleted_at) : data.filter((product) => !product.deleted_at);
   const healthFilteredData = healthFilter === "all"
-    ? data
-    : data.filter((product) => healthSlugs.includes(product.slug));
+    ? retainedData
+    : retainedData.filter((product) => healthSlugs.includes(product.slug));
   const visibleData =
     categoryFilter === "all"
       ? healthFilteredData
@@ -392,35 +434,70 @@ export function StoreProductsDataTable({
     data: visibleData,
     columns: productColumns,
     getRowId: (product: StoreProduct) => product.id,
-    meta: { categories, canManageCatalog, onEdit, onDelete, onBulkStatus },
+    meta: { categories, canManageCatalog, onEdit, onDelete, onRestore, onBulkStatus },
     initialState: { columnVisibility: { search: false } },
     state: { pagination },
     onPaginationChange: setPagination,
+    autoResetPageIndex: false,
   });
+  const tableApiRef = React.useRef(table);
+  tableApiRef.current = table;
+
+  const updateUrl = React.useCallback((updates: Record<string, string | null>, history: "push" | "replace" = "replace") => {
+    const next = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (!value || value === "all" || (key === "page" && value === "1") || (key === "limit" && value === "10")) next.delete(key);
+      else next.set(key, value);
+    });
+    const query = next.toString();
+    router[history](query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  React.useEffect(() => {
+    const canonical = new URLSearchParams();
+    if (search.trim()) canonical.set("q", search.trim());
+    if (typeFilter !== "all") canonical.set("type", typeFilter);
+    if (categoryFilter !== "all") canonical.set("category", categoryFilter);
+    if (statusFilter !== "all") canonical.set("status", statusFilter);
+    if (requestedPage > 1) canonical.set("page", String(requestedPage));
+    if (pageSize !== 10) canonical.set("limit", String(pageSize));
+    if (canonical.toString() !== searchParams.toString()) {
+      const query = canonical.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    }
+  }, [categoryFilter, pageSize, pathname, requestedPage, router, search, searchParams, statusFilter, typeFilter]);
+
+  React.useEffect(() => {
+    const currentTable = tableApiRef.current;
+    currentTable.getColumn("search")?.setFilterValue(search);
+    currentTable.getColumn("product_type")?.setFilterValue(typeFilter === "all" ? "" : typeFilter);
+    currentTable.getColumn("status")?.setFilterValue(statusFilter === "all" || statusFilter === "deleted" ? "" : statusFilter);
+    setPagination((current) => current.pageIndex === requestedPage - 1 && current.pageSize === pageSize
+      ? current
+      : { pageIndex: requestedPage - 1, pageSize });
+  }, [pageSize, requestedPage, search, statusFilter, typeFilter]);
+
+  React.useEffect(() => {
+    if (loading) return;
+    const pageCount = Math.max(tableApiRef.current.getPageCount(), 1);
+    if (requestedPage > pageCount) updateUrl({ page: String(pageCount) });
+    if (requestedCategory !== "all" && categoryFilter === "all") updateUrl({ category: null, page: null });
+  }, [categoryFilter, loading, requestedCategory, requestedPage, updateUrl]);
 
   function setQuery(value: string) {
-    setSearch(value);
-    table.getColumn("search")?.setFilterValue(value);
-    table.setPageIndex(0);
+    updateUrl({ q: value.trimStart() || null, page: null });
   }
 
   function setType(value: string) {
-    setTypeFilter(value);
-    table
-      .getColumn("product_type")
-      ?.setFilterValue(value === "all" ? "" : value);
-    table.setPageIndex(0);
+    updateUrl({ type: value, page: null }, "push");
   }
 
   function setStatus(value: string) {
-    setStatusFilter(value);
-    table.getColumn("status")?.setFilterValue(value === "all" ? "" : value);
-    table.setPageIndex(0);
+    updateUrl({ status: value, page: null }, "push");
   }
 
   function setCategory(value: string) {
-    setCategoryFilter(value);
-    table.setPageIndex(0);
+    updateUrl({ category: value, page: null }, "push");
   }
 
   React.useLayoutEffect(() => {
@@ -441,6 +518,24 @@ export function StoreProductsDataTable({
   ]);
 
   const selectedCount = table.getSelectedRowModel().rows.length;
+  const selectedProducts = table.getSelectedRowModel().rows.map((row) => row.original);
+  const selectedActiveProducts = selectedProducts.filter((product) => !product.deleted_at);
+  const selectedAreNotDeleted = selectedProducts.length > 0 && selectedActiveProducts.length === selectedProducts.length;
+  async function confirmRemove() {
+    if (!removeConfirmation || removePending) return;
+    setRemovePending(true);
+    try {
+      if (removeConfirmation.length === 1) {
+        onDelete(removeConfirmation[0]);
+      } else {
+        await onBulkDelete?.(removeConfirmation);
+      }
+      setRemoveConfirmation(null);
+      table.resetRowSelection();
+    } finally {
+      setRemovePending(false);
+    }
+  }
   const rowCount = table.getFilteredRowModel().rows.length;
   const bulkBarRef = React.useRef<HTMLDivElement>(null);
   React.useLayoutEffect(() => {
@@ -452,10 +547,12 @@ export function StoreProductsDataTable({
     );
   }, [selectedCount]);
   const activeCount = data.filter(
-    (product) => product.status === "active",
+    (product) => product.status === "active" && !product.deleted_at,
   ).length;
+  const deletedCount = data.filter((product) => product.deleted_at).length;
+  const catalogCount = data.length - deletedCount;
   const lowInventoryCount = data.filter((product) => {
-    if (product.product_type !== "physical") return false;
+    if (product.deleted_at || product.product_type !== "physical") return false;
     const stock = availableStock(product);
     return stock !== null && stock <= 5;
   }).length;
@@ -463,11 +560,11 @@ export function StoreProductsDataTable({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       <section
-        className="grid overflow-hidden rounded-xl border border-border/80 bg-card sm:grid-cols-3"
+        className="grid overflow-hidden rounded-xl border border-border/80 bg-card sm:grid-cols-2 xl:grid-cols-4"
         aria-label="Product summary"
       >
         {[
-          { label: "Products", value: data.length, note: "Across the catalog" },
+          { label: "Products", value: catalogCount, note: "Across the catalog" },
           {
             label: "Active listings",
             value: activeCount,
@@ -478,6 +575,7 @@ export function StoreProductsDataTable({
             value: lowInventoryCount,
             note: "Five or fewer units",
           },
+          { label: "Recently deleted", value: deletedCount, note: "Purged after 15 days" },
         ].map((metric) => (
           <div
             key={metric.label}
@@ -558,6 +656,7 @@ export function StoreProductsDataTable({
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="archived">Archived</SelectItem>
+              <SelectItem value="deleted">Recently deleted</SelectItem>
             </SelectContent>
           </Select>
           <DropdownMenu>
@@ -601,34 +700,37 @@ export function StoreProductsDataTable({
           <span className="mr-2 text-sm font-medium">
             {selectedCount} selected
           </span>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="gap-1.5"
-            onClick={() =>
-              onBulkStatus?.(
-                table.getSelectedRowModel().rows.map((row) => row.original),
-                "active",
-              )
-            }
-          >
-            <IconCheck className="size-3.5" /> Mark active
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="gap-1.5"
-            onClick={() =>
-              onBulkStatus?.(
-                table.getSelectedRowModel().rows.map((row) => row.original),
-                "archived",
-              )
-            }
-          >
-            <IconArchive className="size-3.5" /> Archive
-          </Button>
+          {selectedAreNotDeleted && (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={() => onBulkStatus?.(selectedActiveProducts, "active")}
+              >
+                <IconCheck className="size-3.5" /> Mark active
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={() => onBulkStatus?.(selectedActiveProducts, "archived")}
+              >
+                <IconArchive className="size-3.5" /> Archive
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                className="gap-1.5"
+                onClick={() => setRemoveConfirmation(selectedActiveProducts)}
+              >
+                <IconTrash className="size-3.5" /> Remove
+              </Button>
+            </>
+          )}
           <Button
             type="button"
             variant="ghost"
@@ -730,7 +832,7 @@ export function StoreProductsDataTable({
                 size="icon"
                 aria-label="Previous page"
                 disabled={!table.getCanPreviousPage()}
-                onClick={() => table.previousPage()}
+                onClick={() => updateUrl({ page: String(pagination.pageIndex) }, "push")}
               >
                 <IconChevronLeft />
               </Button>
@@ -740,14 +842,51 @@ export function StoreProductsDataTable({
                 size="icon"
                 aria-label="Next page"
                 disabled={!table.getCanNextPage()}
-                onClick={() => table.nextPage()}
+                onClick={() => updateUrl({ page: String(pagination.pageIndex + 2) }, "push")}
               >
                 <IconChevronRight />
               </Button>
             </div>
+            <Select value={String(pagination.pageSize)} onValueChange={(value) => updateUrl({ limit: value, page: null }, "push")}>
+              <SelectTrigger className="w-28" aria-label="Products per page"><SelectValue>{pagination.pageSize} / page</SelectValue></SelectTrigger>
+              <SelectContent side="top">
+                {[10, 20, 50].map((size) => <SelectItem key={size} value={String(size)}>{size} / page</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>
+      <AlertDialog
+        open={removeConfirmation !== null}
+        onOpenChange={(open) => {
+          if (!open && !removePending) setRemoveConfirmation(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {removeConfirmation?.length === 1
+                ? "Move product to Recently deleted?"
+                : `Move ${removeConfirmation?.length ?? 0} products to Recently deleted?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {removeConfirmation?.length === 1
+                ? `“${removeConfirmation[0].title}” will be removed from the catalog. You can restore it within 15 days; after that, it will be permanently deleted.`
+                : "The selected products will be removed from the catalog. You can restore them within 15 days; after that, they will be permanently deleted."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removePending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={removePending}
+              onClick={() => void confirmRemove()}
+            >
+              {removePending ? "Removing…" : "Move to Recently deleted"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

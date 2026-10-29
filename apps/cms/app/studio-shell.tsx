@@ -68,13 +68,16 @@ import {
 } from "@/lib/supabase-client";
 import {
   getAdminNavigationForRole,
+  getAdminNavigationForFeatures,
   getAdminNavigationForWorkspace,
   getAdminRoutePermission,
+  getAdminRouteFeature,
   getAdminBreadcrumbs,
   getAdminWorkspaceTab,
   isAdminNavigationGroupActive,
   isAdminRouteActive,
 } from "@/lib/admin-navigation";
+import { STUDIO_FEATURES, type StudioFeatureKey } from "@/lib/studio-features";
 const quickActions = [
   { label: "New work", href: "/works?create=1", icon: IconBriefcase },
   { label: "New article", href: "/blogs?create=1", icon: IconFileText },
@@ -103,9 +106,15 @@ export default function StudioShell({ children, user }: Props) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [permissions, setPermissions] = useState<string[] | null>(null);
+  const [features, setFeatures] = useState<Record<StudioFeatureKey, boolean>>(
+    () => Object.fromEntries(STUDIO_FEATURES.map((feature) => [feature.key, feature.enabled])) as Record<StudioFeatureKey, boolean>,
+  );
   const navigation = useMemo(
-    () => getAdminNavigationForRole(user.role, permissions),
-    [user.role, permissions],
+    () => getAdminNavigationForFeatures(
+      getAdminNavigationForRole(user.role, permissions),
+      new Set(Object.entries(features).filter(([, enabled]) => enabled).map(([key]) => key as StudioFeatureKey)),
+    ),
+    [user.role, permissions, features],
   );
   const workspaceTab = getAdminWorkspaceTab(pathname);
   const workspaceNavigation = useMemo(
@@ -145,6 +154,12 @@ export default function StudioShell({ children, user }: Props) {
     (pathname === "/" ? "Overview" : "ZeroCraft CMS");
   useEffect(() => {
     let current = true;
+    const onFeatureChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ key?: string; enabled?: boolean }>).detail;
+      if (!detail?.key || typeof detail.enabled !== "boolean") return;
+      setFeatures((value) => ({ ...value, [detail.key as StudioFeatureKey]: detail.enabled }));
+    };
+    window.addEventListener("studio-feature-change", onFeatureChange);
     void fetch("/api/studio/me", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) return;
@@ -153,15 +168,27 @@ export default function StudioShell({ children, user }: Props) {
           setPermissions(payload.permissions);
       })
       .catch(() => undefined);
+    void fetch("/api/studio/features", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const payload = await response.json() as { features?: Array<{ feature_key: StudioFeatureKey; enabled: boolean }> };
+        if (current && Array.isArray(payload.features)) {
+          setFeatures((value) => ({ ...value, ...Object.fromEntries(payload.features!.map((feature) => [feature.feature_key, feature.enabled])) }));
+        }
+      })
+      .catch(() => undefined);
     return () => {
       current = false;
+      window.removeEventListener("studio-feature-change", onFeatureChange);
     };
   }, []);
   useEffect(() => {
     if (!permissions) return;
     const required = getAdminRoutePermission(pathname);
     if (required && !permissions.includes(required)) router.replace("/");
-  }, [pathname, permissions, router]);
+    const feature = getAdminRouteFeature(pathname);
+    if (feature && features[feature] === false) router.replace("/");
+  }, [pathname, permissions, features, router]);
   const loadNotifications = useCallback(async () => {
     setNoticesLoading(true);
     try {

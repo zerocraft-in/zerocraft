@@ -58,3 +58,7 @@ Commerce schema evolution is migration-based. The taxonomy migration adds subcat
 ## 5. Reporting boundary
 
 The existing `/reports` page is an application report, not an audit-log viewer. It reports live table availability, counts, order performance, paid value by currency, and connection coverage. Database audit history is represented in the commerce schema by `store_audit_logs`, but no CMS route currently exposes a complete audit-log browser.
+
+## 6. Current integration boundary
+
+The `/integrations` workspace now exposes the typed Studio app registry, safe provider status, workspace enablement controls, and a connection roadmap. The protected `/api/studio/integrations` route reads and updates non-secret provider metadata through the server-only service client. Provider credentials are never returned to the browser. Real OAuth/API connectors remain a separate deployment step because they require provider credentials, scopes, redirect URLs, and production verification.

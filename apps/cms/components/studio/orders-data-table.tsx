@@ -52,8 +52,8 @@ type OrdersTableFeatures = typeof features;
 const statuses: OrderStatus[] = ["pending", "confirmed", "fulfilling", "shipped", "completed", "cancelled"];
 const column = createColumnHelper<OrdersTableFeatures, StoreOrder>();
 const money = (amount: number, currency: string) => {
-  try { return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(amount); }
-  catch { return `${currency || "USD"} ${amount.toFixed(2)}`; }
+  try { return new Intl.NumberFormat("en-IN", { style: "currency", currency: currency || "INR" }).format(amount); }
+  catch { return `${currency || "INR"} ${amount.toFixed(2)}`; }
 };
 const orderColumns = column.columns([
   column.display({

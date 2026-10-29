@@ -24,6 +24,7 @@ import { SelectField } from "@/components/ui/select-field";
 
 type Category = {
   id: string;
+  deleted_at?: string | null;
   name: string;
   slug: string;
   description: string;
@@ -34,6 +35,7 @@ type Category = {
 type Subcategory = {
   id: string;
   category_id: string;
+  deleted_at?: string | null;
   name: string;
   slug: string;
   description: string;
@@ -81,6 +83,9 @@ type Product = {
   currency: string;
   stock: number | null;
   image_url: string;
+  deleted_at: string | null;
+  purge_after: string | null;
+  deleted_from_status: "draft" | "active" | "archived" | null;
   store_product_variants: Variant[];
   store_product_media?: ProductMedia[];
 };
@@ -109,7 +114,16 @@ type Payload = {
     currencyCount: number;
     currency: string | null;
     paidByCurrency: Record<string, number>;
+    legacyPaidByCurrency: Record<string, number>;
     recent: {
+      id: string;
+      total: number;
+      currency: string | null;
+      status: string;
+      payment_status: string;
+      created_at: string;
+    }[];
+    analytics: {
       id: string;
       total: number;
       currency: string | null;
@@ -137,9 +151,12 @@ const emptyProduct: ProductDraft = {
   sku: "",
   price: 0,
   compare_at_price: null,
-  currency: "USD",
+  currency: "INR",
   stock: 0,
   image_url: "",
+  deleted_at: null,
+  purge_after: null,
+  deleted_from_status: null,
   variants: [],
 };
 const emptyCategory: Omit<Category, "id"> = {
@@ -158,8 +175,8 @@ const emptySubcategory: Omit<Subcategory, "id"> = {
   sort_order: 0,
   is_active: true,
 };
-const money = (amount: number, currency: string) =>
-  new Intl.NumberFormat("en-US", {
+const money = (amount: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency,
     maximumFractionDigits: 2,
@@ -282,7 +299,9 @@ export default function StudioStore({
   }, [initialView]);
 
   const products = data?.products ?? noProducts;
-  const categories = data?.categories ?? noCategories;
+  const categories = (data?.categories ?? noCategories).filter(
+    (category) => !category.deleted_at,
+  );
   const canManageCatalog = permissions?.includes("catalog.manage") === true;
   const healthSlugs = data?.catalogHealth ? (() => {
     const health = data.catalogHealth!;
@@ -301,7 +320,7 @@ export default function StudioStore({
   };
   const rangeDays =
     range === "7d" ? 7 : range === "30d" ? 30 : range === "90d" ? 90 : null;
-  const periodOrders = (data?.orders.recent ?? []).filter((order) => {
+  const periodOrders = (data?.orders.analytics ?? []).filter((order) => {
     const createdAt = new Date(order.created_at).getTime();
     if (range === "custom") {
       const from = dateRange.from?.getTime() ?? 0;
@@ -313,7 +332,7 @@ export default function StudioStore({
   });
   const periodSales = periodOrders
     .filter(
-      (order) => order.payment_status === "paid" || order.status === "paid",
+      (order) => (order.payment_status === "paid" || order.status === "paid") && (order.currency || "INR") === "INR",
     )
     .reduce((sum, order) => sum + Number(order.total || 0), 0);
   const displayedSales =
@@ -356,7 +375,15 @@ export default function StudioStore({
     id: string,
     name: string,
   ) {
-    if (busy || !window.confirm(`Archive “${name}”? It will be hidden from the public store and kept for history.`))
+    if (
+      busy ||
+      (entity !== "product" &&
+        !window.confirm(
+          entity === "category"
+            ? `Move “${name}” and its active subcategories to Recently deleted? Product assignments stay intact for 15 days; after expiry, those assignments are cleared.`
+            : `Move “${name}” to Recently deleted? You can restore it for 15 days.`,
+        ))
+    )
       return;
     setBusy(true);
     setError("");
@@ -376,6 +403,68 @@ export default function StudioStore({
           ? cause.message
           : "Could not delete. Please try again.",
       );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function bulkRemoveProducts(selected: Product[]) {
+    const removable = selected.filter((product) => !product.deleted_at);
+    if (busy || !removable.length) return;
+    setBusy(true);
+    setError("");
+    try {
+      const failures = await Promise.all(
+        removable.map(async (product) => {
+          try {
+            const response = await fetch("/api/studio/store", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ entity: "product", id: product.id }),
+            });
+            const result = await response.json();
+            return response.ok
+              ? null
+              : `${product.title}: ${result.error || "could not be removed"}`;
+          } catch {
+            return `${product.title}: request failed`;
+          }
+        }),
+      );
+      await load();
+      const failedProducts = failures.filter((failure): failure is string => failure !== null);
+      if (failedProducts.length) {
+        const removedCount = removable.length - failedProducts.length;
+        throw new Error(
+          `${removedCount} of ${removable.length} products moved to Recently deleted. ${failedProducts.join("; ")}`,
+        );
+      }
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "The selected products could not be moved to Recently deleted.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function restoreProduct(product: Product) {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/studio/store", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entity: "product", id: product.id, action: "restore" }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "The product could not be restored.");
+      await load(false);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "The product could not be restored.");
     } finally {
       setBusy(false);
     }
@@ -425,7 +514,7 @@ export default function StudioStore({
   }
 
   function editProduct(product?: Product) {
-    router.push(product ? `/products/${product.id}` : "/products/new");
+    router.push(product ? `/store/products/${product.id}` : "/store/products/new");
   }
 
   async function uploadProductMedia(file: File) {
@@ -560,6 +649,7 @@ export default function StudioStore({
           pendingOrders={data?.orders.pending ?? null}
           ordersCurrency={data?.orders.currency ?? null}
           mixedOrderCurrencies={(data?.orders.currencyCount ?? 0) > 1}
+          legacyPaidByCurrency={data?.orders.legacyPaidByCurrency ?? {}}
           catalogHealth={data?.catalogHealth ?? null}
           canManageCatalog={canManageCatalog}
           configured={data?.configured ?? false}
@@ -574,7 +664,7 @@ export default function StudioStore({
             <div>
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">{data?.configured ? products.length : "—"} total</span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">{data?.configured ? products.filter((product) => !product.deleted_at).length : "—"} total</span>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">Manage listings, pricing, variants, and inventory in one place.</p>
             </div>
@@ -593,6 +683,8 @@ export default function StudioStore({
             onDelete={(product) =>
               void remove("product", product.id, product.title)
             }
+            onRestore={(product) => void restoreProduct(product)}
+            onBulkDelete={(selected) => bulkRemoveProducts(selected)}
             onBulkStatus={(selected, status) =>
               void bulkUpdateStatus(selected, status)
             }
@@ -950,21 +1042,9 @@ export default function StudioStore({
                     </label>
                     <label>
                       Currency
-                      <input
-                        required
-                        maxLength={3}
-                        pattern="[A-Za-z]{3}"
-                        value={editor.value.currency}
-                        onChange={(event) =>
-                          setEditor({
-                            ...editor,
-                            value: {
-                              ...editor.value,
-                              currency: event.target.value.toUpperCase(),
-                            },
-                          })
-                        }
-                      />
+                      <div className="flex h-10 items-center rounded-md border border-input bg-muted/40 px-3 text-sm font-medium">
+                        ₹ Indian Rupee (INR)
+                      </div>
                     </label>
                     {editor.value.product_type === "physical" && (
                       <label>

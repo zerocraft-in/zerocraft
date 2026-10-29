@@ -1,5 +1,9 @@
 # CMS audit report
 
+## Current audit update — 2026-10-29
+
+The earlier findings below are historical. The current tree includes a protected audit-log viewer, a live Apps & Integrations hub, the integration registry API, recycle-bin routes, and the related release checks. Current verification passes for migration preflight, RBAC static checks, Gmail security checks, CMS route contracts, CMS typecheck, and the production CMS build. The full lint command was started but did not produce output and was stopped after hanging; focused diagnostics for the changed files report no errors.
+
 Audit date: 2026-10-20
 Overall status: **In progress — not release-ready without follow-up**
 

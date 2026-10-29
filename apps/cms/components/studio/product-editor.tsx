@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PageState } from "@/components/studio/page-state";
 import {
   Select,
   SelectContent,
@@ -141,6 +142,8 @@ type ProductDraft = {
     link_expiry_hours: number;
   };
   variants: Variant[];
+  deleted_at?: string | null;
+  purge_after?: string | null;
 };
 
 type Category = {
@@ -291,6 +294,7 @@ export function ProductEditor({
     InventoryLocation[]
   >([]);
   const [loading, setLoading] = useState(mode === "edit");
+  const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [basicsAttempted, setBasicsAttempted] = useState(false);
@@ -333,9 +337,11 @@ export function ProductEditor({
         setInventoryLocations(result.inventoryLocations || []);
         if (mode === "edit") {
           const current = result.products.find((item) => item.id === productId);
-          if (!current) throw new Error("Product not found.");
+          if (!current) throw new Error("Product not found or permanently removed.");
+          if (current.deleted_at) throw new Error("This product is in Recently deleted. Restore it before editing.");
           setProduct({
             ...current,
+            currency: "INR",
             media: current.store_product_media || current.media || [],
             digital_files:
               current.store_product_digital_files ||
@@ -372,7 +378,7 @@ export function ProductEditor({
         }
       } catch (cause) {
         if (active)
-          setError(
+          setLoadError(
             cause instanceof Error
               ? cause.message
               : "Product could not be loaded.",
@@ -915,8 +921,16 @@ export function ProductEditor({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-8 text-sm text-muted-foreground">
-        Loading product…
+      <div className="grid min-h-screen place-items-center bg-background p-6">
+        <PageState kind="loading" title="Loading product" description="Fetching catalog details, media, variants, and inventory." className="w-full max-w-xl" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background p-6">
+        <PageState kind="error" title="Product unavailable" description={loadError} action={<Button type="button" onClick={() => router.push("/store/products")}>Back to products</Button>} className="w-full max-w-xl" />
       </div>
     );
   }
@@ -1552,15 +1566,9 @@ export function ProductEditor({
               </label>
               <label className={fieldClass}>
                 Currency
-                <ProductSelect
-                  value={product.currency}
-                  onValueChange={(value) => update("currency", value)}
-                  placeholder="Currency"
-                  options={["INR", "USD", "EUR", "GBP"].map((value) => ({
-                    value,
-                    label: value,
-                  }))}
-                />
+                <div className="flex h-10 items-center rounded-md border border-input bg-muted/40 px-3 text-sm font-medium">
+                  ₹ Indian Rupee (INR)
+                </div>
               </label>
             </div>
           </section>

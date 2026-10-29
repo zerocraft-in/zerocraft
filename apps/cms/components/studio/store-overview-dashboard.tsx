@@ -57,6 +57,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+import { formatRecordedMoney, formatStoreMoney, STORE_CURRENCY } from "@/lib/currency";
 
 type StoreOrder = {
   id: string;
@@ -77,6 +78,7 @@ type StoreProduct = {
   product_type: "physical" | "digital";
   stock: number | null;
   store_product_variants: {
+    price: number;
     stock: number | null;
     store_inventory_levels?: { on_hand: number; reserved: number }[];
   }[];
@@ -116,6 +118,7 @@ type Props = {
   pendingOrders: number | null;
   ordersCurrency: string | null;
   mixedOrderCurrencies: boolean;
+  legacyPaidByCurrency: Record<string, number>;
   catalogHealth: CatalogHealth | null;
   canManageCatalog: boolean;
   configured: boolean;
@@ -147,13 +150,6 @@ const chartConfig = {
   orders: { label: "Orders", color: "var(--color-chart-2)" },
 } satisfies ChartConfig;
 
-const formatMoney = (amount: number, currency: string) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(amount);
-
 function getAvailableStock(product: StoreProduct) {
   if (product.product_type === "digital") return null;
   if (!product.store_product_variants?.length) return product.stock;
@@ -165,6 +161,18 @@ function getAvailableStock(product: StoreProduct) {
           0,
         )
       : (variant.stock ?? 0));
+  }, 0);
+}
+
+function getInventoryValue(product: StoreProduct) {
+  if (product.product_type === "digital") return 0;
+  if (!product.store_product_variants?.length) return (product.stock ?? 0) * Number(product.price || 0);
+  return product.store_product_variants.reduce((total, variant) => {
+    const levels = variant.store_inventory_levels ?? [];
+    const available = levels.length
+      ? levels.reduce((sum, level) => sum + Math.max(0, level.on_hand - level.reserved), 0)
+      : (variant.stock ?? 0);
+    return total + available * Number(variant.price || product.price || 0);
   }, 0);
 }
 
@@ -190,8 +198,7 @@ export function StoreOverviewDashboard({
   ordersAvailable,
   orderCount,
   pendingOrders,
-  ordersCurrency,
-  mixedOrderCurrencies,
+  legacyPaidByCurrency,
   catalogHealth,
   canManageCatalog,
   configured,
@@ -211,24 +218,12 @@ export function StoreOverviewDashboard({
     (sum, product) => sum + (getAvailableStock(product) ?? 0),
     0,
   );
-  const inventoryCurrencies = new Set(
-    physicalProducts.map((product) => product.currency).filter(Boolean),
+  const inventoryValue = formatStoreMoney(
+    physicalProducts.reduce((sum, product) => sum + getInventoryValue(product), 0),
   );
-  const inventoryValue =
-    inventoryCurrencies.size > 1
-      ? "Mixed"
-      : formatMoney(
-          physicalProducts.reduce(
-            (sum, product) =>
-              sum +
-              (getAvailableStock(product) ?? 0) * Number(product.price || 0),
-            0,
-          ),
-          Array.from(inventoryCurrencies)[0] || ordersCurrency || "USD",
-        );
-  const currency = ordersCurrency || "USD";
+  const currency = STORE_CURRENCY;
   const paidOrders = periodOrders.filter(
-    (order) => order.payment_status === "paid" || order.status === "paid",
+    (order) => (order.payment_status === "paid" || order.status === "paid") && (order.currency || STORE_CURRENCY) === STORE_CURRENCY,
   );
   const orderTrend = periodOrders
     .slice()
@@ -240,7 +235,7 @@ export function StoreOverviewDashboard({
       }),
       sales:
         order.payment_status === "paid" || order.status === "paid"
-          ? Number(order.total || 0)
+          ? (order.currency || STORE_CURRENCY) === STORE_CURRENCY ? Number(order.total || 0) : 0
           : 0,
       orders: 1,
     }));
@@ -310,7 +305,7 @@ export function StoreOverviewDashboard({
         <div>
           <h2 className="text-base font-semibold tracking-tight">Your numbers</h2>
           <p className="text-sm text-muted-foreground">
-            Sales reflect the latest orders returned by your store.
+            INR sales reflect every order in the selected period.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -363,16 +358,14 @@ export function StoreOverviewDashboard({
         <MetricCard
           title="Gross sales"
           value={
-            !ordersAvailable || mixedOrderCurrencies
+            !ordersAvailable
               ? "—"
-              : formatMoney(displayedSales, currency)
+              : formatStoreMoney(displayedSales)
           }
           detail={
-            mixedOrderCurrencies
-              ? "Multiple currencies"
-              : range === "all"
-                ? "Lifetime paid sales"
-                : `${paidOrders.length} paid orders in latest results`
+            range === "all"
+              ? "Lifetime paid INR sales"
+              : `${paidOrders.length} paid INR orders in selected period`
           }
           icon={<IconCurrencyDollar />}
           tint="lime"
@@ -400,13 +393,18 @@ export function StoreOverviewDashboard({
         <MetricCard
           title="Inventory value"
           value={inventoryValue}
-          detail={`${inventoryUnits.toLocaleString()} units${
-            inventoryCurrencies.size > 1 ? " · mixed currencies" : " available"
-          }`}
+          detail={`${inventoryUnits.toLocaleString("en-IN")} units available · variant prices`}
           icon={<IconBox />}
           tint="orange"
+          valueClassName="!text-[1.35rem]"
         />
       </section>
+
+      {Object.keys(legacyPaidByCurrency).length > 0 && (
+        <p className="-mt-2 text-xs text-muted-foreground">
+          Historical non-INR payments are kept separate for accounting accuracy: {Object.entries(legacyPaidByCurrency).map(([code, amount]) => formatRecordedMoney(Number(amount), code)).join(" · ")}.
+        </p>
+      )}
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,.75fr)]">
         <Card className="overflow-hidden rounded-2xl border-border/70 shadow-sm">
@@ -420,24 +418,17 @@ export function StoreOverviewDashboard({
                 </Badge>
               </div>
               <CardDescription>
-                Paid order totals from the latest orders.
+                Paid INR order totals for the selected period.
               </CardDescription>
             </div>
           </CardHeader>
           <CardContent>
-            {mixedOrderCurrencies ? (
-              <div className="grid h-[280px] place-items-center rounded-xl border border-dashed">
-                <p className="max-w-sm px-6 text-center text-sm text-muted-foreground">
-                  Orders use multiple currencies, so the chart is hidden rather
-                  than combining incomparable amounts.
-                </p>
-              </div>
-            ) : ordersAvailable && orderTrend.length ? (
+            {ordersAvailable && orderTrend.length ? (
               <div className="space-y-3">
                 <div className="flex items-end justify-between">
                   <div>
                     <p className="text-3xl font-semibold tracking-tight tabular-nums">
-                      {formatMoney(displayedSales, currency)}
+                      {formatStoreMoney(displayedSales)}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Paid sales in selected period
@@ -468,7 +459,7 @@ export function StoreOverviewDashboard({
                       content={
                         <ChartTooltipContent
                           formatter={(value) => [
-                            formatMoney(Number(value), currency),
+                            formatStoreMoney(Number(value)),
                             "Paid sales",
                           ]}
                         />
@@ -483,7 +474,7 @@ export function StoreOverviewDashboard({
                   </BarChart>
                 </ChartContainer>
                 <p className="text-xs text-muted-foreground">
-                  Trend is based on the latest {orderTrend.length} orders returned by the store.
+                  Trend includes all {orderTrend.length} orders in the selected period; legacy non-INR totals are excluded.
                 </p>
               </div>
             ) : (
@@ -675,9 +666,10 @@ export function StoreOverviewDashboard({
                         </Badge>
                       </TableCell>
                       <TableCell className="pr-6 text-right font-medium tabular-nums">
-                        {order.currency
-                          ? formatMoney(Number(order.total), order.currency)
-                          : formatMoney(Number(order.total), currency)}
+                        <span className="inline-flex items-center justify-end gap-2">
+                          {formatRecordedMoney(Number(order.total), order.currency || currency)}
+                          {(order.currency || currency) !== STORE_CURRENCY && <Badge variant="outline">Legacy</Badge>}
+                        </span>
                       </TableCell>
                     </TableRow>
                   ))
@@ -875,6 +867,7 @@ function MetricCard({
   tint,
   trend,
   className,
+  valueClassName,
 }: {
   title: string;
   value: string | number;
@@ -883,6 +876,7 @@ function MetricCard({
   tint: "lime" | "blue" | "violet" | "orange";
   trend?: number[];
   className?: string;
+  valueClassName?: string;
 }) {
   const cardClasses = {
     lime: "border-border bg-card text-card-foreground ring-0",
@@ -912,7 +906,7 @@ function MetricCard({
             {icon}
           </span>
         </div>
-        <p className="mt-5 truncate text-[clamp(1.6rem,2.5vw,2rem)] font-semibold tracking-[-0.045em] tabular-nums">
+        <p className={`mt-5 whitespace-nowrap text-[clamp(1.35rem,2vw,2rem)] font-semibold leading-tight tracking-[-0.045em] tabular-nums ${valueClassName || ""}`}>
           {value}
         </p>
         <div className="mt-2 flex items-center justify-between gap-3">

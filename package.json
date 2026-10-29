@@ -30,6 +30,7 @@
     "test:rbac": "node scripts/security/rbac-static-tests.mjs",
     "test:gmail-workspace": "node scripts/security/gmail-workspace-static-tests.mjs && node --experimental-loader ./scripts/security/server-only-test-loader.mjs --experimental-strip-types scripts/security/gmail-workspace-unit-tests.mjs",
     "verify:release": "node scripts/release/check-migrations.mjs && npm run test:rbac && npm run test:gmail-workspace && npm run test:cms-routes && npm run typecheck --workspace=@zerocraft/cms",
+    "verify:env-contract": "node scripts/release/check-env-contract.mjs",
     "test:cms-routes": "node scripts/release/check-cms-routes.mjs",
     "smoke:cms": "node scripts/release/smoke-cms.mjs",
     "smoke:cms:build": "node scripts/release/smoke-cms-build.mjs",

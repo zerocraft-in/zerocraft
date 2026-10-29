@@ -1,5 +1,5 @@
-import { ProductEditor } from "@/components/studio/product-editor";
+import { redirect } from "next/navigation";
 
 export default function NewProductPage() {
-  return <ProductEditor mode="create" />;
+  redirect("/store/products/new");
 }

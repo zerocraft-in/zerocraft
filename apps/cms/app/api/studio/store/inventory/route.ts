@@ -26,10 +26,15 @@ export async function GET() {
   const { supabase } = access;
   const [locations, levels] = await Promise.all([
     supabase.from("store_inventory_locations").select("id,name,code,is_active,created_at").order("name"),
-    supabase.from("store_inventory_levels").select("location_id,variant_id,on_hand,reserved,reorder_point,updated_at,location:store_inventory_locations(id,name,code),variant:store_product_variants(id,label,sku,price,price_paise,currency_code,product:store_products(id,title,status,product_type))").order("updated_at", { ascending: false }),
+    supabase.from("store_inventory_levels").select("location_id,variant_id,on_hand,reserved,reorder_point,updated_at,location:store_inventory_locations(id,name,code),variant:store_product_variants(id,label,sku,price,price_paise,currency_code,product:store_products(id,title,status,product_type,deleted_at))").order("updated_at", { ascending: false }),
   ]);
   if (locations.error || levels.error) return jsonError("Inventory tables are unavailable or access is denied.", 503);
-  return Response.json({ locations: locations.data || [], levels: levels.data || [] }, { headers: { "Cache-Control": "private, no-store" } });
+  const visibleLevels = (levels.data || []).filter((level) => {
+    const variant = Array.isArray(level.variant) ? level.variant[0] : level.variant;
+    const product = variant && (Array.isArray(variant.product) ? variant.product[0] : variant.product);
+    return !product?.deleted_at;
+  });
+  return Response.json({ locations: locations.data || [], levels: visibleLevels }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function POST(request: Request) {

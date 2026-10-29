@@ -43,6 +43,8 @@ export function StudioSidebar({
   const studioLabels: Record<string, string> = {
     [ADMIN_ROUTES.overview]: "Overview",
     [ADMIN_ROUTES.studio.works]: "Works",
+    [ADMIN_ROUTES.studio.crm]: "CRM overview",
+    [ADMIN_ROUTES.studio.content]: "Content studio",
     [ADMIN_ROUTES.studio.clients]: "Clients",
     [ADMIN_ROUTES.studio.appointments]: "Appointments",
     [ADMIN_ROUTES.studio.blogs]: "Journal",

@@ -1,4 +1,4 @@
-import { ProductEditor } from "@/components/studio/product-editor";
+import { redirect } from "next/navigation";
 
 export default async function EditProductPage({
   params,
@@ -6,5 +6,5 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <ProductEditor mode="edit" productId={id} />;
+  redirect(`/store/products/${id}`);
 }
