@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,11 +12,16 @@ import {
   IconFileText,
   IconHelpCircle,
   IconLogout,
+  IconMaximize,
+  IconMicrophone,
+  IconMinimize,
+  IconPaperclip,
   IconPlus,
   IconRefresh,
   IconSearch,
   IconSettings,
   IconSparkles,
+  IconLayoutSidebarRight,
 } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,13 +63,15 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { StudioSidebar } from "@/components/layout/studio-sidebar";
+import { StudioSidebar } from "@/components/navigations/studio-sidebar";
+import { SettingsSidebar } from "@/components/navigations/settings-sidebar";
 import {
   supabase,
   type StudioNotification,
   fetchNotificationsFromSupabase,
   markAllNotificationsAsReadInSupabase,
   markNotificationAsReadInSupabase,
+  clearReadNotificationsInSupabase,
 } from "@/lib/supabase-client";
 import {
   getAdminNavigationForRole,
@@ -76,7 +83,14 @@ import {
   isAdminRouteActive,
 } from "@/lib/admin-navigation";
 import { STUDIO_FEATURES, type StudioFeatureKey } from "@/lib/studio-features";
-import { StudioCommandCenter } from "@/components/studio/studio-command-center";
+import { StudioSidekick } from "@/components/studio/studio-sidekick";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
+import { cn } from "@/lib/utils";
 const quickActions = [
   { label: "New work", href: "/works?create=1", icon: IconBriefcase },
   { label: "New article", href: "/blogs?create=1", icon: IconFileText },
@@ -92,16 +106,43 @@ type Props = {
   user: { name: string; email: string; role: string };
 };
 
+type SpeechRecognitionResultEvent = {
+  results: ArrayLike<ArrayLike<{ transcript: string }>>;
+};
+type SpeechRecognitionLike = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
+  onerror: (() => void) | null;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
 export default function StudioShell({ children, user }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
+  const [commandPrompt, setCommandPrompt] = useState("");
+  const [bottomPrompt, setBottomPrompt] = useState("");
+  const [sidekickOpen, setSidekickOpen] = useState(false);
+  const [sidekickExpanded, setSidekickExpanded] = useState(false);
+  const [sidekickHydrated, setSidekickHydrated] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState("");
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const voiceRecognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [query, setQuery] = useState("");
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
   const [noticesOpen, setNoticesOpen] = useState(false);
   const [notices, setNotices] = useState<StudioNotification[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(false);
+  const [notificationsRealtime, setNotificationsRealtime] = useState<
+    "connecting" | "connected" | "offline"
+  >("connecting");
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -157,14 +198,40 @@ export default function StudioShell({ children, user }: Props) {
   const latestNotices = notices.slice(0, 6);
   const breadcrumbs = getAdminBreadcrumbs(pathname);
   const isLiveView = pathname === "/analytics/live-view";
+  const isSettingsRoute =
+    pathname === "/settings" || pathname.startsWith("/settings/");
+  const effectiveSidebarOpen = isSettingsRoute ? false : sidebarOpen;
+
   useEffect(() => {
+    const savedOpen = window.localStorage.getItem("zerocraft-sidekick-open");
+    if (savedOpen === "true") setSidekickOpen(true);
+    // A refresh always returns an open assistant to the compact right panel.
+    // Expanded mode is intentionally session-only.
+    window.localStorage.removeItem("zerocraft-sidekick-expanded");
+    setSidekickExpanded(false);
+    setSidekickHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!sidekickHydrated) return;
+    window.localStorage.setItem("zerocraft-sidekick-open", String(sidekickOpen));
+  }, [sidekickHydrated, sidekickOpen, sidekickExpanded]);
+
+  useEffect(() => {
+    // Settings uses the dedicated settings rail, so keep the global rail
+    // collapsed and prevent the saved workspace preference from reopening it.
+    setSidebarOpen(!isSettingsRoute);
+    setCollapsedTriggerSuppressed(isSettingsRoute);
+  }, [isSettingsRoute, pathname]);
+  useEffect(() => {
+    if (isSettingsRoute) return;
     const savedSidebarState = window.localStorage.getItem(
       "zerocraft-sidebar-open",
     );
     if (savedSidebarState === "true" || savedSidebarState === "false") {
       setSidebarOpen(savedSidebarState === "true");
     }
-  }, []);
+  }, [isSettingsRoute]);
   useEffect(() => {
     window.localStorage.setItem("zerocraft-sidebar-open", String(sidebarOpen));
   }, [sidebarOpen]);
@@ -232,21 +299,40 @@ export default function StudioShell({ children, user }: Props) {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
     const initialLoad = window.setTimeout(() => void loadNotifications(), 0);
-    const channel = supabase.channel?.("studio-notices");
-    if (channel) {
-      channel.on?.(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications" },
-        () => void loadNotifications(),
-      );
-      channel.subscribe?.();
-    }
     const refreshTimer = window.setInterval(
       () => void loadNotifications(),
       60_000,
     );
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!active || !data.user) return;
+      channel = supabase.channel(`studio-notices:${data.user.id}`);
+      channel
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "notifications",
+            filter: `recipient_id=eq.${data.user.id}`,
+          },
+          () => void loadNotifications(),
+        )
+        .subscribe((status) => {
+          if (!active) return;
+          setNotificationsRealtime(
+            status === "SUBSCRIBED"
+              ? "connected"
+              : status === "CHANNEL_ERROR" || status === "TIMED_OUT"
+                ? "offline"
+                : "connecting",
+          );
+        });
+    });
     return () => {
+      active = false;
       window.clearTimeout(initialLoad);
       window.clearInterval(refreshTimer);
       if (channel) void supabase.removeChannel(channel);
@@ -303,11 +389,10 @@ export default function StudioShell({ children, user }: Props) {
         event.key.toLowerCase() === "k"
       ) {
         event.preventDefault();
-        setCommandCenterOpen((open) => !open);
+        setSidekickOpen((open) => !open);
       }
       if (event.key === "Escape") {
         setSearchOpen(false);
-        setCommandCenterOpen(false);
         setNoticesOpen(false);
         setMobileMenuOpen(false);
       }
@@ -340,6 +425,7 @@ export default function StudioShell({ children, user }: Props) {
           notice.id === item.id ? { ...notice, read: true } : notice,
         ),
       );
+
       setNoticesOpen(false);
       if (item.link?.startsWith("/")) router.push(item.link);
     } catch (error) {
@@ -347,10 +433,83 @@ export default function StudioShell({ children, user }: Props) {
     }
   }
 
+  async function markAllNoticesRead() {
+    try {
+      await markAllNotificationsAsReadInSupabase();
+      setNotices((items) => items.map((item) => ({ ...item, read: true })));
+    } catch (error) {
+      console.error("Could not mark all notifications as read", error);
+    }
+  }
+
+  async function clearReadNotices() {
+    const cleared = await clearReadNotificationsInSupabase();
+    if (cleared) setNotices((items) => items.filter((item) => !item.read));
+  }
+
+  async function sendBottomPrompt(value = bottomPrompt) {
+    const prompt = value.trim();
+    if (!prompt) return;
+    let finalPrompt = prompt;
+    const selectedFiles = attachedFiles.slice(0, 3);
+    if (selectedFiles.length) {
+      try {
+        const fileContext = await Promise.all(
+          selectedFiles.map(async (file) => {
+            const contents = await file.text();
+            return `\n\n[Attached file: ${file.name}]\n${contents.slice(0, 6000)}`;
+          }),
+        );
+        finalPrompt += fileContext.join("").slice(0, 12000);
+      } catch {
+        setVoiceStatus(
+          "Could not read the selected file. Try a text, CSV, Markdown, or JSON file.",
+        );
+        return;
+      }
+    }
+    setCommandPrompt(finalPrompt);
+    setBottomPrompt("");
+    setAttachedFiles([]);
+    setSidekickOpen(true);
+    setVoiceStatus("");
+  }
+
+  function startVoiceCommand() {
+    const browserWindow = window as Window & {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    };
+    const Recognition =
+      browserWindow.SpeechRecognition ?? browserWindow.webkitSpeechRecognition;
+    if (!Recognition) {
+      setVoiceStatus("Voice input is not supported in this browser.");
+      return;
+    }
+    voiceRecognitionRef.current?.stop();
+    const recognition = new Recognition();
+    recognition.lang = "en-IN";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.onstart = () => setVoiceStatus("Listening…");
+    recognition.onresult = (event) => {
+      const transcript = event.results[0]?.[0]?.transcript?.trim();
+      if (transcript) void sendBottomPrompt(transcript);
+    };
+    recognition.onerror = () =>
+      setVoiceStatus("Could not hear that. Please try again.");
+    recognition.onend = () => {
+      voiceRecognitionRef.current = null;
+    };
+    voiceRecognitionRef.current = recognition;
+    recognition.start();
+  }
+
   return (
     <SidebarProvider
-      open={sidebarOpen}
+      open={effectiveSidebarOpen}
       onOpenChange={(nextOpen) => {
+        if (isSettingsRoute) return;
         setSidebarOpen(nextOpen);
         setCollapsedTriggerSuppressed(!nextOpen);
       }}
@@ -459,29 +618,94 @@ export default function StudioShell({ children, user }: Props) {
           </SheetContent>
         </Sheet>
 
-        <StudioSidebar
-          pathname={pathname}
-          navigation={workspaceNavigation}
-          collapsed={!sidebarOpen}
-          onOpenSearch={openSearch}
-          collapsedTriggerSuppressed={collapsedTriggerSuppressed}
-          onCollapsedTriggerReveal={() => setCollapsedTriggerSuppressed(false)}
-        />
+        {isSettingsRoute ? (
+          <>
+            <StudioSidebar
+              pathname={pathname}
+              navigation={workspaceNavigation}
+              user={{ name: user.name, email: user.email }}
+              unreadAlerts={unread}
+              isSigningOut={isSigningOut}
+              onSignOut={() => void signOut()}
+              collapsed={!effectiveSidebarOpen}
+              onOpenSearch={openSearch}
+              collapsedTriggerSuppressed={isSettingsRoute || collapsedTriggerSuppressed}
+              onCollapsedTriggerReveal={() =>
+                !isSettingsRoute && setCollapsedTriggerSuppressed(false)
+              }
+              notices={notices}
+              noticesOpen={noticesOpen}
+              onNoticesOpenChange={setNoticesOpen}
+              onReadNotice={(item) => void readNotice(item)}
+              onMarkAllRead={() => void markAllNoticesRead()}
+              onRefreshNotices={() => void loadNotifications()}
+              onClearReadNotices={() => void clearReadNotices()}
+              noticesLoading={noticesLoading}
+            />
+            <SettingsSidebar
+              pathname={pathname}
+              user={{ name: user.name, email: user.email }}
+            />
+          </>
+        ) : (
+          <StudioSidebar
+            pathname={pathname}
+            navigation={workspaceNavigation}
+            user={{ name: user.name, email: user.email }}
+            unreadAlerts={unread}
+            isSigningOut={isSigningOut}
+            onSignOut={() => void signOut()}
+            collapsed={!effectiveSidebarOpen}
+            onOpenSearch={openSearch}
+            collapsedTriggerSuppressed={collapsedTriggerSuppressed}
+            onCollapsedTriggerReveal={() =>
+              setCollapsedTriggerSuppressed(false)
+            }
+            notices={notices}
+            noticesOpen={noticesOpen}
+            onNoticesOpenChange={setNoticesOpen}
+            onReadNotice={(item) => void readNotice(item)}
+            onMarkAllRead={() => void markAllNoticesRead()}
+            onRefreshNotices={() => void loadNotifications()}
+            onClearReadNotices={() => void clearReadNotices()}
+            noticesLoading={noticesLoading}
+          />
+        )}
 
         {/* Main content */}
-        <SidebarInset className={isLiveView ? "min-h-0 min-w-0 overflow-hidden p-0" : "min-h-0 min-w-0 overflow-hidden p-2"}>
+        <SidebarInset
+          className={cn(
+            isLiveView
+              ? "min-h-0 min-w-0 overflow-hidden p-0"
+              : "min-h-0 min-w-0 overflow-hidden p-2",
+            isSettingsRoute ? "flex gap-0 flex-row" : "flex gap-2 flex-row",
+          )}
+        >
           <div
             role="main"
             tabIndex={0}
             aria-label="Studio content"
             data-studio-scroll
-            className={isLiveView ? "relative z-10 h-full w-full min-h-0 min-w-0 overflow-hidden bg-background outline-none" : "relative z-10 h-full w-full min-h-0 min-w-0 overflow-y-auto overscroll-y-contain outline-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-xl border border-border/70 bg-muted"}
+            className={cn(
+              sidekickExpanded && "hidden",
+              isLiveView
+                ? "relative z-10 h-full w-full min-h-0 min-w-0 overflow-hidden bg-background outline-none"
+                : isSettingsRoute
+                  ? "relative z-10 h-full w-full min-h-0 min-w-0 overflow-y-auto overscroll-y-contain bg-muted rounded-xl outline-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  : "relative z-10 h-full w-full min-h-0 min-w-0 overflow-y-auto overscroll-y-contain outline-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-xl border border-border/70 bg-muted"
+            )}
           >
             <div
               data-studio-content
-              className={isLiveView ? "flex h-full min-h-0 w-full flex-col" : "my-3 mx-auto flex min-h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)] flex-col px-4 pb-8 pt-8 shadow-sm sm:my-4 sm:min-h-[calc(100%-2rem)] sm:w-[calc(100%-2rem)] sm:px-6 sm:pb-10 lg:px-10 lg:pt-10 xl:px-14"}
+              className={
+                isLiveView
+                  ? "flex h-full min-h-0 w-full flex-col"
+                  : isSettingsRoute
+                    ? "mx-auto flex min-h-full w-full max-w-4xl flex-col px-5 pb-10 pt-6 sm:px-8 lg:px-10 lg:pt-8"
+                    : "my-3 mx-auto flex min-h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)] flex-col px-4 pb-8 pt-8  sm:my-4 sm:min-h-[calc(100%-2rem)] sm:w-[calc(100%-2rem)] sm:px-6 sm:pb-10 lg:px-10 lg:pt-10 xl:px-14"
+              }
             >
-              {!isLiveView && breadcrumbs.length > 1 && (
+              {!isLiveView && !isSettingsRoute && breadcrumbs.length > 1 && (
                 <Breadcrumb className="mb-3">
                   <BreadcrumbList className="text-xs">
                     {breadcrumbs.map((item, index) => (
@@ -504,6 +728,20 @@ export default function StudioShell({ children, user }: Props) {
               {children}
             </div>
           </div>
+
+          {!isSettingsRoute && features.assistant !== false && sidekickOpen && (
+            <StudioSidekick
+              pathname={pathname}
+              externalPrompt={commandPrompt}
+              onPromptConsumed={() => setCommandPrompt("")}
+              expanded={sidekickExpanded}
+              onExpand={() => setSidekickExpanded((value) => !value)}
+              onClose={() => {
+                setSidekickOpen(false);
+                setSidekickExpanded(false);
+              }}
+            />
+          )}
         </SidebarInset>
 
         {/* ──────────────────────────────────────────────────────────────────── */}
@@ -526,12 +764,26 @@ export default function StudioShell({ children, user }: Props) {
           </Alert>
         )}
 
-        <Dialog open={noticesOpen} onOpenChange={setNoticesOpen}>
+        {/* Global alerts are rendered from the sidebar as an anchored Shopify-style popover. */}
+        {false && <Dialog open={noticesOpen} onOpenChange={setNoticesOpen}>
           <DialogContent className="w-[min(24rem,calc(100vw-2rem))] sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 Notifications
                 {unread > 0 && <Badge variant="secondary">{unread} new</Badge>}
+                <Badge
+                  variant="outline"
+                  className={`ml-auto gap-1.5 text-[10px] ${notificationsRealtime === "connected" ? "text-emerald-600" : notificationsRealtime === "offline" ? "text-destructive" : "text-muted-foreground"}`}
+                >
+                  <span
+                    className={`size-1.5 rounded-full ${notificationsRealtime === "connected" ? "bg-emerald-500" : notificationsRealtime === "offline" ? "bg-destructive" : "bg-muted-foreground"}`}
+                  />
+                  {notificationsRealtime === "connected"
+                    ? "Live"
+                    : notificationsRealtime === "offline"
+                      ? "Offline"
+                      : "Connecting"}
+                </Badge>
               </DialogTitle>
               <DialogDescription>
                 Updates and activity from your studio workspace.
@@ -624,7 +876,7 @@ export default function StudioShell({ children, user }: Props) {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+        </Dialog>}
 
         <Dialog
           open={searchOpen}
@@ -773,24 +1025,97 @@ export default function StudioShell({ children, user }: Props) {
             </div>
           </DialogContent>
         </Dialog>
-        {features.assistant !== false && (
+
+        {!isSettingsRoute && features.assistant !== false && (
           <>
-            <button
-              type="button"
-              onClick={() => setCommandCenterOpen(true)}
-              className="fixed bottom-5 left-1/2 z-[70] -translate-x-1/2 rounded-full border border-primary/30 bg-primary px-4 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:-translate-y-0.5 hover:bg-primary/90"
-              aria-label="Open Zerocraft assistant"
-            >
-              <IconSparkles className="size-4" />
-              <span className="hidden sm:inline">Ask Zerocraft</span>
-              <kbd className="hidden rounded border border-primary-foreground/20 px-1.5 py-0.5 text-[10px] text-primary-foreground/75 md:inline">
-                ⌘⇧K
-              </kbd>
-            </button>
-            <StudioCommandCenter
-              open={commandCenterOpen}
-              onOpenChange={setCommandCenterOpen}
-            />
+            {!sidekickOpen && (
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void sendBottomPrompt();
+                }}
+                className="fixed bottom-5 left-1/2 z-[70] w-[min(380px,calc(100vw-1.5rem))] -translate-x-1/2"
+                aria-label="Ask Zerocraft"
+              >
+                <InputGroup className="h-12 flex-row items-center gap-1 rounded-4xl bg-background! p-3 shadow-md ">
+                  <InputGroupAddon
+                    align="inline-start"
+                    className="shrink-0 p-0"
+                  >
+                    <span
+                      className="grid size-7 place-items-center rounded-full bg-muted text-foreground"
+                      aria-hidden="true"
+                    >
+                      <IconSparkles className="size-4" />
+                    </span>
+                  </InputGroupAddon>
+                  <InputGroupTextarea
+                    value={bottomPrompt}
+                    onChange={(event) => setBottomPrompt(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" && !event.shiftKey) {
+                        event.preventDefault();
+                        event.currentTarget.form?.requestSubmit();
+                      }
+                    }}
+                    placeholder="Work with Sidekick"
+                    aria-label="Work with Sidekick"
+                    rows={1}
+                    className="min-h-8 max-h-8 min-w-0 resize-none overflow-hidden border-0 px-1 py-1 text-[13px] shadow-none focus-visible:ring-0"
+                  />
+                  <InputGroupAddon
+                    align="inline-end"
+                    className="shrink-0 gap-1 p-0"
+                  >
+                    <InputGroupButton
+                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
+                      className="size-7 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label="Add files"
+                      title="Attach text, CSV, Markdown, or JSON files"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <IconPaperclip className="size-4" />
+                      {attachedFiles.length > 0 && (
+                        <span className="text-[10px]">
+                          {attachedFiles.length}
+                        </span>
+                      )}
+                    </InputGroupButton>
+                    <InputGroupButton
+                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
+                      className="size-7 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label="Voice command"
+                      title="Speak a command"
+                      onClick={startVoiceCommand}
+                    >
+                      <IconMicrophone className="size-4" />
+                    </InputGroupButton>
+                    <span
+                      className="mx-0.5 h-5 w-px bg-border"
+                      aria-hidden="true"
+                    />
+                    <InputGroupButton
+                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
+                      className="size-7 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label="Expand assistant panel"
+                      title="Open AI assistant"
+                      onClick={() => {
+                        setSidekickExpanded(false);
+                        setSidekickOpen(true);
+                      }}
+                    >
+                      <IconLayoutSidebarRight className="size-4" />
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+              </form>
+            )}
           </>
         )}
       </div>

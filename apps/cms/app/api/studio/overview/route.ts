@@ -4,9 +4,9 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const sources = [
-  { name: "store_orders", label: "Store orders", href: "/orders" },
-  { name: "appointments", label: "Appointments", href: "/appointments" },
-  { name: "clients", label: "Clients", href: "/clients" },
+  { name: "store_orders", label: "Store orders", href: "/store/orders" },
+  { name: "appointments", label: "Appointments", href: "/studio/appointments" },
+  { name: "clients", label: "Clients", href: "/studio/clients" },
   { name: "works", label: "Works", href: "/works" },
   { name: "blogs", label: "Blogs", href: "/blogs" },
 ] as const;
@@ -49,8 +49,8 @@ export async function GET() {
   }
   const orderSummaryData = orderSummary.error || !orderSummary.data || typeof orderSummary.data !== "object" ? null : orderSummary.data as { count?: number; pending?: number; paidByCurrency?: Record<string, number> };
   const recent = [
-    ...(recentOrders.data || []).map((row) => ({ id: `order-${row.id}`, title: row.order_number, detail: `Order · ${row.status}`, href: "/orders", date: row.created_at })),
-    ...(recentAppointments.data || []).map((row) => ({ id: `appointment-${row.id}`, title: row.client_name, detail: `Appointment · ${row.status}`, href: "/appointments", date: row.created_at })),
+    ...(recentOrders.data || []).map((row) => ({ id: `order-${row.id}`, title: row.order_number, detail: `Order · ${row.status}`, href: "/store/orders", date: row.created_at })),
+    ...(recentAppointments.data || []).map((row) => ({ id: `appointment-${row.id}`, title: row.client_name, detail: `Appointment · ${row.status}`, href: "/studio/appointments", date: row.created_at })),
   ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
 
   return Response.json({

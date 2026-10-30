@@ -10,6 +10,37 @@ const PUBLIC_PATHS = new Set([
   "/api/studio/notifications/reports/worker",
 ]);
 
+// Workspace URLs are canonical. Keep the older root-level URLs working while
+// navigation and bookmarks migrate to the explicit Studio/Store boundaries.
+const LEGACY_WORKSPACE_ROUTES: Array<[string, string]> = [
+  ["/", "/studio"],
+  ["/products", "/store/products"],
+  ["/orders", "/store/orders"],
+  ["/clients", "/studio/clients"],
+  ["/leads", "/studio/leads"],
+  ["/projects", "/studio/projects"],
+  ["/appointments", "/studio/appointments"],
+  ["/blogs", "/studio/blogs"],
+  ["/content", "/studio/content"],
+  ["/crm", "/studio/crm"],
+  ["/works", "/studio/works"],
+];
+
+function canonicalWorkspacePath(pathname: string) {
+  if (pathname === "/store" || pathname.startsWith("/store/")) return null;
+  if (pathname === "/studio" || pathname.startsWith("/studio/")) return null;
+
+  const route = LEGACY_WORKSPACE_ROUTES.find(([source]) =>
+    source === "/" ? pathname === "/" : pathname === source || pathname.startsWith(`${source}/`),
+  );
+  if (!route) return null;
+
+  const [, destination] = route;
+  return pathname === route[0]
+    ? destination
+    : `${destination}${pathname.slice(route[0].length)}`;
+}
+
 async function sessionFor(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { url, key } = getSupabasePublicConfig();
@@ -38,23 +69,14 @@ function copyCookies(from: NextResponse, to: NextResponse) {
   return to;
 }
 
-/**
- * The CMS is mounted at the domain root. Keep the former `/studio` URLs as
- * permanent compatibility redirects so links from the public site and old
- * bookmarks continue to land on the canonical CMS route.
- */
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const isLegacyStudioRoute =
-    pathname === "/studio" || pathname.startsWith("/studio/");
 
-  const isEmailWorkspaceRoute =
-    pathname === "/studio/email" || pathname.startsWith("/studio/email/");
-
-  if (isLegacyStudioRoute && !isEmailWorkspaceRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = pathname.replace(/^\/studio(?=\/|$)/, "") || "/";
-    return NextResponse.redirect(url, 308);
+  const canonicalPath = canonicalWorkspacePath(pathname);
+  if (canonicalPath) {
+    const canonicalUrl = request.nextUrl.clone();
+    canonicalUrl.pathname = canonicalPath;
+    return NextResponse.redirect(canonicalUrl, 307);
   }
 
   // Public endpoints must remain reachable even when the authentication

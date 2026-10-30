@@ -607,7 +607,7 @@ export function StoreOverviewDashboard({
             <Button
               variant="ghost"
               size="sm"
-              render={<Link href="/orders" />}
+              render={<Link href="/store/orders" />}
               nativeButton={false}
             >
               All orders <IconArrowUpRight />

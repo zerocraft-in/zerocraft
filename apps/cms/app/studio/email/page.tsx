@@ -11,7 +11,7 @@ export default async function EmailPage() {
     if (access.response.status >= 500) {
       throw new Error("Email workspace permissions are unavailable. Apply the approved permissions and Gmail workspace migrations.");
     }
-    redirect("/");
+    redirect("/studio");
   }
   return <EmailWorkspace />;
 }

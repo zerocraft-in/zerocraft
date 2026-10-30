@@ -349,20 +349,24 @@ export interface StudioNotification {
   id: string;
   title: string;
   message: string;
-  category: "appointments" | "clients" | "works" | "blogs" | "system";
+  category: "orders" | "inventory" | "payments" | "clients" | "projects" | "appointments" | "works" | "blogs" | "automation" | "system" | string;
   type: "info" | "success" | "warning" | "error";
   read: boolean;
   link?: string;
   created_at: string;
+  metadata?: Record<string, unknown>;
 }
 
 export async function fetchNotificationsFromSupabase(): Promise<
   StudioNotification[]
 > {
   try {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) return [];
     const { data, error } = await supabase
       .from("notifications")
       .select("*")
+      .eq("recipient_id", authData.user.id)
       .order("created_at", { ascending: false });
 
     if (error || !data) return [];
@@ -374,10 +378,13 @@ export async function fetchNotificationsFromSupabase(): Promise<
 
 export async function markNotificationAsReadInSupabase(id: string) {
   try {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) return null;
     const { data, error } = await supabase
       .from("notifications")
       .update({ read: true })
       .eq("id", id)
+      .eq("recipient_id", authData.user.id)
       .select()
       .single();
     if (error) throw error;
@@ -389,15 +396,29 @@ export async function markNotificationAsReadInSupabase(id: string) {
 
 export async function markAllNotificationsAsReadInSupabase() {
   try {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) return null;
     const { data, error } = await supabase
       .from("notifications")
       .update({ read: true })
+      .eq("recipient_id", authData.user.id)
       .eq("read", false)
       .select();
     if (error) throw error;
     return data;
   } catch {
     return null;
+  }
+}
+
+export async function clearReadNotificationsInSupabase() {
+  try {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) return false;
+    const { error } = await supabase.from("notifications").delete().eq("recipient_id", authData.user.id).eq("read", true);
+    return !error;
+  } catch {
+    return false;
   }
 }
 

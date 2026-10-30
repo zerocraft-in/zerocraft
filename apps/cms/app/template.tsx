@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 
 /**
  * Route transition boundary for the CMS. The key makes each navigation a
@@ -11,8 +12,16 @@ export default function CmsTemplate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div key={pathname} data-cms-template="true" className="contents">
+    <motion.div
+      key={pathname}
+      data-cms-template="true"
+      className="contents"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+      style={{ willChange: "opacity" }}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }

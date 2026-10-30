@@ -18,6 +18,18 @@ import {
   IconPhoto,
   IconTrash,
   IconSparkles,
+  IconTargetArrow,
+  IconUser,
+  IconFolder,
+  IconChartDots,
+  IconFileDescription,
+  IconCalendarEvent,
+  IconPackage,
+  IconArchive,
+  IconBox,
+  IconTag,
+  IconChartLine,
+  IconWorld,
 } from "@tabler/icons-react";
 import { ADMIN_ROUTES, type AdminRoute } from "@/lib/admin-routes";
 import type { StudioFeatureKey } from "@/lib/studio-features";
@@ -57,25 +69,96 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     href: ADMIN_ROUTES.studio.works,
     icon: IconBriefcase,
     links: [
-      { label: "CRM overview", href: ADMIN_ROUTES.studio.crm, icon: IconUsers, feature: "crm" },
-      { label: "Content studio", href: ADMIN_ROUTES.studio.content, icon: IconPhoto, feature: "content" },
-      { label: "Metaobjects", href: ADMIN_ROUTES.studio.metaobjects, icon: IconDatabase, feature: "content" },
-      { label: "Files", href: ADMIN_ROUTES.studio.files, icon: IconPhoto, feature: "content" },
-      { label: "Menus", href: ADMIN_ROUTES.studio.menus, icon: IconFileText, feature: "content" },
-      { label: "Blog posts", href: ADMIN_ROUTES.studio.blogPosts, icon: IconFileText, feature: "content" },
-      { label: "Works", href: ADMIN_ROUTES.studio.works, icon: IconBriefcase, feature: "content" },
-      { label: "Email", href: ADMIN_ROUTES.studio.email, icon: IconMail, feature: "email" },
-      { label: "Clients", href: ADMIN_ROUTES.studio.clients, icon: IconUsers, feature: "crm" },
-      { label: "Segments", href: ADMIN_ROUTES.studio.segments, icon: IconUsers, feature: "crm" },
-      { label: "Companies", href: ADMIN_ROUTES.studio.companies, icon: IconUsers, feature: "crm" },
-      { label: "Leads", href: ADMIN_ROUTES.studio.leads, icon: IconUsers, feature: "crm" },
-      { label: "Projects", href: ADMIN_ROUTES.studio.projects, icon: IconBriefcase, feature: "content" },
+      {
+        label: "CRM overview",
+        href: ADMIN_ROUTES.studio.crm,
+        icon: IconChartDots,
+        feature: "crm",
+      },
+      {
+        label: "Content studio",
+        href: ADMIN_ROUTES.studio.content,
+        icon: IconFileDescription,
+        feature: "content",
+      },
+      {
+        label: "Metaobjects",
+        href: ADMIN_ROUTES.studio.metaobjects,
+        icon: IconDatabase,
+        feature: "content",
+      },
+      {
+        label: "Files",
+        href: ADMIN_ROUTES.studio.files,
+        icon: IconPhoto,
+        feature: "content",
+      },
+      {
+        label: "Menus",
+        href: ADMIN_ROUTES.studio.menus,
+        icon: IconFileText,
+        feature: "content",
+      },
+      {
+        label: "Blog posts",
+        href: ADMIN_ROUTES.studio.blogPosts,
+        icon: IconFileText,
+        feature: "content",
+      },
+      {
+        label: "Works",
+        href: ADMIN_ROUTES.studio.works,
+        icon: IconFolder,
+        feature: "content",
+      },
+      {
+        label: "Email",
+        href: ADMIN_ROUTES.studio.email,
+        icon: IconMail,
+        feature: "email",
+      },
+      {
+        label: "Clients",
+        href: ADMIN_ROUTES.studio.clients,
+        icon: IconUser,
+        feature: "crm",
+      },
+      {
+        label: "Segments",
+        href: ADMIN_ROUTES.studio.segments,
+        icon: IconUsersGroup,
+        feature: "crm",
+      },
+      {
+        label: "Companies",
+        href: ADMIN_ROUTES.studio.companies,
+        icon: IconUsers,
+        feature: "crm",
+      },
+      {
+        label: "Leads",
+        href: ADMIN_ROUTES.studio.leads,
+        icon: IconTargetArrow,
+        feature: "crm",
+      },
+      {
+        label: "Projects",
+        href: ADMIN_ROUTES.studio.projects,
+        icon: IconPackage,
+        feature: "content",
+      },
       {
         label: "Appointments",
         href: ADMIN_ROUTES.studio.appointments,
-        icon: IconCalendar, feature: "crm",
+        icon: IconCalendarEvent,
+        feature: "crm",
       },
-      { label: "Journal", href: ADMIN_ROUTES.studio.blogs, icon: IconFileText, feature: "content" },
+      {
+        label: "Journal",
+        href: ADMIN_ROUTES.studio.blogs,
+        icon: IconFileText,
+        feature: "content",
+      },
     ],
   },
   {
@@ -83,31 +166,52 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     href: ADMIN_ROUTES.store.overview,
     icon: IconShoppingBag,
     links: [
+      { label: "Drafts", href: ADMIN_ROUTES.store.drafts, icon: IconFileText, feature: "commerce" },
       {
         label: "Products",
         href: ADMIN_ROUTES.store.products,
-        icon: IconShoppingBag, feature: "commerce",
+        icon: IconBox,
+        feature: "commerce",
       },
+      {
+        label: "Customers",
+        href: ADMIN_ROUTES.store.customers,
+        icon: IconUser,
+        feature: "commerce",
+      },
+      { label: "Growth", href: ADMIN_ROUTES.store.growth, icon: IconChartLine, feature: "commerce" },
+      { label: "Discounts", href: ADMIN_ROUTES.store.discounts, icon: IconTag, feature: "commerce" },
+      { label: "Content", href: ADMIN_ROUTES.store.content, icon: IconFileDescription, feature: "commerce" },
+      { label: "Markets", href: ADMIN_ROUTES.store.markets, icon: IconWorld, feature: "commerce" },
+      { label: "Analytics", href: ADMIN_ROUTES.store.analytics, icon: IconChartBar, feature: "commerce" },
       {
         label: "Categories",
         href: ADMIN_ROUTES.store.categories,
-        icon: IconDatabase, feature: "commerce",
+        icon: IconArchive,
+        feature: "commerce",
       },
       {
         label: "Media library",
         href: ADMIN_ROUTES.store.mediaLibrary,
-        icon: IconPhoto, feature: "commerce",
+        icon: IconPhoto,
+        feature: "commerce",
       },
       {
         label: "Recycle bin",
         href: ADMIN_ROUTES.store.recycleBin,
-        icon: IconTrash, feature: "commerce",
+        icon: IconTrash,
+        feature: "commerce",
       },
       {
         label: "Inventory",
         href: ADMIN_ROUTES.store.inventory,
-        icon: IconDatabase, feature: "commerce",
+        icon: IconDatabase,
+        feature: "commerce",
       },
+      { label: "Collections", href: ADMIN_ROUTES.store.categories, icon: IconArchive, feature: "commerce" },
+      { label: "Purchase orders", href: ADMIN_ROUTES.operations.purchaseOrders, icon: IconFileText, feature: "commerce" },
+      { label: "Transfers", href: ADMIN_ROUTES.operations.transfers, icon: IconFileText, feature: "commerce" },
+      { label: "Gift cards", href: ADMIN_ROUTES.operations.giftCards, icon: IconCreditCard, feature: "commerce" },
     ],
   },
   {
@@ -118,7 +222,8 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
       {
         label: "Orders",
         href: ADMIN_ROUTES.operations.orders,
-        icon: IconFileText, feature: "commerce",
+        icon: IconFileText,
+        feature: "commerce",
       },
     ],
   },
@@ -140,12 +245,14 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
       {
         label: "Growth & attribution",
         href: ADMIN_ROUTES.operations.growth,
-        icon: IconChartBar, feature: "analytics",
+        icon: IconChartBar,
+        feature: "analytics",
       },
       {
         label: "Search Console",
         href: ADMIN_ROUTES.operations.searchConsole,
-        icon: IconChartBar, feature: "search_console",
+        icon: IconChartBar,
+        feature: "search_console",
       },
     ],
   },
@@ -189,22 +296,32 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
       {
         label: "Automation health",
         href: ADMIN_ROUTES.system.automations,
-        icon: IconActivity, feature: "automation",
+        icon: IconActivity,
+        feature: "automation",
+      },
+      {
+        label: "AI approvals",
+        href: ADMIN_ROUTES.system.approvals,
+        icon: IconSparkles,
+        feature: "automation",
       },
       {
         label: "Notification history",
         href: ADMIN_ROUTES.system.notifications,
-        icon: IconMail, feature: "automation",
+        icon: IconMail,
+        feature: "automation",
       },
       {
         label: "Weekly reports",
         href: ADMIN_ROUTES.system.notificationReports,
-        icon: IconFileText, feature: "automation",
+        icon: IconFileText,
+        feature: "automation",
       },
       {
         label: "System health",
         href: ADMIN_ROUTES.system.systemHealth,
-        icon: IconHeartbeat, feature: "automation",
+        icon: IconHeartbeat,
+        feature: "automation",
       },
     ],
   },
@@ -219,44 +336,55 @@ export function getAdminNavigationForFeatures(
   enabledFeatures: ReadonlySet<StudioFeatureKey>,
 ) {
   return navigation.flatMap((group) => {
-    const links = group.links.filter((link) => !link.feature || enabledFeatures.has(link.feature));
+    const links = group.links.filter(
+      (link) => !link.feature || enabledFeatures.has(link.feature),
+    );
     if (!links.length) return [];
-    return [{ ...group, href: links.some((link) => link.href === group.href) ? group.href : links[0].href, links }];
+    return [
+      {
+        ...group,
+        href: links.some((link) => link.href === group.href)
+          ? group.href
+          : links[0].href,
+        links,
+      },
+    ];
   });
 }
 
 export function getAdminRouteFeature(pathname: string) {
-  const match = ADMIN_NAVIGATION_LINKS
-    .filter((link) => pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`)))
-    .sort((left, right) => right.href.length - left.href.length)[0];
+  const match = ADMIN_NAVIGATION_LINKS.filter(
+    (link) => pathname === link.href || pathname.startsWith(`${link.href}/`),
+  ).sort((left, right) => right.href.length - left.href.length)[0];
   return match?.feature || null;
 }
 
 const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
-  "/": "dashboard.read",
-  "/crm": "clients.read",
-  "/content": "content.read",
-  "/content/metaobjects": "content.read",
-  "/content/files": "content.read",
-  "/content/menus": "content.read",
-  "/content/blog-posts": "content.read",
-  "/works": "content.read",
+  "/studio": "dashboard.read",
+  "/studio/crm": "clients.read",
+  "/studio/content": "content.read",
+  "/studio/content/metaobjects": "content.read",
+  "/studio/content/files": "content.read",
+  "/studio/content/menus": "content.read",
+  "/studio/content/blog-posts": "content.read",
+  "/studio/works": "content.read",
   "/studio/email": "email.read",
-  "/blogs": "content.read",
-  "/clients": "clients.read",
-  "/customers/segments": "clients.read",
-  "/customers/companies": "clients.read",
-  "/leads": "clients.read",
-  "/projects": "content.read",
-  "/appointments": "appointments.read",
+  "/studio/blogs": "content.read",
+  "/studio/clients": "clients.read",
+  "/studio/customers/segments": "clients.read",
+  "/studio/customers/companies": "clients.read",
+  "/studio/leads": "clients.read",
+  "/studio/projects": "content.read",
+  "/studio/appointments": "appointments.read",
   "/store": "catalog.read",
   "/store/products": "catalog.read",
+  "/store/customers": "clients.read",
   "/store/categories": "catalog.read",
   "/store/bin": "catalog.read",
   "/media-library": "catalog.read",
   "/store/inventory": "inventory.read",
   "/channels": "catalog.read",
-  "/orders": "orders.read",
+  "/store/orders": "orders.read",
   "/transactions": "billing.read",
   "/subscriptions": "billing.read",
   "/disputes": "billing.read",
@@ -276,6 +404,7 @@ const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
   "/audit-logs": "audit.read",
   "/email-events": "notifications.read",
   "/automations": "automations.read",
+  "/automations/approvals": "automations.read",
   "/notifications": "notifications.read",
   "/notification-reports": "notifications.read",
   "/system-health": "system_health.read",
@@ -291,13 +420,17 @@ export function getAdminRoutePermission(pathname: string) {
   return match?.[1] || null;
 }
 
-export function getAdminNavigationForRole(role: string, permissions?: readonly string[] | null): readonly AdminNavigationGroup[] {
+export function getAdminNavigationForRole(
+  role: string,
+  permissions?: readonly string[] | null,
+): readonly AdminNavigationGroup[] {
   if (role === "admin" && permissions == null) return ADMIN_NAVIGATION;
   const allowedSystemLinks: AdminRoute[] =
     role === "manager"
       ? [
           ADMIN_ROUTES.system.emailEvents,
           ADMIN_ROUTES.system.automations,
+          ADMIN_ROUTES.system.approvals,
           ADMIN_ROUTES.system.notifications,
           ADMIN_ROUTES.system.systemHealth,
         ]
@@ -346,7 +479,6 @@ export function isAdminNavigationGroupActive(
   pathname: string,
   group: AdminNavigationGroup,
 ) {
-  if (group.href === "/") return pathname === "/";
   return group.links.some((link) => isAdminRouteActive(pathname, link.href));
 }
 
@@ -358,13 +490,21 @@ export function getAdminBreadcrumbs(pathname: string) {
   ) {
     const analyticsLink =
       pathname === ADMIN_ROUTES.operations.analytics
-        ? { label: "Analytics", href: ADMIN_ROUTES.operations.analytics, icon: IconChartBar }
+        ? {
+            label: "Analytics",
+            href: ADMIN_ROUTES.operations.analytics,
+            icon: IconChartBar,
+          }
         : ADMIN_NAVIGATION_LINKS.find((item) => item.href === pathname);
     if (analyticsLink) {
       return pathname === ADMIN_ROUTES.operations.analytics
         ? [analyticsLink]
         : [
-            { label: "Analytics", href: ADMIN_ROUTES.operations.analytics, icon: IconChartBar },
+            {
+              label: "Analytics",
+              href: ADMIN_ROUTES.operations.analytics,
+              icon: IconChartBar,
+            },
             analyticsLink,
           ];
     }

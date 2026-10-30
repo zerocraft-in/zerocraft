@@ -1,105 +1,77 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type ReactNode } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { IconArrowLeft, IconBell, IconBrandGoogle, IconBuildingStore, IconCheck, IconChevronRight, IconCloud, IconCreditCard, IconDatabase, IconExternalLink, IconFileText, IconGlobe, IconKey, IconLanguage, IconLock, IconPalette, IconPlus, IconSearch, IconShieldCheck, IconUsers } from "@tabler/icons-react";
-import { AppearanceSettings } from "@/components/studio/appearance";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import type { ComponentType, ReactNode } from "react";
+import {
+  IconApps, IconBell, IconBuildingStore, IconCreditCard, IconDatabase,
+  IconFileText, IconGlobe, IconLanguage, IconLock, IconMapPin, IconReceipt,
+  IconShoppingCart, IconSparkles, IconTruck, IconUser, IconUsers, IconWorld,
+} from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
 import { Switch } from "@/components/ui/switch";
 
 type SettingKey = "general" | "plan" | "billing" | "users" | "payments" | "checkout" | "customer-accounts" | "shipping" | "taxes" | "locations" | "apps" | "sales-channels" | "domains" | "customer-events" | "notifications" | "custom-data" | "languages" | "privacy" | "policies";
-type SettingNavItem = { key: SettingKey; label: string; description: string; icon: typeof IconGlobe };
+type SettingDefinition = { key: SettingKey; label: string; description: string; icon: ComponentType<{ className?: string; stroke?: number }> };
 
-const settingsNavigation: SettingNavItem[] = [
-  { key: "general", label: "General", description: "Workspace identity and defaults", icon: IconBuildingStore },
-  { key: "plan", label: "Plan", description: "Plan, limits, and feature access", icon: IconCreditCard },
-  { key: "billing", label: "Billing", description: "Billing profile and invoices", icon: IconFileText },
-  { key: "users", label: "Users", description: "Members and invitations", icon: IconUsers },
-  { key: "payments", label: "Payments", description: "Payment providers and payouts", icon: IconCreditCard },
-  { key: "checkout", label: "Checkout", description: "Checkout and order processing", icon: IconCheck },
-  { key: "customer-accounts", label: "Customer accounts", description: "Client account preferences", icon: IconUsers },
-  { key: "shipping", label: "Shipping and delivery", description: "Delivery methods and service areas", icon: IconCloud },
-  { key: "taxes", label: "Taxes and duties", description: "Tax regions and exemptions", icon: IconFileText },
-  { key: "locations", label: "Locations", description: "Studio and fulfilment locations", icon: IconGlobe },
-  { key: "apps", label: "Apps", description: "Connected integrations", icon: IconPlus },
-  { key: "sales-channels", label: "Sales channels", description: "Website and publishing destinations", icon: IconGlobe },
-  { key: "domains", label: "Domains", description: "Public domains and verification", icon: IconGlobe },
-  { key: "customer-events", label: "Customer events", description: "Analytics and event destinations", icon: IconBrandGoogle },
-  { key: "notifications", label: "Notifications", description: "Email and in-app updates", icon: IconBell },
-  { key: "custom-data", label: "Metafields and metaobjects", description: "Custom records and definitions", icon: IconDatabase },
-  { key: "languages", label: "Languages", description: "Workspace and content locales", icon: IconLanguage },
-  { key: "privacy", label: "Customer privacy", description: "Consent and data requests", icon: IconShieldCheck },
-  { key: "policies", label: "Policies", description: "Privacy, terms, and service policies", icon: IconFileText },
-];
+const settings: readonly SettingDefinition[] = [
+  ["general", "General", "Store details and defaults", IconBuildingStore],
+  ["plan", "Plan", "Plan, limits, and feature access", IconCreditCard],
+  ["billing", "Billing", "Invoices and billing profile", IconReceipt],
+  ["users", "Users", "Users and permissions", IconUsers],
+  ["payments", "Payments", "Payment providers and payouts", IconCreditCard],
+  ["checkout", "Checkout", "Checkout and order processing", IconShoppingCart],
+  ["customer-accounts", "Customer accounts", "Customer sign-in and account settings", IconUser],
+  ["shipping", "Shipping and delivery", "Shipping profiles and delivery methods", IconTruck],
+  ["taxes", "Taxes and duties", "Tax regions and collection", IconReceipt],
+  ["locations", "Locations", "Inventory and fulfillment locations", IconMapPin],
+  ["apps", "Apps", "Installed apps and permissions", IconApps],
+  ["sales-channels", "Sales channels", "Connected publishing channels", IconWorld],
+  ["domains", "Domains", "Domains, DNS, and SSL", IconGlobe],
+  ["customer-events", "Customer events", "Pixels and event destinations", IconSparkles],
+  ["notifications", "Notifications", "Staff and customer notifications", IconBell],
+  ["custom-data", "Metafields and metaobjects", "Custom fields and content models", IconDatabase],
+  ["languages", "Languages", "Store and checkout languages", IconLanguage],
+  ["privacy", "Customer privacy", "Consent and data controls", IconLock],
+  ["policies", "Policies", "Refund, privacy, and legal policies", IconFileText],
+].map(([key, label, description, icon]) => ({ key: key as SettingKey, label, description, icon })) as readonly SettingDefinition[];
 
-function Status({ children, tone = "success" }: { children: ReactNode; tone?: "success" | "neutral" | "warning" }) {
-  const toneClass = tone === "warning" ? "border-amber-500/25 text-amber-300" : tone === "neutral" ? "border-border text-muted-foreground" : "border-emerald-500/25 text-emerald-300";
-  const dotClass = tone === "warning" ? "bg-amber-400" : tone === "neutral" ? "bg-muted-foreground" : "bg-emerald-400";
-  return <Badge variant="outline" className={`gap-1.5 ${toneClass}`}><span className={`size-1.5 rounded-full ${dotClass}`} />{children}</Badge>;
+function CardSection({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+  return <section className="space-y-3"><div><h2 className="text-[15px] font-semibold tracking-tight">{title}</h2>{description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>}</div><Card className="border-border/80 shadow-none">{children}</Card></section>;
 }
 
-function SettingsSection({ eyebrow, title, description, children }: { eyebrow: string; title: string; description: string; children: ReactNode }) {
-  return <section className="scroll-mt-6"><div className="mb-3"><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{eyebrow}</p><h2 className="mt-1 text-[17px] font-semibold tracking-tight text-foreground">{title}</h2><p className="mt-1 max-w-2xl text-[12px] leading-5 text-muted-foreground">{description}</p></div>{children}</section>;
+function Row({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+  return <div className="flex min-h-[68px] items-center gap-4 border-b border-border/70 px-5 py-4 last:border-b-0"><div className="min-w-0 flex-1"><p className="text-[13px] font-medium">{title}</p>{description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>}</div><div className="shrink-0">{children}</div></div>;
 }
 
-function SettingRow({ icon, title, description, action }: { icon: ReactNode; title: string; description: string; action: ReactNode }) {
-  return <div className="flex min-h-[58px] items-center gap-3 border-b border-border/70 px-3.5 py-3 last:border-b-0"><span className="grid size-8 shrink-0 place-items-center rounded-lg border border-border/70 bg-muted/50 text-muted-foreground">{icon}</span><div className="min-w-0 flex-1"><p className="text-[13px] font-medium text-foreground">{title}</p><p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">{description}</p></div><div className="shrink-0">{action}</div></div>;
+function StateBadge({ children, warning = false }: { children: ReactNode; warning?: boolean }) {
+  return <Badge variant="outline" className={`gap-1.5 ${warning ? "border-amber-500/40 text-amber-700" : "border-emerald-500/40 text-emerald-700"}`}><span className={`size-1.5 rounded-full ${warning ? "bg-amber-500" : "bg-emerald-500"}`} />{children}</Badge>;
 }
 
-function SettingsCard({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <Card className={`border-border/80 bg-card shadow-none ${className}`}>{children}</Card>;
+function GeneralPage() {
+  const [currency, setCurrency] = useState("INR");
+  const [timezone, setTimezone] = useState("Asia/Kolkata");
+  return <div className="space-y-8"><CardSection title="Store name" description="Your store name appears on your online store and in customer communications."><CardContent className="space-y-4 p-5"><label className="grid gap-2 text-xs font-medium">Store name<Input defaultValue="My Store" /></label><p className="text-xs text-muted-foreground">Appears on your online store</p></CardContent></CardSection><CardSection title="Store contact details" description="These details are used for store communication and may be visible to customers through your policies."><CardContent className="space-y-4 p-5"><label className="grid gap-2 text-xs font-medium">Store email<Input defaultValue="in.zerocraft@gmail.com" /></label><label className="grid gap-2 text-xs font-medium">Store phone<Input placeholder="Add phone number" /></label></CardContent></CardSection><CardSection title="Store defaults" description="Set the defaults used for products, orders, and store operations."><CardContent className="grid gap-4 p-5 sm:grid-cols-2"><label className="grid gap-2 text-xs font-medium">Currency<SelectField value={currency} onValueChange={setCurrency} options={[{ value: "INR", label: "Indian rupee (INR)" }, { value: "USD", label: "US dollar (USD)" }]} /></label><label className="grid gap-2 text-xs font-medium">Time zone<SelectField value={timezone} onValueChange={setTimezone} options={[{ value: "Asia/Kolkata", label: "(GMT+05:30) Asia/Kolkata" }, { value: "UTC", label: "(GMT+00:00) UTC" }]} /></label><label className="grid gap-2 text-xs font-medium">Unit system<SelectField defaultValue="metric" options={[{ value: "metric", label: "Metric system" }, { value: "imperial", label: "Imperial system" }]} /></label><label className="grid gap-2 text-xs font-medium">Default weight unit<SelectField defaultValue="kg" options={[{ value: "kg", label: "Kilograms (kg)" }, { value: "lb", label: "Pounds (lb)" }]} /></label></CardContent></CardSection><CardSection title="Home page metadata" description="Metadata helps customers identify your store in search results."><CardContent className="space-y-4 p-5"><label className="grid gap-2 text-xs font-medium">Page title<Input defaultValue="My Store" /></label><label className="grid gap-2 text-xs font-medium">Meta description<Input placeholder="Describe your store" /></label></CardContent></CardSection></div>;
 }
 
-function GeneralSettings({ onPanel }: { onPanel: (panel: string) => void }) {
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [inAppNotifications, setInAppNotifications] = useState(true);
-  const [reauthentication, setReauthentication] = useState(true);
-  const [autosave, setAutosave] = useState(true);
-  const [compactDensity, setCompactDensity] = useState(false);
-  return <div className="space-y-8">
-    <SettingsSection eyebrow="01 / Workspace" title="Workspace" description="Manage your Zerocraft identity, public site, and team access."><SettingsCard><CardContent className="divide-y divide-border/70 p-0"><SettingRow icon={<span className="text-sm font-bold">Z</span>} title="Zerocraft Studio" description="Production workspace" action={<Status>Ready</Status>} /><SettingRow icon={<IconGlobe className="size-4" />} title="Public site" description="zerocraft.in" action={<Button variant="ghost" size="icon-sm" nativeButton={false} render={<Link href="/" />} aria-label="Open public site"><IconExternalLink /></Button>} /><SettingRow icon={<IconUsers className="size-4" />} title="Team access" description="Manage roles and permissions for workspace members." action={<Button variant="outline" size="sm" onClick={() => onPanel("profile")}>Manage</Button>} /></CardContent></SettingsCard></SettingsSection>
-    <SettingsSection eyebrow="02 / Interface" title="Appearance" description="Choose the visual mode used across the CMS."><SettingsCard><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-[13px]"><IconPalette className="size-4 text-muted-foreground" />Color mode</CardTitle><CardDescription className="text-[11px]">Light, dark, or follow your system preference.</CardDescription></CardHeader><CardContent className="pt-0"><AppearanceSettings /></CardContent></SettingsCard></SettingsSection>
-    <SettingsSection eyebrow="03 / Updates" title="Notifications" description="Control the updates you receive while working in Zerocraft."><SettingsCard><CardContent className="divide-y divide-border/70 p-0"><SettingRow icon={<IconBell className="size-4" />} title="Email notifications" description="Receive important workspace and security updates." action={<Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />} /><SettingRow icon={<IconBell className="size-4" />} title="In-app notifications" description="Show activity and operational updates inside the CMS." action={<Switch checked={inAppNotifications} onCheckedChange={setInAppNotifications} />} /></CardContent></SettingsCard></SettingsSection>
-    <SettingsSection eyebrow="04 / Access" title="Security" description="Protect the workspace and review who can operate it."><SettingsCard><CardContent className="divide-y divide-border/70 p-0"><SettingRow icon={<IconLock className="size-4" />} title="Re-authentication" description="Ask for a fresh sign-in before sensitive changes." action={<Switch checked={reauthentication} onCheckedChange={setReauthentication} />} /><SettingRow icon={<IconShieldCheck className="size-4" />} title="Active sessions" description="Review browsers and devices currently signed in." action={<Button variant="outline" size="sm" nativeButton={false} render={<Link href="/devices" />}>Review</Button>} /><SettingRow icon={<IconKey className="size-4" />} title="Team permissions" description="Roles and server-side access checks are enabled." action={<Status>Protected</Status>} /></CardContent></SettingsCard></SettingsSection>
-    <SettingsSection eyebrow="05 / Connections" title="Connections" description="Services connected to publishing, commerce, and workspace operations."><SettingsCard><CardContent className="divide-y divide-border/70 p-0"><SettingRow icon={<IconDatabase className="size-4" />} title="Supabase" description="Auth, database, realtime notices, and storage." action={<Status>Connected</Status>} /><SettingRow icon={<IconCloud className="size-4" />} title="SMTP email" description="Delivery and retry services are configured." action={<Status>Configured</Status>} /><SettingRow icon={<IconCloud className="size-4" />} title="Device management" description="Review trusted browsers, sessions, and access points." action={<Button variant="outline" size="sm" nativeButton={false} render={<Link href="/devices" />}>Open</Button>} /><SettingRow icon={<IconPlus className="size-4" />} title="App integrations" description="Connect analytics, publishing, commerce, and workflow tools." action={<Button variant="outline" size="sm" nativeButton={false} render={<Link href="/integrations" />}>Open</Button>} /></CardContent></SettingsCard></SettingsSection>
-    <SettingsSection eyebrow="06 / Workspace" title="Workspace defaults" description="Set the defaults that keep daily work consistent across your team."><SettingsCard><CardContent className="divide-y divide-border/70 p-0"><SettingRow icon={<IconGlobe className="size-4" />} title="Timezone and locale" description="Asia / Kolkata · English (India) · INR" action={<Button variant="outline" size="sm" onClick={() => onPanel("locale")}>Configure</Button>} /><SettingRow icon={<IconCheck className="size-4" />} title="Autosave drafts" description="Save content changes while you work in editors." action={<Switch checked={autosave} onCheckedChange={setAutosave} />} /><SettingRow icon={<IconDatabase className="size-4" />} title="Compact tables" description="Show more records in catalog and operations tables." action={<Switch checked={compactDensity} onCheckedChange={setCompactDensity} />} /></CardContent></SettingsCard></SettingsSection>
-    <SettingsSection eyebrow="07 / Data" title="Data & privacy" description="Control exports, retention, and sensitive workspace operations."><SettingsCard><CardContent className="divide-y divide-border/70 p-0"><SettingRow icon={<IconShieldCheck className="size-4" />} title="Audit log retention" description="Security and workspace activity history is retained for 12 months." action={<Status>Protected</Status>} /><SettingRow icon={<IconDatabase className="size-4" />} title="Export workspace data" description="Download a portable copy of your workspace records." action={<Button variant="outline" size="sm" onClick={() => onPanel("export")}>Prepare export</Button>} /></CardContent></SettingsCard><div className="mt-3 rounded-xl border border-destructive/25 bg-destructive/[0.035] p-3.5"><div className="flex items-center gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-lg bg-destructive/10 text-destructive"><IconLock className="size-4" /></span><div className="min-w-0 flex-1"><p className="text-[13px] font-medium">Danger zone</p><p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">Pause workspace access or request permanent deletion.</p></div><Button variant="outline" size="sm" onClick={() => onPanel("danger")}>Review</Button></div></div></SettingsSection>
-  </div>;
-}
+const sectionRows: Record<SettingKey, string[]> = {
+  general: [], plan: ["Plan details", "Billing cycle", "Store limits"], billing: ["Billing profile", "Payment method", "Invoices"], users: ["Users and permissions", "Roles", "Pending invitations"], payments: ["Payment providers", "Manual payment methods", "Payouts"], checkout: ["Customer information", "Order processing", "Checkout branding"], "customer-accounts": ["Account mode", "Sign-in links", "Saved payment methods"], shipping: ["Shipping profiles", "Shipping zones", "Local delivery"], taxes: ["Tax regions", "Tax registrations", "Duties and imports"], locations: ["Locations", "Fulfillment priority", "Pickup availability"], apps: ["Installed apps", "App permissions", "App billing"], "sales-channels": ["Online Store", "Connected channels", "Channel permissions"], domains: ["Primary domain", "Connected domains", "DNS and SSL"], "customer-events": ["Customer events", "Pixels", "Event testing"], notifications: ["Staff notifications", "Customer notifications", "Email templates"], "custom-data": ["Products and variants", "Customers and orders", "Metaobjects"], languages: ["Store languages", "Checkout languages", "Translation status"], privacy: ["Privacy policy", "Cookie banner", "Data sharing opt-out"], policies: ["Refund policy", "Privacy policy", "Terms of service"],
+};
 
-function GenericSettings({ item, onOpen }: { item: SettingNavItem; onOpen: (href: string) => void }) {
-  const Icon = item.icon;
-  const linked = item.key === "apps" ? "/integrations" : item.key === "sales-channels" ? "/channels" : item.key === "users" ? "/team" : item.key === "customer-events" ? "/reports" : null;
-  return <SettingsSection eyebrow="Workspace settings" title={item.label} description={item.description}><SettingsCard><CardHeader className="border-b border-border/70 pb-4"><div className="flex items-start gap-3"><span className="grid size-9 place-items-center rounded-xl border border-border/70 bg-muted/50 text-muted-foreground"><Icon className="size-4" /></span><div className="min-w-0 flex-1"><CardTitle className="text-[15px]">{item.label}</CardTitle><CardDescription className="mt-1 text-[11px]">Configure how this part of your workspace behaves.</CardDescription></div><Status tone="neutral">Available</Status></div></CardHeader><CardContent className="divide-y divide-border/70 p-0"><SettingRow icon={<IconCheck className="size-4" />} title="Workspace configuration" description="This settings area is ready for your Zerocraft workspace." action={linked ? <Button variant="outline" size="sm" onClick={() => onOpen(linked)}>Open workspace</Button> : <Button variant="outline" size="sm" onClick={() => onOpen("/integrations")}>Configure</Button>} /><SettingRow icon={<IconShieldCheck className="size-4" />} title="Access and audit" description="Changes are protected by workspace permissions and recorded in the audit log." action={<Status>Protected</Status>} /></CardContent></SettingsCard><div className="mt-4 rounded-xl border border-dashed border-border/80 bg-muted/20 p-4"><p className="text-[12px] font-medium">Shopify-style settings workspace</p><p className="mt-1 text-[11px] leading-5 text-muted-foreground">Provider-specific controls appear after the related feature or integration is enabled.</p></div></SettingsSection>;
+function SectionPage({ item }: { item: SettingDefinition }) {
+  const rows = sectionRows[item.key];
+  return <div className="space-y-8"><CardSection title={rows[0]} description={item.description}><CardContent className="p-0"><Row title={rows[0]} description={`Manage ${rows[0].toLowerCase()} for your store.`}><StateBadge>{item.key === "plan" ? "Trial" : "Configured"}</StateBadge></Row><Row title={rows[1]} description={`Configure ${rows[1].toLowerCase()} and related options.`}><Button variant="outline" size="sm">Manage</Button></Row><Row title={rows[2]} description={`Review and update ${rows[2].toLowerCase()}.`}><Button variant="outline" size="sm">View</Button></Row></CardContent></CardSection><CardSection title="Additional settings" description="These settings are saved to your store and protected by permissions."><CardContent className="p-0"><Row title="Save changes automatically" description="Keep your latest configuration ready while you work."><Switch defaultChecked /></Row><Row title="Activity history" description="Review changes made by staff and connected apps."><Button variant="outline" size="sm" nativeButton={false} render={<Link href="/audit-logs" />}>View log</Button></Row></CardContent></CardSection></div>;
 }
 
 export default function StudioSettingsPage() {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const requested = searchParams.get("section") as SettingKey | null;
-  const [query, setQuery] = useState("");
-  const [panel, setPanel] = useState<string | null>(null);
-  const [timezone, setTimezone] = useState("Asia/Kolkata");
-  const [locale, setLocale] = useState("en-IN");
-  const routeSection = pathname.startsWith("/settings/") ? pathname.split("/")[2] as SettingKey : null;
-  const activeKey = settingsNavigation.some((item) => item.key === routeSection)
-    ? routeSection!
-    : settingsNavigation.some((item) => item.key === requested)
-      ? requested!
-      : "general";
-  const activeItem = settingsNavigation.find((item) => item.key === activeKey)!;
-  const filteredSettings = useMemo(() => settingsNavigation.filter((item) => `${item.label} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase())), [query]);
-
-  return <main className="w-full max-w-[1400px] pb-16 [&>header:first-child]:hidden">
-    <header className="mb-5 flex flex-wrap items-center gap-3 border-b border-border/70 pb-4"><Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/" />}><IconArrowLeft /> Back to admin</Button><span className="text-muted-foreground">/</span><span className="text-[13px] font-medium">Settings</span><div className="ml-auto flex w-full max-w-[250px] items-center gap-2 sm:w-auto"><div className="relative w-full"><IconSearch className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search settings" className="h-8 rounded-lg pl-8 pr-10 text-xs" /><kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-border bg-muted px-1 text-[9px] text-muted-foreground">⌘K</kbd></div></div></header>
-    <div className="grid items-start gap-8 lg:grid-cols-[232px_minmax(0,780px)] xl:grid-cols-[240px_minmax(0,820px)]"><aside className="min-w-0 lg:sticky lg:top-5"><div className="border-b border-border/70 px-1 pb-3"><Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/" />} className="-ml-2 gap-2 px-2 text-xs font-semibold"><IconArrowLeft className="size-3.5" /> Settings</Button></div><div className="relative mt-3"><IconSearch className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search settings" aria-label="Search settings" className="h-8 rounded-lg border-border/80 bg-muted/40 pl-8 pr-10 text-xs" /><kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-border bg-background px-1 text-[9px] text-muted-foreground">⌘K</kbd></div><div className="mt-5 border-b border-border/70 px-1 pb-4"><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">My workspace</p><div className="mt-2 flex items-center gap-2.5"><span className="grid size-8 shrink-0 place-items-center rounded-lg bg-foreground text-xs font-bold text-background">Z</span><div className="min-w-0"><p className="truncate text-xs font-semibold">Zerocraft Studio</p><p className="truncate text-[10px] text-muted-foreground">admin.zerocraft.in</p></div></div></div><nav aria-label="Settings navigation" className="mt-3 max-h-[calc(100vh-240px)] space-y-0.5 overflow-y-auto pr-1">{filteredSettings.map((item) => { const active = item.key === activeKey; return <Link key={item.key} href={`/settings/${item.key}`} aria-current={active ? "page" : undefined} className={`flex min-h-8 items-center justify-between rounded-md px-2.5 py-1.5 text-[12px] transition-colors ${active ? "bg-muted font-semibold text-foreground" : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"}`}><span className="truncate">{item.label}</span>{active && <IconChevronRight className="size-3.5 shrink-0" />}</Link>; })}{!filteredSettings.length && <p className="px-2 py-6 text-center text-xs text-muted-foreground">No settings found.</p>}</nav><div className="mt-4 border-t border-border/70 pt-3"><a href="mailto:hello@zerocraft.in?subject=CMS%20support" className="px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground">Need help?</a></div></aside><div className="min-w-0"><header className="mb-7 flex flex-wrap items-start justify-between gap-4 border-b border-border/70 pb-5"><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Zerocraft Studio</p><h1 className="mt-1 text-2xl font-semibold tracking-tight">{activeItem.label}</h1><p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">Manage your Zerocraft workspace, account, connections, and operating defaults.</p></div><Status>All systems operational</Status></header>{activeKey === "general" ? <GeneralSettings onPanel={setPanel} /> : <GenericSettings item={activeItem} onOpen={(href) => router.push(href)} />}</div></div>
-    <Dialog open={Boolean(panel)} onOpenChange={(open) => !open && setPanel(null)}><DialogContent className="sm:max-w-lg"><DialogHeader><DialogTitle>{panel === "locale" ? "Timezone and locale" : panel === "export" ? "Prepare workspace export" : panel === "danger" ? "Danger zone" : "Workspace profile"}</DialogTitle><DialogDescription>Changes apply to this Zerocraft workspace.</DialogDescription></DialogHeader>{panel === "profile" ? <div className="grid gap-4"><label className="grid gap-2 text-sm font-medium">Workspace name<Input defaultValue="Zerocraft Studio" /></label><label className="grid gap-2 text-sm font-medium">Public URL<Input defaultValue="zerocraft.in" /></label></div> : panel === "locale" ? <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-sm font-medium">Timezone<SelectField value={timezone} onValueChange={setTimezone} options={[{ value: "Asia/Kolkata", label: "Asia/Kolkata" }, { value: "UTC", label: "UTC" }, { value: "America/New_York", label: "America/New_York" }]} /></label><label className="grid gap-2 text-sm font-medium">Locale<SelectField value={locale} onValueChange={setLocale} options={[{ value: "en-IN", label: "English (India)" }, { value: "en-US", label: "English (US)" }]} /></label></div> : panel === "export" ? <div className="rounded-lg border border-border bg-muted/30 p-4"><p className="text-sm font-medium">Export request ready</p><p className="mt-1 text-xs leading-5 text-muted-foreground">A secure export includes workspace settings, content metadata, and operational records. Secrets are excluded.</p></div> : <div className="rounded-lg border border-destructive/25 bg-destructive/[0.03] p-4"><p className="text-sm font-medium">Proceed carefully</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Workspace suspension and deletion require administrator confirmation and are recorded in the audit log.</p></div>}<DialogFooter><Button variant="outline" onClick={() => setPanel(null)}>Close</Button><Button onClick={() => setPanel(null)}>{panel === "export" ? "Request export" : panel === "danger" ? "Keep workspace safe" : "Done"}</Button></DialogFooter></DialogContent></Dialog>
-  </main>;
+  const routeKey = pathname.split("/")[2] as SettingKey | undefined;
+  const active = settings.find((item) => item.key === routeKey) ?? settings[0];
+  const ActiveIcon = active.icon;
+  return <main className="mx-auto w-full max-w-[920px] pb-20"><header className="mb-8 flex items-start gap-3 border-b border-border/70 pb-6"><span className="mt-0.5 grid size-8 place-items-center rounded-lg border border-border bg-muted/50"><ActiveIcon className="size-4 text-muted-foreground" /></span><div className="min-w-0 flex-1"><p className="text-xs text-muted-foreground">Settings</p><h1 className="mt-1 text-2xl font-semibold tracking-tight">{active.label}</h1><p className="mt-1 text-sm text-muted-foreground">{active.description}</p></div><StateBadge>Saved</StateBadge></header>{active.key === "general" ? <GeneralPage /> : <SectionPage item={active} />}</main>;
 }

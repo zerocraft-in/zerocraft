@@ -15,8 +15,9 @@ export type SelectFieldOption = {
 };
 
 type SelectFieldProps = {
-  value: string;
-  onValueChange: (value: string) => void;
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
   options: readonly SelectFieldOption[];
   placeholder?: string;
   className?: string;
@@ -26,7 +27,8 @@ type SelectFieldProps = {
 
 export function SelectField({
   value,
-  onValueChange,
+    onValueChange,
+    defaultValue,
   options,
   placeholder,
   className,
@@ -34,7 +36,7 @@ export function SelectField({
   "aria-label": ariaLabel,
 }: SelectFieldProps) {
   return (
-    <Select value={value} onValueChange={(next) => onValueChange(next ?? "")}>
+    <Select value={value ?? defaultValue} onValueChange={(next) => onValueChange?.(next ?? "")}>
       <SelectTrigger
         className={cn("w-full", className)}
         disabled={disabled}
