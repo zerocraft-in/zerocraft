@@ -1,1 +1,8 @@
-export { default } from "@/app/content/menus/page";
+import { MenusPage } from "@/components/studio/content-workspaces";
+
+export default function MenusRoute() {
+  return <MenusPage />;
+}
+
+
+

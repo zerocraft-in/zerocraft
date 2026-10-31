@@ -1,5 +1,5 @@
 {
-  "ignoreCommand": "npx turbo query affected --packages=@zerocraft/cms --exit-code",
+  "ignoreCommand": "TURBO_SCM_BASE=$VERCEL_GIT_PREVIOUS_SHA npx turbo query affected --packages=@zerocraft/cms --exit-code",
   "crons": [
     {
       "path": "/api/studio/notifications/reports/worker",

@@ -27,6 +27,9 @@ const LEGACY_WORKSPACE_ROUTES: Array<[string, string]> = [
 ];
 
 function canonicalWorkspacePath(pathname: string) {
+  // Gmail workspace keeps its explicit Studio route and must not be treated
+  // as a legacy root-level redirect.
+  if (pathname === "/studio/email") return null;
   if (pathname === "/store" || pathname.startsWith("/store/")) return null;
   if (pathname === "/studio" || pathname.startsWith("/studio/")) return null;
 

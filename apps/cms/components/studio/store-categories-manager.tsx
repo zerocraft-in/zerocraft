@@ -189,7 +189,7 @@ export default function StoreCategoriesManager() {
 
   const load = useCallback(async () => {
     try {
-      const response = await fetch("/api/studio/store", { cache: "no-store" });
+      const response = await fetch("/api/store", { cache: "no-store" });
       const result = await response.json();
       if (!response.ok)
         throw new Error(result.error || "Categories could not be loaded.");
@@ -208,7 +208,7 @@ export default function StoreCategoriesManager() {
 
   useEffect(() => {
     let current = true;
-    fetch("/api/studio/store", { cache: "no-store" })
+    fetch("/api/store", { cache: "no-store" })
       .then(async (response) => {
         const result = await response.json();
         if (!response.ok)
@@ -380,7 +380,7 @@ export default function StoreCategoriesManager() {
       if (pendingImage) {
         const form = new FormData();
         form.set("file", pendingImage.file);
-        const uploadResponse = await fetch("/api/studio/store/category-media", {
+        const uploadResponse = await fetch("/api/store/category-media", {
           method: "POST",
           body: form,
         });
@@ -391,7 +391,7 @@ export default function StoreCategoriesManager() {
           );
         imageUrl = uploadResult.publicUrl;
       }
-      const response = await fetch("/api/studio/store", {
+      const response = await fetch("/api/store", {
         method: editor.id ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -413,7 +413,7 @@ export default function StoreCategoriesManager() {
       const savedId = editor.id || result.id;
       const categoryId =
         kind === "subcategory" ? editor.draft.parent_id : savedId;
-      const assignmentResponse = await fetch("/api/studio/store", {
+      const assignmentResponse = await fetch("/api/store", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -451,7 +451,7 @@ export default function StoreCategoriesManager() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/studio/store", {
+      const response = await fetch("/api/store", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -486,7 +486,7 @@ export default function StoreCategoriesManager() {
           "category" | "subcategory",
           string,
         ];
-        const response = await fetch("/api/studio/store", {
+        const response = await fetch("/api/store", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ entity: kind, id }),
@@ -589,7 +589,7 @@ export default function StoreCategoriesManager() {
   const loadMediaLibrary = useCallback(async () => {
     setMediaLibraryLoading(true);
     try {
-      const response = await fetch("/api/studio/store/media-library", {
+      const response = await fetch("/api/store/media-library", {
         cache: "no-store",
       });
       const result = await response.json();
@@ -1793,3 +1793,5 @@ export default function StoreCategoriesManager() {
     </main>
   );
 }
+
+

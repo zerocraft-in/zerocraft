@@ -16,8 +16,8 @@ const team = read("apps/cms/app/team/page.tsx");
 const products = read("apps/cms/components/studio/studio-store.tsx");
 const productTable = read("apps/cms/components/studio/store-products-data-table.tsx");
 const inventory = read("apps/cms/components/studio/inventory-workspace.tsx");
-const catalogApi = read("apps/cms/app/api/studio/store/route.ts");
-const inventoryApi = read("apps/cms/app/api/studio/store/inventory/route.ts");
+const catalogApi = read("apps/cms/app/api/store/route.ts");
+const inventoryApi = read("apps/cms/app/api/store/inventory/route.ts");
 const storeHealth = read("apps/cms/components/studio/store-overview-dashboard.tsx");
 const systemHealth = read("apps/cms/app/system-health/page.tsx");
 

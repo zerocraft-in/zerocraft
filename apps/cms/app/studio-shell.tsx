@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -63,27 +63,21 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { StudioSidebar } from "@/components/navigations/studio-sidebar";
+import { CmsSidebar } from "@/components/layout/cms-sidebar";
 import { SettingsSidebar } from "@/components/navigations/settings-sidebar";
+import { supabase } from "@/lib/supabase-client";
 import {
-  supabase,
-  type StudioNotification,
-  fetchNotificationsFromSupabase,
-  markAllNotificationsAsReadInSupabase,
-  markNotificationAsReadInSupabase,
-  clearReadNotificationsInSupabase,
-} from "@/lib/supabase-client";
-import {
-  getAdminNavigationForRole,
-  getAdminNavigationForFeatures,
-  getAdminRoutePermission,
-  getAdminRouteFeature,
   getAdminBreadcrumbs,
   isAdminNavigationGroupActive,
   isAdminRouteActive,
 } from "@/lib/admin-navigation";
-import { STUDIO_FEATURES, type StudioFeatureKey } from "@/lib/studio-features";
-import { StudioSidekick } from "@/components/studio/studio-sidekick";
+import { useStudioAccess } from "@/hooks/use-studio-access";
+import { useStudioNotifications } from "@/hooks/use-studio-notifications";
+import { useStudioCommandSearch } from "@/hooks/use-studio-command-search";
+import { useStudioSidekick } from "@/hooks/use-studio-sidekick";
+import { MobileNavigation } from "@/components/layout/mobile-navigation";
+import { CmsShell } from "@/components/layout/cms-shell";
+import { SidekickLauncher } from "@/components/layout/sidekick-launcher";
 import {
   InputGroup,
   InputGroupAddon,
@@ -106,94 +100,59 @@ type Props = {
   user: { name: string; email: string; role: string };
 };
 
-type SpeechRecognitionResultEvent = {
-  results: ArrayLike<ArrayLike<{ transcript: string }>>;
-};
-type SpeechRecognitionLike = {
-  lang: string;
-  interimResults: boolean;
-  continuous: boolean;
-  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
-  onerror: (() => void) | null;
-  onstart: (() => void) | null;
-  onend: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-};
-type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
-
 export default function StudioShell({ children, user }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [commandPrompt, setCommandPrompt] = useState("");
-  const [bottomPrompt, setBottomPrompt] = useState("");
-  const [sidekickOpen, setSidekickOpen] = useState(false);
-  const [sidekickExpanded, setSidekickExpanded] = useState(false);
-  const [sidekickHydrated, setSidekickHydrated] = useState(false);
-  const [voiceStatus, setVoiceStatus] = useState("");
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const voiceRecognitionRef = useRef<SpeechRecognitionLike | null>(null);
-  const [query, setQuery] = useState("");
-  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+  const {
+    commandPrompt,
+    setCommandPrompt,
+    bottomPrompt,
+    setBottomPrompt,
+    sidekickOpen,
+    setSidekickOpen,
+    sidekickExpanded,
+    setSidekickExpanded,
+    voiceStatus,
+    attachedFiles,
+    setAttachedFiles,
+    fileInputRef,
+    sendBottomPrompt,
+    startVoiceCommand,
+  } = useStudioSidekick();
   const [noticesOpen, setNoticesOpen] = useState(false);
-  const [notices, setNotices] = useState<StudioNotification[]>([]);
-  const [noticesLoading, setNoticesLoading] = useState(false);
-  const [notificationsRealtime, setNotificationsRealtime] = useState<
-    "connecting" | "connected" | "offline"
-  >("connecting");
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [collapsedTriggerSuppressed, setCollapsedTriggerSuppressed] =
     useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [permissions, setPermissions] = useState<string[] | null>(null);
-  const [features, setFeatures] = useState<Record<StudioFeatureKey, boolean>>(
-    () =>
-      Object.fromEntries(
-        STUDIO_FEATURES.map((feature) => [feature.key, feature.enabled]),
-      ) as Record<StudioFeatureKey, boolean>,
-  );
-  const navigation = useMemo(
-    () =>
-      getAdminNavigationForFeatures(
-        getAdminNavigationForRole(user.role, permissions),
-        new Set(
-          Object.entries(features)
-            .filter(([, enabled]) => enabled)
-            .map(([key]) => key as StudioFeatureKey),
-        ),
-      ),
-    [user.role, permissions, features],
-  );
+  const { features, navigation } = useStudioAccess(user.role);
   const workspaceNavigation = useMemo(() => navigation, [navigation]);
   const navigationLinks = useMemo(
     () => workspaceNavigation.flatMap((group) => group.links),
     [workspaceNavigation],
   );
-  const results = useMemo(
-    () =>
-      navigationLinks.filter((item) =>
-        item.label.toLowerCase().includes(query.trim().toLowerCase()),
-      ),
-    [navigationLinks, query],
-  );
-  const actionResults = useMemo(
-    () =>
-      quickActions.filter((item) =>
-        item.label.toLowerCase().includes(query.trim().toLowerCase()),
-      ),
-    [query],
-  );
-  const searchResults = useMemo(
-    () => [
-      ...actionResults.map((item) => ({ ...item, section: "Create" as const })),
-      ...results.map((item) => ({ ...item, section: "Navigation" as const })),
-    ],
-    [actionResults, results],
-  );
+  const {
+    searchOpen,
+    setSearchOpen,
+    query,
+    setQuery,
+    activeSearchIndex,
+    setActiveSearchIndex,
+    searchResults,
+    openSearch,
+    goToSearchResult,
+    handleSearchKeyDown,
+  } = useStudioCommandSearch(navigationLinks, quickActions);
+  const {
+    notices,
+    noticesLoading,
+    notificationsRealtime,
+    loadNotifications,
+    readNotice,
+    markAllNoticesRead,
+    clearReadNotices,
+  } = useStudioNotifications((href) => router.push(href));
   const unread = notices.filter((item) => !item.read).length;
   const latestNotices = notices.slice(0, 6);
   const breadcrumbs = getAdminBreadcrumbs(pathname);
@@ -201,21 +160,6 @@ export default function StudioShell({ children, user }: Props) {
   const isSettingsRoute =
     pathname === "/settings" || pathname.startsWith("/settings/");
   const effectiveSidebarOpen = isSettingsRoute ? false : sidebarOpen;
-
-  useEffect(() => {
-    const savedOpen = window.localStorage.getItem("zerocraft-sidekick-open");
-    if (savedOpen === "true") setSidekickOpen(true);
-    // A refresh always returns an open assistant to the compact right panel.
-    // Expanded mode is intentionally session-only.
-    window.localStorage.removeItem("zerocraft-sidekick-expanded");
-    setSidekickExpanded(false);
-    setSidekickHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!sidekickHydrated) return;
-    window.localStorage.setItem("zerocraft-sidekick-open", String(sidekickOpen));
-  }, [sidekickHydrated, sidekickOpen, sidekickExpanded]);
 
   useEffect(() => {
     // Settings uses the dedicated settings rail, so keep the global rail
@@ -235,137 +179,6 @@ export default function StudioShell({ children, user }: Props) {
   useEffect(() => {
     window.localStorage.setItem("zerocraft-sidebar-open", String(sidebarOpen));
   }, [sidebarOpen]);
-  useEffect(() => {
-    let current = true;
-    const onFeatureChange = (event: Event) => {
-      const detail = (event as CustomEvent<{ key?: string; enabled?: boolean }>)
-        .detail;
-      if (!detail?.key || typeof detail.enabled !== "boolean") return;
-      setFeatures((value) => ({
-        ...value,
-        [detail.key as StudioFeatureKey]: detail.enabled,
-      }));
-    };
-    window.addEventListener("studio-feature-change", onFeatureChange);
-    void fetch("/api/studio/me", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) return;
-        const payload = await response.json();
-        if (current && Array.isArray(payload.permissions))
-          setPermissions(payload.permissions);
-      })
-      .catch(() => undefined);
-    void fetch("/api/studio/features", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) return;
-        const payload = (await response.json()) as {
-          features?: Array<{ feature_key: StudioFeatureKey; enabled: boolean }>;
-        };
-        if (current && Array.isArray(payload.features)) {
-          setFeatures((value) => ({
-            ...value,
-            ...Object.fromEntries(
-              payload.features!.map((feature) => [
-                feature.feature_key,
-                feature.enabled,
-              ]),
-            ),
-          }));
-        }
-      })
-      .catch(() => undefined);
-    return () => {
-      current = false;
-      window.removeEventListener("studio-feature-change", onFeatureChange);
-    };
-  }, []);
-  useEffect(() => {
-    if (!permissions) return;
-    const required = getAdminRoutePermission(pathname);
-    if (required && !permissions.includes(required)) router.replace("/");
-    const feature = getAdminRouteFeature(pathname);
-    if (feature && features[feature] === false) router.replace("/");
-  }, [pathname, permissions, features, router]);
-  const loadNotifications = useCallback(async () => {
-    setNoticesLoading(true);
-    try {
-      const data = await fetchNotificationsFromSupabase();
-      setNotices(data);
-    } catch (error) {
-      console.error("Could not load notifications", error);
-    } finally {
-      setNoticesLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-    const initialLoad = window.setTimeout(() => void loadNotifications(), 0);
-    const refreshTimer = window.setInterval(
-      () => void loadNotifications(),
-      60_000,
-    );
-    void supabase.auth.getUser().then(({ data }) => {
-      if (!active || !data.user) return;
-      channel = supabase.channel(`studio-notices:${data.user.id}`);
-      channel
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "notifications",
-            filter: `recipient_id=eq.${data.user.id}`,
-          },
-          () => void loadNotifications(),
-        )
-        .subscribe((status) => {
-          if (!active) return;
-          setNotificationsRealtime(
-            status === "SUBSCRIBED"
-              ? "connected"
-              : status === "CHANNEL_ERROR" || status === "TIMED_OUT"
-                ? "offline"
-                : "connecting",
-          );
-        });
-    });
-    return () => {
-      active = false;
-      window.clearTimeout(initialLoad);
-      window.clearInterval(refreshTimer);
-      if (channel) void supabase.removeChannel(channel);
-    };
-  }, [loadNotifications]);
-
-  function openSearch() {
-    setQuery("");
-    setActiveSearchIndex(0);
-    setSearchOpen(true);
-  }
-
-  function goToSearchResult(href: string) {
-    router.push(href);
-    setSearchOpen(false);
-    setQuery("");
-  }
-
-  function handleSearchKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (!searchResults.length) return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setActiveSearchIndex((index) => (index + 1) % searchResults.length);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setActiveSearchIndex((index) =>
-        index === 0 ? searchResults.length - 1 : index - 1,
-      );
-    } else if (event.key === "Enter") {
-      event.preventDefault();
-      goToSearchResult(searchResults[activeSearchIndex].href);
-    }
-  }
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -417,94 +230,6 @@ export default function StudioShell({ children, user }: Props) {
     }
   }
 
-  async function readNotice(item: StudioNotification) {
-    try {
-      await markNotificationAsReadInSupabase(item.id);
-      setNotices((current) =>
-        current.map((notice) =>
-          notice.id === item.id ? { ...notice, read: true } : notice,
-        ),
-      );
-
-      setNoticesOpen(false);
-      if (item.link?.startsWith("/")) router.push(item.link);
-    } catch (error) {
-      console.error("Could not mark notification as read", error);
-    }
-  }
-
-  async function markAllNoticesRead() {
-    try {
-      await markAllNotificationsAsReadInSupabase();
-      setNotices((items) => items.map((item) => ({ ...item, read: true })));
-    } catch (error) {
-      console.error("Could not mark all notifications as read", error);
-    }
-  }
-
-  async function clearReadNotices() {
-    const cleared = await clearReadNotificationsInSupabase();
-    if (cleared) setNotices((items) => items.filter((item) => !item.read));
-  }
-
-  async function sendBottomPrompt(value = bottomPrompt) {
-    const prompt = value.trim();
-    if (!prompt) return;
-    let finalPrompt = prompt;
-    const selectedFiles = attachedFiles.slice(0, 3);
-    if (selectedFiles.length) {
-      try {
-        const fileContext = await Promise.all(
-          selectedFiles.map(async (file) => {
-            const contents = await file.text();
-            return `\n\n[Attached file: ${file.name}]\n${contents.slice(0, 6000)}`;
-          }),
-        );
-        finalPrompt += fileContext.join("").slice(0, 12000);
-      } catch {
-        setVoiceStatus(
-          "Could not read the selected file. Try a text, CSV, Markdown, or JSON file.",
-        );
-        return;
-      }
-    }
-    setCommandPrompt(finalPrompt);
-    setBottomPrompt("");
-    setAttachedFiles([]);
-    setSidekickOpen(true);
-    setVoiceStatus("");
-  }
-
-  function startVoiceCommand() {
-    const browserWindow = window as Window & {
-      SpeechRecognition?: SpeechRecognitionConstructor;
-      webkitSpeechRecognition?: SpeechRecognitionConstructor;
-    };
-    const Recognition =
-      browserWindow.SpeechRecognition ?? browserWindow.webkitSpeechRecognition;
-    if (!Recognition) {
-      setVoiceStatus("Voice input is not supported in this browser.");
-      return;
-    }
-    voiceRecognitionRef.current?.stop();
-    const recognition = new Recognition();
-    recognition.lang = "en-IN";
-    recognition.interimResults = false;
-    recognition.continuous = false;
-    recognition.onstart = () => setVoiceStatus("Listening…");
-    recognition.onresult = (event) => {
-      const transcript = event.results[0]?.[0]?.transcript?.trim();
-      if (transcript) void sendBottomPrompt(transcript);
-    };
-    recognition.onerror = () =>
-      setVoiceStatus("Could not hear that. Please try again.");
-    recognition.onend = () => {
-      voiceRecognitionRef.current = null;
-    };
-    voiceRecognitionRef.current = recognition;
-    recognition.start();
-  }
-
   return (
     <SidebarProvider
       open={effectiveSidebarOpen}
@@ -521,106 +246,18 @@ export default function StudioShell({ children, user }: Props) {
       }
     >
       <div className="relative isolate flex h-dvh w-full overflow-hidden text-foreground ">
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent
-            side="left"
-            className="w-[min(18rem,88vw)] gap-0 p-3 lg:hidden"
-          >
-            <SheetHeader className="border-b px-1 pb-4 pt-1 text-left">
-              <SheetTitle className="flex items-center gap-3">
-                <span className="grid size-9 place-items-center rounded-xl bg-[#151515]">
-                  <Image
-                    src="/icon.svg"
-                    alt=""
-                    width={24}
-                    height={24}
-                    className="size-6"
-                    priority
-                  />
-                </span>
-                ZeroCraft CMS
-              </SheetTitle>
-              <SheetDescription>Workspace navigation</SheetDescription>
-            </SheetHeader>
-            <nav
-              className="mt-3 space-y-0.5 overflow-y-auto"
-              aria-label="Mobile CMS navigation"
-            >
-              {workspaceNavigation.map((group) => {
-                const groupActive = isAdminNavigationGroupActive(
-                  pathname,
-                  group,
-                );
-                const childLinks = group.links.filter(
-                  (link) => link.href !== group.href,
-                );
-                const GroupIcon = group.icon;
-                return (
-                  <div key={group.label}>
-                    <Link
-                      href={group.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${pathname === group.href ? "bg-muted font-medium text-foreground" : groupActive ? "font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-                    >
-                      <GroupIcon className="size-[18px]" stroke={1.7} />
-                      {group.label}
-                    </Link>
-                    {groupActive && childLinks.length > 0 && (
-                      <div className="mb-1 mt-0.5 space-y-0.5 py-0.5">
-                        {childLinks.map(({ label, href }) => {
-                          const childActive = isAdminRouteActive(
-                            pathname,
-                            href,
-                          );
-                          return (
-                            <Link
-                              key={href}
-                              href={href}
-                              onClick={() => setMobileMenuOpen(false)}
-                              aria-current={childActive ? "page" : undefined}
-                              className={`flex min-h-8 items-center rounded-lg py-1 pl-9 pr-2.5 text-[13px] transition-colors ${childActive ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-                            >
-                              {label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </nav>
-            <div className="mt-4 border-t pt-3">
-              <a
-                href="mailto:hello@zerocraft.in?subject=CMS%20support"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <IconHelpCircle className="size-[18px]" /> Help &amp; support
-              </a>
-              <Link
-                href="/settings"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <IconSettings className="size-[18px]" /> Settings
-              </Link>
-              <button
-                type="button"
-                onClick={() => void signOut()}
-                disabled={isSigningOut}
-                className="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-              >
-                <IconLogout className="size-[18px]" />{" "}
-                {isSigningOut ? "Logging out…" : "Log out"}
-              </button>
-            </div>
-          </SheetContent>
-        </Sheet>
+        <MobileNavigation
+          open={mobileMenuOpen}
+          onOpenChange={setMobileMenuOpen}
+          pathname={pathname}
+          navigation={workspaceNavigation}
+          onSignOut={signOut}
+          isSigningOut={isSigningOut}
+        />
 
         {isSettingsRoute ? (
           <>
-            <StudioSidebar
+            <CmsSidebar
               pathname={pathname}
               navigation={workspaceNavigation}
               user={{ name: user.name, email: user.email }}
@@ -629,7 +266,9 @@ export default function StudioShell({ children, user }: Props) {
               onSignOut={() => void signOut()}
               collapsed={!effectiveSidebarOpen}
               onOpenSearch={openSearch}
-              collapsedTriggerSuppressed={isSettingsRoute || collapsedTriggerSuppressed}
+              collapsedTriggerSuppressed={
+                isSettingsRoute || collapsedTriggerSuppressed
+              }
               onCollapsedTriggerReveal={() =>
                 !isSettingsRoute && setCollapsedTriggerSuppressed(false)
               }
@@ -648,7 +287,7 @@ export default function StudioShell({ children, user }: Props) {
             />
           </>
         ) : (
-          <StudioSidebar
+          <CmsSidebar
             pathname={pathname}
             navigation={workspaceNavigation}
             user={{ name: user.name, email: user.email }}
@@ -692,7 +331,7 @@ export default function StudioShell({ children, user }: Props) {
                 ? "relative z-10 h-full w-full min-h-0 min-w-0 overflow-hidden bg-background outline-none"
                 : isSettingsRoute
                   ? "relative z-10 h-full w-full min-h-0 min-w-0 overflow-y-auto overscroll-y-contain bg-muted rounded-xl outline-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                  : "relative z-10 h-full w-full min-h-0 min-w-0 overflow-y-auto overscroll-y-contain outline-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-xl border border-border/70 bg-muted"
+                  : "relative z-10 h-full w-full min-h-0 min-w-0 overflow-y-auto overscroll-y-contain outline-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-xl border border-border/70 bg-muted",
             )}
           >
             <div
@@ -730,7 +369,7 @@ export default function StudioShell({ children, user }: Props) {
           </div>
 
           {!isSettingsRoute && features.assistant !== false && sidekickOpen && (
-            <StudioSidekick
+            <SidekickLauncher
               pathname={pathname}
               externalPrompt={commandPrompt}
               onPromptConsumed={() => setCommandPrompt("")}
@@ -765,118 +404,115 @@ export default function StudioShell({ children, user }: Props) {
         )}
 
         {/* Global alerts are rendered from the sidebar as an anchored Shopify-style popover. */}
-        {false && <Dialog open={noticesOpen} onOpenChange={setNoticesOpen}>
-          <DialogContent className="w-[min(24rem,calc(100vw-2rem))] sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                Notifications
-                {unread > 0 && <Badge variant="secondary">{unread} new</Badge>}
-                <Badge
-                  variant="outline"
-                  className={`ml-auto gap-1.5 text-[10px] ${notificationsRealtime === "connected" ? "text-emerald-600" : notificationsRealtime === "offline" ? "text-destructive" : "text-muted-foreground"}`}
+        {false && (
+          <Dialog open={noticesOpen} onOpenChange={setNoticesOpen}>
+            <DialogContent className="w-[min(24rem,calc(100vw-2rem))] sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  Notifications
+                  {unread > 0 && (
+                    <Badge variant="secondary">{unread} new</Badge>
+                  )}
+                  <Badge
+                    variant="outline"
+                    className={`ml-auto gap-1.5 text-[10px] ${notificationsRealtime === "connected" ? "text-emerald-600" : notificationsRealtime === "offline" ? "text-destructive" : "text-muted-foreground"}`}
+                  >
+                    <span
+                      className={`size-1.5 rounded-full ${notificationsRealtime === "connected" ? "bg-emerald-500" : notificationsRealtime === "offline" ? "bg-destructive" : "bg-muted-foreground"}`}
+                    />
+                    {notificationsRealtime === "connected"
+                      ? "Live"
+                      : notificationsRealtime === "offline"
+                        ? "Offline"
+                        : "Connecting"}
+                  </Badge>
+                </DialogTitle>
+                <DialogDescription>
+                  Updates and activity from your studio workspace.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex items-center justify-between border-b pb-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void loadNotifications()}
+                  disabled={noticesLoading}
                 >
-                  <span
-                    className={`size-1.5 rounded-full ${notificationsRealtime === "connected" ? "bg-emerald-500" : notificationsRealtime === "offline" ? "bg-destructive" : "bg-muted-foreground"}`}
+                  <IconRefresh
+                    className={noticesLoading ? "animate-spin" : ""}
                   />
-                  {notificationsRealtime === "connected"
-                    ? "Live"
-                    : notificationsRealtime === "offline"
-                      ? "Offline"
-                      : "Connecting"}
-                </Badge>
-              </DialogTitle>
-              <DialogDescription>
-                Updates and activity from your studio workspace.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex items-center justify-between border-b pb-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => void loadNotifications()}
-                disabled={noticesLoading}
-              >
-                <IconRefresh className={noticesLoading ? "animate-spin" : ""} />
-                Refresh
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={!unread}
-                onClick={async () => {
-                  try {
-                    await markAllNotificationsAsReadInSupabase();
-                    setNotices((items) =>
-                      items.map((item) => ({ ...item, read: true })),
-                    );
-                  } catch (error) {
-                    console.error(error);
-                  }
-                }}
-              >
-                Mark all read
-              </Button>
-            </div>
-            <ScrollArea className="h-80 max-h-[40vh]">
-              <div className="mt-3 space-y-2 pr-3">
-                {latestNotices.length ? (
-                  latestNotices.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => void readNotice(item)}
-                      className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted ${!item.read ? "border-primary/30 bg-primary/[0.03]" : ""}`}
-                    >
-                      <span className="flex items-center justify-between gap-2 text-sm font-medium">
-                        <span className="flex min-w-0 items-center gap-2">
-                          {!item.read && (
-                            <span className="size-2 rounded-full bg-primary" />
-                          )}
-                          <span className="truncate">{item.title}</span>
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="shrink-0 text-[10px] capitalize"
-                        >
-                          {item.type}
-                        </Badge>
-                      </span>
-                      <span className="mt-1 block text-xs text-muted-foreground">
-                        {item.message}
-                      </span>
-                      <span className="mt-2 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
-                        <span className="capitalize">{item.category}</span>
-                        <span>
-                          {new Date(item.created_at).toLocaleString()}
-                        </span>
-                      </span>
-                    </button>
-                  ))
-                ) : (
-                  <p className="py-8 text-center text-sm text-muted-foreground">
-                    You’re all caught up.
-                  </p>
-                )}
+                  Refresh
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={!unread}
+                  onClick={() => void markAllNoticesRead()}
+                >
+                  Mark all read
+                </Button>
               </div>
-            </ScrollArea>
-            <div className="mt-3 flex items-center justify-between border-t pt-3">
-              <span className="text-xs text-muted-foreground">
-                Showing the latest {Math.min(latestNotices.length, 6)} alerts
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                render={
-                  <Link
-                    href="/notifications"
-                    onClick={() => setNoticesOpen(false)}
-                  />
-                }
-              >
-                View all
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>}
+              <ScrollArea className="h-80 max-h-[40vh]">
+                <div className="mt-3 space-y-2 pr-3">
+                  {latestNotices.length ? (
+                    latestNotices.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => void readNotice(item)}
+                        className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted ${!item.read ? "border-primary/30 bg-primary/[0.03]" : ""}`}
+                      >
+                        <span className="flex items-center justify-between gap-2 text-sm font-medium">
+                          <span className="flex min-w-0 items-center gap-2">
+                            {!item.read && (
+                              <span className="size-2 rounded-full bg-primary" />
+                            )}
+                            <span className="truncate">{item.title}</span>
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 text-[10px] capitalize"
+                          >
+                            {item.type}
+                          </Badge>
+                        </span>
+                        <span className="mt-1 block text-xs text-muted-foreground">
+                          {item.message}
+                        </span>
+                        <span className="mt-2 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                          <span className="capitalize">{item.category}</span>
+                          <span>
+                            {new Date(item.created_at).toLocaleString()}
+                          </span>
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="py-8 text-center text-sm text-muted-foreground">
+                      You’re all caught up.
+                    </p>
+                  )}
+                </div>
+              </ScrollArea>
+              <div className="mt-3 flex items-center justify-between border-t pt-3">
+                <span className="text-xs text-muted-foreground">
+                  Showing the latest {Math.min(latestNotices.length, 6)} alerts
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  render={
+                    <Link
+                      href="/notifications"
+                      onClick={() => setNoticesOpen(false)}
+                    />
+                  }
+                >
+                  View all
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
 
         <Dialog
           open={searchOpen}

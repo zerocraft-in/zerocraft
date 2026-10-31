@@ -44,6 +44,7 @@ type DataTableWorkspaceProps = {
   sortOptions?: Array<{ id: string; label: string }>;
   activeSort?: string;
   onSortChange?: (sort: string) => void;
+  onCreateView?: () => void;
   children: ReactNode;
   empty?: ReactNode;
   className?: string;
@@ -66,6 +67,7 @@ export function DataTableWorkspace({
   sortOptions = [],
   activeSort,
   onSortChange,
+  onCreateView,
   children,
   empty,
   className,
@@ -101,7 +103,7 @@ export function DataTableWorkspace({
             {typeof view.count === "number" && <span className="ml-1.5 text-[11px] text-muted-foreground">{view.count}</span>}
           </button>
         ))}
-        <button type="button" className="shrink-0 rounded-lg px-2 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">+ Create view</button>
+        <button type="button" onClick={onCreateView} className="shrink-0 rounded-lg px-2 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">+ Create view</button>
       </div>
 
       {selectedCount > 0 ? (

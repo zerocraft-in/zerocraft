@@ -1,1 +1,8 @@
-export { default } from "@/app/content/files/page";
+import { FilesPage } from "@/components/studio/content-workspaces";
+
+export default function FilesRoute() {
+  return <FilesPage />;
+}
+
+
+

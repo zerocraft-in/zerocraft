@@ -1,1 +1,8 @@
-export { default } from "@/app/customers/segments/page";
+import { CustomerSegmentsPage } from "@/components/studio/customers-workspaces";
+
+export default function CustomerSegmentsRoute() {
+  return <CustomerSegmentsPage />;
+}
+
+
+

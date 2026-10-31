@@ -76,7 +76,7 @@ export function FilesMediaManager() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/studio/store/media-library", { cache: "no-store" });
+      const response = await fetch("/api/store/media-library", { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Media library could not be loaded.");
       setAssets(payload.assets || []);
@@ -123,7 +123,7 @@ export function FilesMediaManager() {
         const form = new FormData();
         form.set("file", file);
         if (selectedUploadProduct !== "none") form.set("productId", selectedUploadProduct);
-        const response = await fetch("/api/studio/store/media-library", { method: "POST", body: form });
+        const response = await fetch("/api/store/media-library", { method: "POST", body: form });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `${file.name} could not be uploaded.`);
         completed += 1;
@@ -138,7 +138,7 @@ export function FilesMediaManager() {
     if (!detail) return;
     setSaving(true); setError(null); setNotice(null);
     try {
-      const response = await fetch("/api/studio/store/media-library", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: detail.path, altText, productId: linkProduct === "none" ? undefined : linkProduct }) });
+      const response = await fetch("/api/store/media-library", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: detail.path, altText, productId: linkProduct === "none" ? undefined : linkProduct }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Media changes could not be saved.");
       setDetail(null); setNotice("Media details updated."); await load();
@@ -149,7 +149,7 @@ export function FilesMediaManager() {
   async function moveToBin(asset: Asset) {
     if (!window.confirm(`Move ${asset.fileName} to Recently deleted?`)) return;
     setError(null); setNotice(null);
-    const response = await fetch("/api/studio/store/media-library", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: asset.path }) });
+    const response = await fetch("/api/store/media-library", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: asset.path }) });
     const payload = await response.json();
     if (!response.ok) { setError(payload.error || "The file could not be moved to Recently deleted."); return; }
     setAssets((current) => current.filter((item) => item.path !== asset.path));
@@ -193,3 +193,5 @@ export function FilesMediaManager() {
     </section>
   );
 }
+
+

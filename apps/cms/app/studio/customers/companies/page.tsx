@@ -1,1 +1,8 @@
-export { default } from "@/app/customers/companies/page";
+import { CustomerCompaniesPage } from "@/components/studio/customers-workspaces";
+
+export default function CustomerCompaniesRoute() {
+  return <CustomerCompaniesPage />;
+}
+
+
+

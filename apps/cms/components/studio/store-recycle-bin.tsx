@@ -90,7 +90,7 @@ export default function StoreRecycleBin() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/studio/store/recycle-bin", {
+      const response = await fetch("/api/store/recycle-bin", {
         cache: "no-store",
       });
       const payload = await response.json();
@@ -116,7 +116,7 @@ export default function StoreRecycleBin() {
 
   useEffect(() => {
     let current = true;
-    fetch("/api/studio/store/recycle-bin", { cache: "no-store" })
+    fetch("/api/store/recycle-bin", { cache: "no-store" })
       .then(async (response) => {
         const payload = await response.json();
         if (!response.ok) {
@@ -174,12 +174,12 @@ export default function StoreRecycleBin() {
     try {
       const response =
         type === "product"
-          ? await fetch("/api/studio/store", {
+          ? await fetch("/api/store", {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ entity: "product", id, action: "restore" }),
             })
-          : await fetch("/api/studio/store/recycle-bin", {
+          : await fetch("/api/store/recycle-bin", {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(
@@ -491,3 +491,5 @@ function EmptyRow({
     </TableRow>
   );
 }
+
+

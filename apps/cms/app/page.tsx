@@ -31,7 +31,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useStudioOverview } from "./use-studio-overview";
+import { useStudioOverview } from "@/hooks/use-studio-overview";
 
 type CrmSnapshot = {
   clients: number;
@@ -195,7 +195,7 @@ export default function StudioDashboard() {
           label="Open leads"
           value={crmOpenLeads}
           description="Need a next action"
-          href="/crm"
+          href="/leads?view=new"
           icon={IconUsers}
           accent="bg-blue-500/10 text-blue-600 dark:text-blue-300"
         />
@@ -203,7 +203,7 @@ export default function StudioDashboard() {
           label="Active projects"
           value={activeProjects}
           description="Planning, active or review"
-          href="/projects"
+          href="/projects?view=active"
           icon={IconBriefcase}
           accent="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
         />
@@ -211,7 +211,7 @@ export default function StudioDashboard() {
           label="Store orders"
           value={data?.commerce.totalOrders ?? null}
           description={`${data?.pendingOrders ?? 0} awaiting fulfilment`}
-          href="/orders"
+          href="/orders?view=pending"
           icon={IconShoppingBag}
           accent="bg-amber-500/10 text-amber-600 dark:text-amber-300"
         />
@@ -219,7 +219,7 @@ export default function StudioDashboard() {
           label="Clients"
           value={crm?.clients ?? table("clients")?.count ?? null}
           description="Relationship records"
-          href="/clients"
+          href="/clients?tab=active"
           icon={IconUsers}
           accent="bg-pink-500/10 text-pink-600 dark:text-pink-300"
         />

@@ -1,0 +1,216 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  IconChartBar,
+  IconClock,
+  IconRefresh,
+  IconSearch,
+} from "@tabler/icons-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+
+type Growth = {
+  checkedAt: string;
+  providers: {
+    ga4: { status: string; propertyId: string | null };
+    searchConsole: { status: string; siteUrl: string | null };
+  };
+  leads: {
+    total: number;
+    byStage: Record<string, number>;
+    bySource: Record<string, number>;
+    byCampaign: Record<string, number>;
+  };
+  projects: { total: number; byStatus: Record<string, number> };
+};
+
+export default function GrowthPage() {
+  const [data, setData] = useState<Growth | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  async function load() {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/studio/growth", { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error);
+      setData(payload);
+      setError("");
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Growth data could not be loaded.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => {
+    void load();
+  }, []);
+  const leadMax = Math.max(
+    ...Object.values(data?.leads.bySource || { leads: 1 }),
+    1,
+  );
+  return (
+    <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-6 pb-12">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+            Insights
+          </p>
+          <h1 className="mt-2 flex items-center gap-2 text-3xl font-semibold tracking-tight">
+            <IconChartBar className="size-7" />
+            Growth &amp; attribution
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Lead source performance today, with live provider readiness for
+            external growth data.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => void load()}
+          disabled={loading}
+        >
+          <IconRefresh className={loading ? "animate-spin" : ""} />
+          Refresh
+        </Button>
+      </header>
+      {error && (
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {error}
+        </div>
+      )}
+      <section className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <IconChartBar className="size-4" />
+              Google Analytics
+            </CardTitle>
+            <CardDescription>
+              Read-only traffic and conversion adapter.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <Badge
+                variant="outline"
+                className={
+                  data?.providers.ga4.status === "configured"
+                    ? "border-emerald-500/30 text-emerald-600"
+                    : ""
+                }
+              >
+                {data?.providers.ga4.status === "configured"
+                  ? "Configured"
+                  : "Needs property ID"}
+              </Badge>
+              <p className="mt-3 text-xs text-muted-foreground">
+                {data?.providers.ga4.propertyId ||
+                  "Set GA4_PROPERTY_ID to activate live metrics."}
+              </p>
+            </div>
+            <IconClock className="size-5 text-muted-foreground" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <IconSearch className="size-4" />
+              Search Console
+            </CardTitle>
+            <CardDescription>
+              Read-only SEO and indexing adapter.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <Badge
+                variant="outline"
+                className={
+                  data?.providers.searchConsole.status === "configured"
+                    ? "border-emerald-500/30 text-emerald-600"
+                    : ""
+                }
+              >
+                {data?.providers.searchConsole.status === "configured"
+                  ? "Configured"
+                  : "Needs site URL"}
+              </Badge>
+              <p className="mt-3 text-xs text-muted-foreground">
+                {data?.providers.searchConsole.siteUrl ||
+                  "Set GOOGLE_SEARCH_CONSOLE_SITE_URL to activate live metrics."}
+              </p>
+            </div>
+            <IconClock className="size-5 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </section>
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Leads by source</CardTitle>
+            <CardDescription>
+              {data?.leads.total || 0} tracked enquiries
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {Object.entries(data?.leads.bySource || {}).map(
+              ([source, count]) => (
+                <div key={source}>
+                  <div className="mb-1 flex justify-between text-xs">
+                    <span className="capitalize">{source}</span>
+                    <strong>{count}</strong>
+                  </div>
+                  <Progress value={(count / leadMax) * 100} />
+                </div>
+              ),
+            )}
+            {!data?.leads.total && (
+              <p className="text-sm text-muted-foreground">
+                Lead attribution will appear after the first enquiry.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Pipeline snapshot</CardTitle>
+            <CardDescription>Lead and project status mix.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-2">
+            {Object.entries(data?.leads.byStage || {}).map(([stage, count]) => (
+              <div
+                key={stage}
+                className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-xs"
+              >
+                <span className="capitalize">{stage}</span>
+                <Badge variant="secondary">{count}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {data
+          ? `Updated ${new Date(data.checkedAt).toLocaleString("en-IN")}`
+          : "Waiting for live data"}
+      </p>
+    </main>
+  );
+}

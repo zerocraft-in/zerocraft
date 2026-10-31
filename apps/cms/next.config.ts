@@ -18,7 +18,11 @@ const supabaseHostname = (() => {
 const mediaHostname = (() => {
   const value = process.env.CLOUDFLARE_R2_PUBLIC_BASE_URL;
   if (!value) return null;
-  try { return new URL(value).hostname; } catch { return null; }
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return null;
+  }
 })();
 
 const nextConfig: NextConfig = {
@@ -28,7 +32,8 @@ const nextConfig: NextConfig = {
     workerThreads: false,
     webpackBuildWorker: false,
   },
-  distDir: releaseDistDirectory || (process.env.VERCEL ? ".next" : ".next-local"),
+  distDir:
+    releaseDistDirectory || (process.env.VERCEL ? ".next" : ".next-local"),
   ...(releaseDistDirectory
     ? {
         experimental: {
@@ -64,7 +69,13 @@ const nextConfig: NextConfig = {
           ]
         : []),
       ...(mediaHostname
-        ? [{ protocol: "https" as const, hostname: mediaHostname, pathname: "/**" }]
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: mediaHostname,
+              pathname: "/**",
+            },
+          ]
         : []),
     ],
   },

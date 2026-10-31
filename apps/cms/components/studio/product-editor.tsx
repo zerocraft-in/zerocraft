@@ -324,7 +324,7 @@ export function ProductEditor({
     let active = true;
     async function load() {
       try {
-        const response = await fetch("/api/studio/store", {
+        const response = await fetch("/api/store", {
           cache: "no-store",
         });
         const result = (await response.json()) as StorePayload & {
@@ -559,7 +559,7 @@ export function ProductEditor({
 
   async function updateDigitalVariant(file: DigitalFile, variantId: string) {
     if (!file.id || !product.id) return;
-    const response = await fetch("/api/studio/store/digital-files", {
+    const response = await fetch("/api/store/digital-files", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -582,7 +582,7 @@ export function ProductEditor({
 
   async function removeDigitalFile(file: DigitalFile) {
     if (!file.id || !product.id) return;
-    const response = await fetch("/api/studio/store/digital-files", {
+    const response = await fetch("/api/store/digital-files", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId: product.id, fileId: file.id }),
@@ -605,7 +605,7 @@ export function ProductEditor({
     if (mediaLibrary.length || mediaLibraryLoading) return;
     setMediaLibraryLoading(true);
     try {
-      const response = await fetch("/api/studio/store/media-library", {
+      const response = await fetch("/api/store/media-library", {
         cache: "no-store",
       });
       const result = (await response.json()) as {
@@ -809,7 +809,7 @@ export function ProductEditor({
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("/api/studio/store", {
+      const response = await fetch("/api/store", {
         method: mode === "edit" ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -832,7 +832,7 @@ export function ProductEditor({
           form.set("productId", savedId);
           form.set("file", media.file);
           form.set("altText", product.title);
-          const uploadResponse = await fetch("/api/studio/store/media", {
+          const uploadResponse = await fetch("/api/store/media", {
             method: "POST",
             body: form,
           });
@@ -848,7 +848,7 @@ export function ProductEditor({
             firstUploadedUrl = uploadResult.media?.public_url || "";
         }
         if (!product.media[0]?.public_url && firstUploadedUrl)
-          await fetch("/api/studio/store", {
+          await fetch("/api/store", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -861,7 +861,7 @@ export function ProductEditor({
       if (savedId)
         for (const [index, media] of product.media.entries())
           if (media.id) {
-            const reorderResponse = await fetch("/api/studio/store/media", {
+            const reorderResponse = await fetch("/api/store/media", {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -875,7 +875,7 @@ export function ProductEditor({
               throw new Error("The product image order could not be saved.");
           }
       if (savedId && product.media[0]?.id)
-        await fetch("/api/studio/store/media", {
+        await fetch("/api/store/media", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -895,7 +895,7 @@ export function ProductEditor({
           form.set("file", file.file);
           if (file.variantId) form.set("variantId", file.variantId);
           const uploadResponse = await fetch(
-            "/api/studio/store/digital-files",
+            "/api/store/digital-files",
             { method: "POST", body: form },
           );
           const uploadResult = (await uploadResponse.json()) as {
@@ -2159,3 +2159,5 @@ export function ProductEditor({
     </form>
   );
 }
+
+

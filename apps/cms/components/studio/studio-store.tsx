@@ -229,7 +229,7 @@ export default function StudioStore({
   }));
 
   const requestStore = useCallback(async () => {
-    const response = await fetch("/api/studio/store", { cache: "no-store" });
+    const response = await fetch("/api/store", { cache: "no-store" });
     const result = await response.json();
     if (!response.ok)
       throw new Error(result.error || "Store data could not be loaded.");
@@ -345,7 +345,7 @@ export default function StudioStore({
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/studio/store", {
+      const response = await fetch("/api/store", {
         method: editor.id ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -388,7 +388,7 @@ export default function StudioStore({
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/studio/store", {
+      const response = await fetch("/api/store", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ entity, id }),
@@ -417,7 +417,7 @@ export default function StudioStore({
       const failures = await Promise.all(
         removable.map(async (product) => {
           try {
-            const response = await fetch("/api/studio/store", {
+            const response = await fetch("/api/store", {
               method: "DELETE",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ entity: "product", id: product.id }),
@@ -455,7 +455,7 @@ export default function StudioStore({
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/studio/store", {
+      const response = await fetch("/api/store", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ entity: "product", id: product.id, action: "restore" }),
@@ -480,7 +480,7 @@ export default function StudioStore({
     try {
       await Promise.all(
         selected.map(async (product) => {
-          const response = await fetch("/api/studio/store", {
+          const response = await fetch("/api/store", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -525,7 +525,7 @@ export default function StudioStore({
       const form = new FormData();
       form.set("productId", editor.id);
       form.set("file", file);
-      const response = await fetch("/api/studio/store/media", { method: "POST", body: form });
+      const response = await fetch("/api/store/media", { method: "POST", body: form });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "The product image could not be uploaded.");
       await load();
@@ -542,7 +542,7 @@ export default function StudioStore({
     setMediaBusy(true);
     setMediaError("");
     try {
-      const response = await fetch("/api/studio/store/media", {
+      const response = await fetch("/api/store/media", {
         method: action === "delete" ? "DELETE" : "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(action === "delete" ? { productId: editor.id, mediaId: media.id } : { productId: editor.id, mediaId: media.id, action }),
@@ -576,7 +576,7 @@ export default function StudioStore({
         [rows[neighborIndex], rows[index].sort_order],
       ] as const;
       for (const [row, sortOrder] of updates) {
-        const response = await fetch("/api/studio/store/media", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: editor.id, mediaId: row.id, action: "reorder", sortOrder }) });
+        const response = await fetch("/api/store/media", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: editor.id, mediaId: row.id, action: "reorder", sortOrder }) });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "The image order could not be updated.");
       }
@@ -1335,3 +1335,5 @@ function StoreSkeleton() {
     </div>
   );
 }
+
+

@@ -51,7 +51,7 @@ export default function InventoryWorkspace() {
   const [drafts, setDrafts] = useState<Record<string, { onHand: string; reorderPoint: string }>>({});
 
   const requestInventory = useCallback(async () => {
-    const response = await fetch("/api/studio/store/inventory", { cache: "no-store" });
+    const response = await fetch("/api/store/inventory", { cache: "no-store" });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "Inventory could not be loaded.");
     return result as InventoryPayload;
@@ -108,7 +108,7 @@ export default function InventoryWorkspace() {
   const lowStock = payload.levels.filter((level) => Number(level.on_hand) - Number(level.reserved) <= Number(level.reorder_point)).length;
 
   async function request(method: "POST" | "PATCH" | "DELETE", body: Record<string, unknown>) {
-    const response = await fetch("/api/studio/store/inventory", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const response = await fetch("/api/store/inventory", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "Inventory update failed.");
     return result;
@@ -176,3 +176,5 @@ export default function InventoryWorkspace() {
     </PageShell>
   );
 }
+
+

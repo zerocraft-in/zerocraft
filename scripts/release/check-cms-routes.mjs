@@ -8,14 +8,14 @@ const cms = join(root, "apps", "cms");
 const pageRoutes = [
   ["/", "app/page.tsx"],
   ["/login", "app/login/page.tsx"],
-  ["/works", "app/works/page.tsx"],
-  ["/blogs", "app/blogs/page.tsx"],
-  ["/clients", "app/clients/page.tsx"],
-  ["/crm", "app/crm/page.tsx"],
-  ["/content", "app/content/page.tsx"],
-  ["/leads", "app/leads/page.tsx"],
-  ["/projects", "app/projects/page.tsx"],
-  ["/appointments", "app/appointments/page.tsx"],
+  ["/studio/works", "app/studio/works/page.tsx"],
+  ["/studio/blogs", "app/studio/blogs/page.tsx"],
+  ["/studio/clients", "app/studio/clients/page.tsx"],
+  ["/studio/crm", "app/studio/crm/page.tsx"],
+  ["/studio/content", "app/studio/content/page.tsx"],
+  ["/studio/leads", "app/studio/leads/page.tsx"],
+  ["/studio/projects", "app/studio/projects/page.tsx"],
+  ["/studio/appointments", "app/studio/appointments/page.tsx"],
   ["/studio/email", "app/studio/email/page.tsx"],
   ["/team", "app/team/page.tsx"],
   ["/store", "app/store/page.tsx"],
@@ -38,11 +38,11 @@ const apiRoutes = [
   ["/api/studio/me", "app/api/studio/me/route.ts"],
   ["/api/studio/team", "app/api/studio/team/route.ts"],
   ["/api/studio/audit-logs", "app/api/studio/audit-logs/route.ts"],
-  ["/api/studio/store", "app/api/studio/store/route.ts"],
-  ["/api/studio/store/recycle-bin", "app/api/studio/store/recycle-bin/route.ts"],
-  ["/api/studio/store/media", "app/api/studio/store/media/route.ts"],
-  ["/api/studio/store/media-library", "app/api/studio/store/media-library/route.ts"],
-  ["/api/studio/store/category-media", "app/api/studio/store/category-media/route.ts"],
+  ["/api/store", "app/api/store/route.ts"],
+  ["/api/store/recycle-bin", "app/api/store/recycle-bin/route.ts"],
+  ["/api/store/media", "app/api/store/media/route.ts"],
+  ["/api/store/media-library", "app/api/store/media-library/route.ts"],
+  ["/api/store/category-media", "app/api/store/category-media/route.ts"],
   ["/api/studio/alerts/low-stock", "app/api/studio/alerts/low-stock/route.ts"],
   ["/api/studio/system-health", "app/api/studio/system-health/route.ts"],
   ["/api/studio/integrations", "app/api/studio/integrations/route.ts"],
@@ -71,7 +71,7 @@ for (const staleRoute of ["/studio", "/transactions", "/subscriptions", "/disput
   assert(!navigation.includes(`href: "${staleRoute}"`), `navigation still exposes stale route ${staleRoute}`);
 }
 
-const placeholderRoutes = ["channels", "disputes", "scheduling", "subscriptions", "time-tracking", "whats-new"];
+const placeholderRoutes = ["channels", "scheduling", "time-tracking", "whats-new"];
 for (const route of placeholderRoutes) {
   const source = readFileSync(join(cms, "app", route, "page.tsx"), "utf8");
   assert(source.includes("ComingSoonPage"), `${route}: placeholder route must use the honest ComingSoonPage state`);

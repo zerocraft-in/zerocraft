@@ -24,7 +24,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ADMIN_ROUTES } from "@/lib/admin-routes";
 import { studio } from "@/lib/studio-config";
-import { useStudioOverview } from "../use-studio-overview";
+import { useStudioOverview } from "@/hooks/use-studio-overview";
 
 const metricConfig = [
   { label: "Total works", key: "works", icon: IconBriefcase },
@@ -62,8 +62,8 @@ export default function StudioOverviewPage() {
             <IconBriefcase className="size-6" /> Studio
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
-            Your central workspace for works, clients, appointments, and studio
-            operations.
+            Your central workspace for portfolio works, client projects,
+            appointments, and studio operations.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -85,27 +85,6 @@ export default function StudioOverviewPage() {
         </div>
       </header>
 
-      <nav
-        className="flex flex-wrap items-center gap-1 rounded-xl border border-border bg-card p-1 shadow-sm"
-        aria-label="Studio navigation"
-      >
-        {[
-          { label: "Overview", href: ADMIN_ROUTES.studio.overview },
-          { label: "Works", href: ADMIN_ROUTES.studio.works },
-          { label: "Clients", href: ADMIN_ROUTES.studio.clients },
-          { label: "Appointments", href: ADMIN_ROUTES.studio.appointments },
-          { label: "Journal", href: ADMIN_ROUTES.studio.blogs },
-        ].map((item, index) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition ${index === 0 ? "bg-accent text-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-
       {error && (
         <div
           role="alert"
@@ -125,8 +104,16 @@ export default function StudioOverviewPage() {
         {metricConfig.map((metric) => {
           const Icon = metric.icon;
           const value = count(metric.key);
+          const href = metric.key === "works"
+            ? ADMIN_ROUTES.studio.works
+            : metric.key === "clients"
+              ? `${ADMIN_ROUTES.studio.clients}?tab=active`
+              : metric.key === "appointments"
+                ? ADMIN_ROUTES.studio.appointments
+                : `${ADMIN_ROUTES.studio.blogs}?status=published`;
           return (
-            <Card key={metric.key} className="border-border shadow-none">
+            <Card key={metric.key} className="border-border shadow-none transition hover:border-primary/40 hover:bg-muted/20">
+              <Link href={href} className="block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
                 <CardDescription>{metric.label}</CardDescription>
                 <Icon className="size-4" />
@@ -141,6 +128,7 @@ export default function StudioOverviewPage() {
                     : "Connected workspace data"}
                 </p>
               </CardContent>
+              </Link>
             </Card>
           );
         })}
@@ -277,6 +265,9 @@ export default function StudioOverviewPage() {
                     <span className="mt-1 size-2 rounded-full bg-primary" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-xs font-semibold">
+                        <span className="mr-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                          {item.href.startsWith("/store/") ? "Store" : "Studio"}
+                        </span>
                         {item.title}
                       </span>
                       <span className="mt-1 block text-[11px] text-muted-foreground">

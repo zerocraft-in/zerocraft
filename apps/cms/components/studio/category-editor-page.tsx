@@ -43,7 +43,7 @@ export default function CategoryEditorPage({ categoryId }: { categoryId?: string
 
   useEffect(() => {
     let mounted = true;
-    fetch("/api/studio/store", { cache: "no-store" })
+    fetch("/api/store", { cache: "no-store" })
       .then(async (response) => {
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "Category data could not be loaded.");
@@ -82,7 +82,7 @@ export default function CategoryEditorPage({ categoryId }: { categoryId?: string
     if (assets.length) return;
     setLibraryLoading(true);
     try {
-      const response = await fetch("/api/studio/store/media-library", { cache: "no-store" });
+      const response = await fetch("/api/store/media-library", { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Media library could not be loaded.");
       setAssets((result.assets || []) as MediaAsset[]);
@@ -106,12 +106,12 @@ export default function CategoryEditorPage({ categoryId }: { categoryId?: string
       if (uploadFile) {
         const form = new FormData();
         form.set("file", uploadFile);
-        const uploadResponse = await fetch("/api/studio/store/category-media", { method: "POST", body: form });
+        const uploadResponse = await fetch("/api/store/category-media", { method: "POST", body: form });
         const uploadResult = await uploadResponse.json();
         if (!uploadResponse.ok) throw new Error(uploadResult.error || "Category image could not be uploaded.");
         savedImageUrl = uploadResult.publicUrl;
       }
-      const response = await fetch("/api/studio/store", {
+      const response = await fetch("/api/store", {
         method: editing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -125,7 +125,7 @@ export default function CategoryEditorPage({ categoryId }: { categoryId?: string
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Category could not be saved.");
       const savedId = editing ? categoryId : result.id;
-      const assignmentResponse = await fetch("/api/studio/store", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entity: "category_items", id: parentId || savedId, subcategory_id: parentId ? savedId : null, product_ids: selectedItemIds }) });
+      const assignmentResponse = await fetch("/api/store", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entity: "category_items", id: parentId || savedId, subcategory_id: parentId ? savedId : null, product_ids: selectedItemIds }) });
       if (!assignmentResponse.ok) throw new Error("Category items could not be updated.");
       router.push("/store/categories");
       router.refresh();
@@ -198,3 +198,5 @@ export default function CategoryEditorPage({ categoryId }: { categoryId?: string
     </main>
   );
 }
+
+
