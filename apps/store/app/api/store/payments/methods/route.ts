@@ -1,11 +1,11 @@
-import { createClient } from "@/apps/studio/utils/supabase/server";
+import { createClient } from "@zerocraft/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("store_payment_methods")
+    .from("payment_methods")
     .select(
       "method_code,display_name,merchant_name,upi_vpa,upi_qr_image_url,bank_name,bank_account_name,bank_account_number,bank_ifsc,instructions",
     )

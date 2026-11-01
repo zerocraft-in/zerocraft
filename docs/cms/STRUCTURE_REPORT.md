@@ -61,4 +61,4 @@ The existing `/reports` page is an application report, not an audit-log viewer. 
 
 ## 6. Current integration boundary
 
-The `/integrations` workspace now exposes the typed Studio app registry, safe provider status, workspace enablement controls, and a connection roadmap. The protected `/api/studio/integrations` route reads and updates non-secret provider metadata through the server-only service client. Provider credentials are never returned to the browser. Real OAuth/API connectors remain a separate deployment step because they require provider credentials, scopes, redirect URLs, and production verification.
+The `/settings/integrations` workspace now exposes the typed Studio app registry, safe provider status, workspace enablement controls, and a connection roadmap. The protected `/api/studio/integrations` route reads and updates non-secret provider metadata through the server-only service client. Provider credentials are never returned to the browser. Real OAuth/API connectors remain a separate deployment step because they require provider credentials, scopes, redirect URLs, and production verification.

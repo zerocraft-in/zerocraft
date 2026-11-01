@@ -32,7 +32,7 @@ export default async function Home() {
         <Reel className="hero-wm" />
         <div className="wrap hero">
           <div className="hero-copy">
-            <span className="mono gold row-c"><Icon name="reel" /> ZeroCraft Studio presents · Drop 07</span>
+            <span className="mono gold row-c"><Icon name="reel" /> ZeroCraft Commerce presents · Drop 07</span>
             <h1 id="home-hero-title">Wear the<br /><span>Story.</span></h1>
             <div className="langs-line"><span lang="ta">தமிழ்</span> · <span lang="ml">മലയാളം</span></div>
             <p className="lead">Streetwear, posters and custom pieces built on cinema, tea-stall debates and the stories of Tamil Nadu and Kerala. Original art, studio printed.</p>
@@ -112,7 +112,7 @@ export default async function Home() {
             <div><span className="mono red-t">Now trending</span><h2 id="trending-products-title">First day. <em>First show.</em></h2><p className="muted">Fresh picks for your next favourite.</p></div>
             <Link className="btn o" href="/shop">View all <Icon name="arrow" /></Link>
           </div>
-          {trending.length ? <div className="pgrid trending-products-grid">{trending.map((product, index) => <div className={`trending-product-item trending-product-item--${index + 1}`} key={product.id}><span className="trending-product-item__number">{String(index + 1).padStart(2, '0')}</span><CatalogProductCard product={product} /></div>)}</div> : <p className="muted">New products will appear here when they are published in Studio.</p>}
+          {trending.length ? <div className="pgrid trending-products-grid">{trending.map((product, index) => <div className={`trending-product-item trending-product-item--${index + 1}`} key={product.id}><span className="trending-product-item__number">{String(index + 1).padStart(2, '0')}</span><CatalogProductCard product={product} /></div>)}</div> : <p className="muted">New products will appear here when they are published in Commerce.</p>}
         </div>
       </section>
 
@@ -182,7 +182,7 @@ export default async function Home() {
       {/* TRUST */}
       <section className="trust-s">
         <div className="wrap trust">
-          {[['truck', 'Free shipping', 'Above ₹999'], ['ret', 'Easy exchange', '7-day returns'], ['shield', 'Secure checkout', 'UPI & cards'], ['reel', 'Studio printed', 'Made in India']].map(([i, t, s]) => (
+          {[['truck', 'Free shipping', 'Above ₹999'], ['ret', 'Easy exchange', '7-day returns'], ['shield', 'Secure checkout', 'UPI & cards'], ['reel', 'Commerce printed', 'Made in India']].map(([i, t, s]) => (
             <div key={t}><Icon name={i} size={30} /><div><b>{t}</b><div className="mono muted">{s}</div></div></div>
           ))}
         </div>

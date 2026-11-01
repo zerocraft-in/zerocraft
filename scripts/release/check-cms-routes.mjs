@@ -3,81 +3,45 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
-const cms = join(root, "apps", "cms");
+const appPath = (app, relativePath) => join(root, "apps", app, relativePath);
 
-const pageRoutes = [
-  ["/", "app/page.tsx"],
-  ["/login", "app/login/page.tsx"],
-  ["/studio/works", "app/studio/works/page.tsx"],
-  ["/studio/blogs", "app/studio/blogs/page.tsx"],
-  ["/studio/clients", "app/studio/clients/page.tsx"],
-  ["/studio/crm", "app/studio/crm/page.tsx"],
-  ["/studio/content", "app/studio/content/page.tsx"],
-  ["/studio/leads", "app/studio/leads/page.tsx"],
-  ["/studio/projects", "app/studio/projects/page.tsx"],
-  ["/studio/appointments", "app/studio/appointments/page.tsx"],
-  ["/studio/email", "app/studio/email/page.tsx"],
-  ["/team", "app/team/page.tsx"],
-  ["/store", "app/store/page.tsx"],
-  ["/store/products", "app/store/products/page.tsx"],
-  ["/store/categories", "app/store/categories/page.tsx"],
-  ["/store/bin", "app/store/bin/page.tsx"],
-  ["/media-library", "app/media-library/page.tsx"],
-  ["/store/inventory", "app/store/inventory/page.tsx"],
-  ["/audit-logs", "app/audit-logs/page.tsx"],
-  ["/automations", "app/automations/page.tsx"],
-  ["/notifications", "app/notifications/page.tsx"],
-  ["/system-health", "app/system-health/page.tsx"],
-  ["/integrations", "app/integrations/page.tsx"],
-  ["/growth", "app/growth/page.tsx"],
-  ["/search-console", "app/search-console/page.tsx"],
-];
+const contracts = {
+  cms: [
+    ["/", "app/page.tsx"], ["/login", "app/login/page.tsx"],
+    ["/store", "app/store/page.tsx"], ["/store/[slug]", "app/store/[slug]/page.tsx"],
+    ...["products", "categories", "orders", "inventory", "content", "media", "analytics", "settings", "bin"]
+      .map(section => [`/store/[slug]/${section}`, `app/store/[slug]/${section}/page.tsx`]),
+    ["/store/[slug]/media/library", "app/store/[slug]/media/library/page.tsx"],
+    ...["metaobjects", "files", "menus", "articles"].map(section => [`/store/[slug]/content/${section}`, `app/store/[slug]/content/${section}/page.tsx`]),
+    ["/api/store/content/[kind]", "app/api/store/content/[kind]/route.ts"],
+    ["/store/[slug]/settings/users", "app/store/[slug]/settings/users/page.tsx"],
+    ["/store/[slug]/settings/users/new", "app/store/[slug]/settings/users/new/page.tsx"],
+    ["/store/[slug]/settings/users/[id]", "app/store/[slug]/settings/users/[id]/page.tsx"],
+    ["/store/[slug]/settings/users/roles", "app/store/[slug]/settings/users/roles/page.tsx"],
+    ["/store/[slug]/settings/users/security", "app/store/[slug]/settings/users/security/page.tsx"],
+    ["/api/admin/me", "app/api/admin/me/route.ts"], ["/api/admin/team", "app/api/admin/team/route.ts"],
+    ["/api/health", "app/api/health/route.ts"], ["/api/store", "app/api/store/route.ts"],
+    ["/api/store/media", "app/api/store/media/route.ts"], ["/api/store/digital-files", "app/api/store/digital-files/route.ts"],
+    ["/api/store/customization", "app/api/store/customization/route.ts"],
+  ],
 
-const apiRoutes = [
-  ["/api/health", "app/api/health/route.ts"],
-  ["/api/studio/me", "app/api/studio/me/route.ts"],
-  ["/api/studio/team", "app/api/studio/team/route.ts"],
-  ["/api/studio/audit-logs", "app/api/studio/audit-logs/route.ts"],
-  ["/api/store", "app/api/store/route.ts"],
-  ["/api/store/recycle-bin", "app/api/store/recycle-bin/route.ts"],
-  ["/api/store/media", "app/api/store/media/route.ts"],
-  ["/api/store/media-library", "app/api/store/media-library/route.ts"],
-  ["/api/store/category-media", "app/api/store/category-media/route.ts"],
-  ["/api/studio/alerts/low-stock", "app/api/studio/alerts/low-stock/route.ts"],
-  ["/api/studio/system-health", "app/api/studio/system-health/route.ts"],
-  ["/api/studio/integrations", "app/api/studio/integrations/route.ts"],
-  ["/api/studio/integrations/connect", "app/api/studio/integrations/connect/route.ts"],
-  ["/api/studio/integrations/health", "app/api/studio/integrations/health/route.ts"],
-  ["/api/studio/features", "app/api/studio/features/route.ts"],
-  ["/api/studio/leads", "app/api/studio/leads/route.ts"],
-  ["/api/studio/crm", "app/api/studio/crm/route.ts"],
-  ["/api/studio/content/pages", "app/api/studio/content/pages/route.ts"],
-  ["/api/studio/leads/activities", "app/api/studio/leads/activities/route.ts"],
-  ["/api/studio/projects", "app/api/studio/projects/route.ts"],
-  ["/api/studio/projects/milestones", "app/api/studio/projects/milestones/route.ts"],
-  ["/api/studio/growth", "app/api/studio/growth/route.ts"],
-  ["/api/studio/search-console", "app/api/studio/search-console/route.ts"],
-  ["/api/studio/search-console/oauth", "app/api/studio/search-console/oauth/route.ts"],
-  ["/api/studio/search-console/oauth/callback", "app/api/studio/search-console/oauth/callback/route.ts"],
-];
+};
 
-for (const [route, relativePath] of [...pageRoutes, ...apiRoutes]) {
-  assert(existsSync(join(cms, relativePath)), `${route}: missing ${relativePath}`);
-  console.log(`PASS ${route}`);
+for (const [app, routes] of Object.entries(contracts)) {
+  for (const [route, relativePath] of routes) {
+    assert(existsSync(appPath(app, relativePath)), `${app} ${route}: missing ${relativePath}`);
+    console.log(`PASS ${app} ${route}`);
+  }
 }
 
-const navigation = readFileSync(join(cms, "lib", "admin-navigation.ts"), "utf8");
-for (const staleRoute of ["/studio", "/transactions", "/subscriptions", "/disputes", "/scheduling", "/time-tracking", "/channels"]) {
-  assert(!navigation.includes(`href: "${staleRoute}"`), `navigation still exposes stale route ${staleRoute}`);
+const cmsRoutes = readFileSync(appPath("cms", "proxy.ts"), "utf8");
+assert(cmsRoutes.includes("/store") && cmsRoutes.includes("/api/store") && cmsRoutes.includes("/api/admin"), "CMS proxy is missing protected admin paths");
+
+for (const staleRoute of ["/system-health", "/audit-logs", "/automations", "/integrations", "/growth", "/search-console", "/team"]) {
+  for (const app of ["cms"]) {
+    const files = ["lib/admin-navigation.ts", "lib/admin-routes.ts"].map((file) => appPath(app, file));
+    for (const file of files) if (existsSync(file)) assert(!readFileSync(file, "utf8").includes(`href: "${staleRoute}"`), `${app} exposes removed route ${staleRoute}`);
+  }
 }
 
-const placeholderRoutes = ["channels", "scheduling", "time-tracking", "whats-new"];
-for (const route of placeholderRoutes) {
-  const source = readFileSync(join(cms, "app", route, "page.tsx"), "utf8");
-  assert(source.includes("ComingSoonPage"), `${route}: placeholder route must use the honest ComingSoonPage state`);
-}
-
-const transactionsSource = readFileSync(join(cms, "app", "transactions", "page.tsx"), "utf8");
-assert(transactionsSource.includes("ManualPaymentsReview"), "transactions: manual payments review route is missing");
-
-console.log("CMS route contract checks passed.");
+console.log("CMS/Store route contract checks passed.");

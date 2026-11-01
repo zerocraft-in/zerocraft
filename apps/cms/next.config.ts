@@ -44,9 +44,10 @@ const nextConfig: NextConfig = {
       }
     : {}),
   outputFileTracingRoot: path.join(configDirectory, "../.."),
-  transpilePackages: ["@zerocraft/supabase"],
+  transpilePackages: ["@zerocraft/supabase", "@zerocraft/ui"],
   images: {
     remotePatterns: [
+      { protocol: "https", hostname: "*.supabase.co" },
       {
         protocol: "https",
         hostname: "images.unsplash.com",

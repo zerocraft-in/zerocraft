@@ -1,75 +1,171 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { OtpLoginForm } from "@/components/auth/otp-login-form";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { IconShieldLock } from "@tabler/icons-react";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Studio Sign In | Zerocraft Studio",
-  description: "Secure authentication portal for the Zerocraft Studio CMS.",
-  robots: { index: false, follow: false },
-};
+import { useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { isSafeReturnPath } from "@/lib/domains";
+import { Button } from "@zerocraft/components/ui/button";
+import { Input } from "@zerocraft/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@zerocraft/components/ui/card";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [token, setToken] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const requestInFlight = useRef(false);
+  const next = isSafeReturnPath(searchParams.get("next"), "/");
+
+  async function sendCode() {
+    const response = await fetch("/api/platform/auth/otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify({ email }),
+    });
+    const result = await response.json().catch(() => null) as { error?: string; sent?: boolean } | null;
+    if (!response.ok || !result?.sent) {
+      throw new Error(result?.error || "We could not send your sign-in code. Please retry.");
+    }
+  }
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (requestInFlight.current) return;
+    requestInFlight.current = true;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      if (sent) {
+        const response = await fetch("/api/platform/auth/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ email, token, next }),
+        });
+        const result = await response.json().catch(() => null) as { error?: string; next?: string } | null;
+        if (!response.ok) throw new Error(result?.error || "The code could not be verified. Check it and try again.");
+        if (!result?.next) throw new Error("Sign-in succeeded, but no destination was returned. Please retry.");
+        // The verification endpoint writes the platform session cookie before this navigation.
+        window.location.replace(result.next);
+      } else {
+        await sendCode();
+        setSent(true);
+      }
+    } catch (cause) {
+      const authError = cause as { message?: string; status?: number; code?: string };
+      if (sent) {
+        setError(authError.message || "The code could not be verified. Check it and try again.");
+      } else if (authError.status === 500) {
+        setError(`The platform Auth service returned HTTP 500 while sending the code${authError.code ? ` (${authError.code})` : ""}. Check the platform project's Auth logs, SMTP delivery, and email template. ${authError.message || ""}`.trim());
+      } else {
+        setError(authError.message || "We could not send your sign-in code. Please retry.");
+      }
+    } finally {
+      requestInFlight.current = false;
+      setBusy(false);
+    }
+  }
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12 text-foreground">
-      <div className="relative z-10 w-full max-w-md space-y-6">
-        <div className="text-center space-y-3">
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-3 focus:outline-none"
-            aria-label="Zerocraft Studio home"
-          >
-            <span className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-transform duration-200 group-hover:scale-105">
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6 fill-current">
-                <path d="M5.16.43c4.97,7.25,9.93,8.51,14.9,3.78,1.09,1.24,1.94,2.48,2.53,3.71-2.41,3.97-7.69,4.08-11.59,6.41,4.15-.64,8.18-.19,12.08,1.37-.44,1.21-1.13,2.42-2.07,3.63-5.6-5.34-11.2-3.92-16.8,4.26-1.48-1.89-2.57-3.78-3.3-5.67,2.87-6.36,8.78-7.1,12.63-8.59-3.92-.16-7.97-1.26-12.14-3.32.88-1.86,2.13-3.72,3.76-5.58Z" />
-              </svg>
-            </span>
-            <div className="text-left leading-none">
-              <span className="block text-sm font-black uppercase tracking-tight">ZEROCRAFT</span>
-              <span className="text-[10px] font-mono tracking-widest text-muted-foreground">STUDIO PORTAL</span>
-            </div>
-          </Link>
-
-          <div className="pt-2">
-            <Badge variant="outline" className="h-6 font-mono text-[10px] uppercase tracking-wider">
-              <IconShieldLock size={12} className="mr-1.5" />
-              SECURE CMS ACCESS
-            </Badge>
-          </div>
-        </div>
-
-        <Card className="rounded-xl border bg-card p-6 text-card-foreground shadow-sm sm:p-8">
-          <CardHeader className="space-y-1 border-b px-0 pb-6">
-            <CardTitle className="text-2xl font-semibold tracking-tight">
-              Welcome back.
-            </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
-              Sign in to manage creative works, orders, appointments, and client operations.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="px-0 pt-6">
-            <OtpLoginForm />
-          </CardContent>
-        </Card>
-
-        <div className="text-center space-y-2">
-          <p className="text-xs text-muted-foreground">
-            Authorized studio team accounts only. New staff accounts must be provisioned by an administrator.
-          </p>
-          <div className="pt-1">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <span>Return to Zerocraft website</span>
-              <span>→</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+    <main className="flex min-h-svh items-center justify-center bg-[#f1f1f1] p-4">
+      <Card className="w-full max-w-md shadow-sm">
+        <CardHeader>
+          <p className="mb-3 text-sm font-semibold tracking-tight">ZEROCRAFT</p>
+          <CardTitle>Sign in to your stores</CardTitle>
+          <CardDescription>
+            One owner account for all your stores and isolated databases.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={submit} className="space-y-4">
+            <label className="block text-sm">
+              Email
+              <Input
+                className="mt-2"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                disabled={sent}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </label>
+            {sent && (
+              <label className="block text-sm">
+                Email code
+                <Input
+                  className="mt-2"
+                  autoComplete="one-time-code"
+                  required
+                  value={token}
+                  onChange={(event) => setToken(event.target.value)}
+                />
+              </label>
+            )}
+            {error && (
+              <p role="alert" className="text-sm text-red-700">
+                {error}
+              </p>
+            )}
+            {notice && <p role="status" className="text-sm text-muted-foreground">{notice}</p>}
+            <Button type="submit" disabled={busy}>
+              {busy ? "Please wait…" : sent ? "Verify and continue" : "Continue with email"}
+            </Button>
+            {sent && (
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={busy}
+                className="ml-2"
+                onClick={async () => {
+                  if (requestInFlight.current) return;
+                  requestInFlight.current = true;
+                  setBusy(true);
+                  setToken("");
+                  setError("");
+                  setNotice("");
+                  try {
+                    await sendCode();
+                    setNotice("A new sign-in code was sent. Use the newest email code.");
+                  } catch (cause) {
+                    setError(cause instanceof Error ? cause.message : "We could not send a new code. Please retry.");
+                  } finally {
+                    requestInFlight.current = false;
+                    setBusy(false);
+                  }
+                }}
+              >
+                Resend code
+              </Button>
+            )}
+            {sent && (
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={busy}
+                onClick={() => {
+                  setSent(false);
+                  setToken("");
+                  setError("");
+                  setNotice("");
+                }}
+              >
+                Use another email
+              </Button>
+            )}
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

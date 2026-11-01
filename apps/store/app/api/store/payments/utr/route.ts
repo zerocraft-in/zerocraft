@@ -1,5 +1,6 @@
+import { getRequestStoreConfig } from "@zerocraft/supabase/store-server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { createClient } from "@/apps/studio/utils/supabase/server";
+import { createClient } from "@zerocraft/supabase/server";
 import { isSameOrigin } from "@/lib/request-origin";
 import { isUuid } from "@/lib/commerce/cart";
 
@@ -54,8 +55,7 @@ export async function POST(request: Request) {
       { error: "Sign in before submitting payment proof." },
       { status: 401 },
     );
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { url, serviceKey: key } = await getRequestStoreConfig();
   if (!url || !key)
     return Response.json(
       { error: "Payment proof is not configured." },

@@ -1,7 +1,7 @@
 import { createClient } from "@zerocraft/supabase/server";
 import { createServiceClient } from "@/lib/supabase-service";
 import { isSameOrigin } from "@/lib/request-origin";
-import { requireStudioPermission } from "@/lib/studio-auth";
+import { requireCommercePermission } from "@/lib/commerce-auth";
 import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
@@ -29,14 +29,14 @@ async function recordCatalogAudit(
   entry: { actor_id: string; action: string; entity_type: string; entity_id: string | null; metadata: Record<string, unknown> },
 ) {
   let auditClient = supabase;
-  try { auditClient = createServiceClient() as typeof supabase; } catch { /* fall back to the authenticated client when service credentials are unavailable */ }
-  const { error } = await auditClient.from("store_audit_logs").insert(entry);
+  try { auditClient = await createServiceClient() as typeof supabase; } catch { /* fall back to the authenticated client when service credentials are unavailable */ }
+  const { error } = await auditClient.from("audit_logs").insert(entry);
   if (error) console.error("Catalog audit log write failed", { action: entry.action, entityId: entry.entity_id, error });
 }
 
 function buildCatalogHealth(categories: any[], products: any[]) {
   const activeCategories = categories.filter((category) => category.is_active);
-  const activeSubcategories = activeCategories.flatMap((category) => (category.store_subcategories || []).filter((subcategory: any) => subcategory.is_active));
+  const activeSubcategories = activeCategories.flatMap((category) => (category.subcategories || []).filter((subcategory: any) => subcategory.is_active));
   const activeProducts = products.filter((product) => product.status === "active" && !product.deleted_at);
   const duplicateValues = (values: unknown[]) => [...new Set(values.filter(Boolean).map(String).filter((value, index, list) => list.indexOf(value) !== index))];
   const duplicateSlugs = new Set(duplicateValues(products.map((product) => product.slug)));
@@ -47,8 +47,8 @@ function buildCatalogHealth(categories: any[], products: any[]) {
     activeCategories: activeCategories.length,
     activeSubcategories: activeSubcategories.length,
     activeProducts: activeProducts.length,
-    productsWithoutMedia: activeProducts.filter((product) => !product.image_url && !(product.store_product_media || []).some((media: any) => media.public_url || media.storage_path)).map((product) => product.slug),
-    productsWithoutVariants: activeProducts.filter((product) => !(product.store_product_variants || []).some((variant: any) => variant.is_active !== false)).map((product) => product.slug),
+    productsWithoutMedia: activeProducts.filter((product) => !product.image_url && !(product.product_media || []).some((media: any) => media.public_url || media.storage_path)).map((product) => product.slug),
+    productsWithoutVariants: activeProducts.filter((product) => !(product.variants || []).some((variant: any) => variant.is_active !== false)).map((product) => product.slug),
     rightsReviewProducts: activeProducts.filter((product) => product.rights_status === "review_required").map((product) => product.slug),
     orphanedTaxonomy: activeProducts.filter((product) => !product.category_id || !product.subcategory_id || !categoryIds.has(product.category_id) || !subcategoryIds.has(product.subcategory_id) || subcategoryIds.get(product.subcategory_id) !== product.category_id).map((product) => product.slug),
     duplicateCategorySlugs: duplicateValues(categories.map((category) => category.slug)),
@@ -58,16 +58,16 @@ function buildCatalogHealth(categories: any[], products: any[]) {
 }
 
 export async function GET() {
-  const access = await requireStudioPermission("catalog.read");
+  const access = await requireCommercePermission("catalog.read");
   if (!access.ok) return access.response;
   const { supabase, user } = access;
   const [categories, products, recentOrders, analyticsOrders, orderSummary, inventoryLocations] = await Promise.all([
-    supabase.from("store_categories").select("id,name,slug,description,image_url,is_active,created_at,updated_at,deleted_at,purge_after,deleted_from_is_active,store_subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,created_at,updated_at,deleted_at,purge_after,deleted_from_is_active)").order("name"),
-    supabase.from("store_products").select("id,category_id,subcategory_id,design_origin,rights_status,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,digital_delivery,write_version,created_at,updated_at,deleted_at,purge_after,deleted_from_status,store_product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),store_product_digital_files(id,product_id,variant_id,file_name,mime_type,size_bytes,sort_order,created_at),store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,store_inventory_levels(location_id,on_hand,reserved,reorder_point)),store_collection_products(collection:store_collections(id,name,slug,status))").order("updated_at", { ascending: false }),
-    supabase.from("store_orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(10),
-    supabase.from("store_orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(1000),
-    supabase.rpc("studio_store_order_summary"),
-    supabase.from("store_inventory_locations").select("id,name,code,is_active").order("name"),
+    supabase.from("categories").select("id,name,slug,description,image_url,is_active,created_at,updated_at,deleted_at,purge_after,deleted_from_is_active,subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,created_at,updated_at,deleted_at,purge_after,deleted_from_is_active)").order("name"),
+    supabase.from("products").select("id,category_id,subcategory_id,design_origin,rights_status,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,digital_delivery,write_version,created_at,updated_at,deleted_at,purge_after,deleted_from_status,product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),digital_files(id,product_id,variant_id,file_name,mime_type,size_bytes,sort_order,created_at),variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,inventory_levels(location_id,on_hand,reserved,reorder_point)),collection_products(collection:collections(id,name,slug,status))").order("updated_at", { ascending: false }),
+    supabase.from("orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(10),
+    supabase.from("orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(1000),
+    supabase.rpc("order_summary"),
+    supabase.from("locations").select("id,name,code,is_active").order("name"),
   ]);
   const catalogReady = !categories.error && !products.error;
   const orderReady = !recentOrders.error && !analyticsOrders.error && !orderSummary.error;
@@ -85,7 +85,7 @@ export async function GET() {
 
 type CategoryInput = { name?: string; slug?: string; description?: string; image_url?: string; is_active?: boolean };
 type SubcategoryInput = { category_id?: string; name?: string; slug?: string; description?: string; image_url?: string; sort_order?: number; is_active?: boolean };
-type VariantInput = { id?: string; label: string; sku: string; options?: Record<string, string | string[]>; price: number; price_paise?: number | null; stock?: number | null; is_active?: boolean; inventory?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[]; store_inventory_levels?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[] };
+type VariantInput = { id?: string; label: string; sku: string; options?: Record<string, string | string[]>; price: number; price_paise?: number | null; stock?: number | null; is_active?: boolean; inventory?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[]; inventory_levels?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[] };
 type ProductInput = { id?: string; write_version?: number; title?: string; slug?: string; category_id?: string | null; subcategory_id?: string | null; design_origin?: "original_zerocraft" | "licensed" | "fan_inspired"; rights_status?: "not_applicable" | "approved_license" | "review_required"; description?: string; product_type?: "physical" | "digital"; status?: "draft" | "active" | "archived"; sku?: string; price?: number; price_paise?: number | null; compare_at_price?: number | null; compare_at_price_paise?: number | null; currency?: string; currency_code?: string | null; stock?: number | null; image_url?: string; digital_delivery?: { mode?: "instant" | "manual"; download_limit?: number; link_expiry_hours?: number }; collection_ids?: string[]; variants?: VariantInput[] };
 
 function validSlug(slug: unknown): slug is string { return typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug); }
@@ -108,8 +108,8 @@ async function validateProductIdentity(supabase: Awaited<ReturnType<typeof creat
   const sku = product.sku!.trim();
   const variantSkus = (product.variants || []).map((variant) => variant.sku.trim()).filter(Boolean);
   const [productIdentity, variantIdentity] = await Promise.all([
-    supabase.from("store_products").select("id,slug,sku").or(`slug.eq.${slug},sku.eq.${sku}`),
-    variantSkus.length ? supabase.from("store_product_variants").select("id,product_id,sku").in("sku", variantSkus) : Promise.resolve({ data: [], error: null }),
+    supabase.from("products").select("id,slug,sku").or(`slug.eq.${slug},sku.eq.${sku}`),
+    variantSkus.length ? supabase.from("variants").select("id,product_id,sku").in("sku", variantSkus) : Promise.resolve({ data: [], error: null }),
   ]);
   if (productIdentity.error || variantIdentity.error) return "Product identity could not be validated. Try again.";
   const conflictingProduct = (productIdentity.data || []).find((item) => item.id !== productId && (item.slug === slug || item.sku === sku));
@@ -127,7 +127,7 @@ function atomicError(error: { code?: string; message?: string } | null) {
   if (message.includes("INVENTORY_RESERVED")) return jsonError("A variant with active fulfillment cannot be archived.", 409);
   if (message.includes("DUPLICATE_SKU") || message.includes("CONFLICT") || error?.code === "23505") return jsonError("A product, variant SKU, option, or combination already exists.", 409);
   if (message.includes("NOT_FOUND") || error?.code === "P0002") return jsonError("The product no longer exists. Refresh the catalog.", 404);
-  if (message.includes("FORBIDDEN") || error?.code === "42501") return jsonError("Studio access required.", 403);
+  if (message.includes("FORBIDDEN") || error?.code === "42501") return jsonError("Commerce access required.", 403);
   if (message.includes("VALIDATION_ERROR") || error?.code === "22023") {
     const detail = message.split("VALIDATION_ERROR:")[1]?.trim();
     const safeDetails = new Set([
@@ -186,7 +186,7 @@ async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createC
 
   let locationId: string | null = null;
   if (product.product_type === "physical" && variants.some((variant) => !variant.id)) {
-    const { data: location, error: locationError } = await supabase.from("store_inventory_locations").select("id").eq("is_active", true).order("created_at").limit(1).maybeSingle();
+    const { data: location, error: locationError } = await supabase.from("locations").select("id").eq("is_active", true).order("created_at").limit(1).maybeSingle();
     if (locationError) return { data: null, error: { code: locationError.code, message: "VALIDATION_ERROR: inventory location is unavailable." } };
     locationId = location?.id || null;
     if (!locationId) return { data: null, error: { code: "22023", message: "VALIDATION_ERROR: create an active inventory location before adding physical variants." } };
@@ -213,7 +213,7 @@ async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createC
     return item;
   });
 
-  return supabase.rpc("studio_save_product_atomic_v2", {
+  return supabase.rpc("save_product", {
     p_action: action,
     p_product_id: id,
     p_expected_version: action === "edit" ? product.write_version ?? null : null,
@@ -227,16 +227,16 @@ async function saveProductTaxonomy(supabase: Awaited<ReturnType<typeof createCli
   const categoryId = product.category_id || null;
   const subcategoryId = product.subcategory_id || null;
   if (subcategoryId) {
-    const { data, error } = await supabase.from("store_subcategories").select("id,category_id").eq("id", subcategoryId).eq("is_active", true).maybeSingle();
+    const { data, error } = await supabase.from("subcategories").select("id,category_id").eq("id", subcategoryId).eq("is_active", true).maybeSingle();
     if (error || !data || data.category_id !== categoryId) return { error: { code: "22023", message: "VALIDATION_ERROR: subcategory must belong to the selected category." } };
   }
-  const { error } = await supabase.from("store_products").update({ subcategory_id: subcategoryId, design_origin: product.design_origin || "original_zerocraft", rights_status: product.rights_status || "not_applicable", digital_delivery: product.digital_delivery || { mode: "instant", download_limit: 0, link_expiry_hours: 0 } }).eq("id", productId);
+  const { error } = await supabase.from("products").update({ subcategory_id: subcategoryId, design_origin: product.design_origin || "original_zerocraft", rights_status: product.rights_status || "not_applicable", digital_delivery: product.digital_delivery || { mode: "instant", download_limit: 0, link_expiry_hours: 0 } }).eq("id", productId);
   return { error };
 }
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const access = await requireStudioPermission("catalog.manage");
+  const access = await requireCommercePermission("catalog.manage");
   if (!access.ok) return access.response;
   const { supabase, user } = access;
   let body: { entity?: string; data?: CategoryInput | ProductInput };
@@ -245,7 +245,7 @@ export async function POST(request: Request) {
   if (body.entity === "subcategory") {
     const subcategory = data as SubcategoryInput;
     if (!subcategory.category_id || !subcategory.name?.trim() || !validSlug(subcategory.slug)) return jsonError("A parent category, name, and valid URL slug are required.");
-    const { data: created, error } = await supabase.from("store_subcategories").insert({ category_id: subcategory.category_id, name: subcategory.name.trim(), slug: subcategory.slug, description: subcategory.description || "", image_url: subcategory.image_url || "", sort_order: subcategory.sort_order ?? 0, is_active: subcategory.is_active ?? true }).select("id").single();
+    const { data: created, error } = await supabase.from("subcategories").insert({ category_id: subcategory.category_id, name: subcategory.name.trim(), slug: subcategory.slug, description: subcategory.description || "", image_url: subcategory.image_url || "", sort_order: subcategory.sort_order ?? 0, is_active: subcategory.is_active ?? true }).select("id").single();
     if (!error) {
       revalidateStoreCatalog();
       await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.subcategory_created", entity_type: "store_subcategory", entity_id: created.id, metadata: { name: subcategory.name.trim(), slug: subcategory.slug, category_id: subcategory.category_id } });
@@ -255,7 +255,7 @@ export async function POST(request: Request) {
   if (body.entity === "category") {
     const category = data as CategoryInput;
     if (!category.name?.trim() || !validSlug(category.slug)) return jsonError("A category name and valid URL slug are required.");
-    const { data: created, error } = await supabase.from("store_categories").insert({ name: category.name.trim(), slug: category.slug, description: category.description || "", image_url: category.image_url || "", is_active: category.is_active ?? true }).select("id").single();
+    const { data: created, error } = await supabase.from("categories").insert({ name: category.name.trim(), slug: category.slug, description: category.description || "", image_url: category.image_url || "", is_active: category.is_active ?? true }).select("id").single();
     if (!error) {
       revalidateStoreCatalog();
       await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.category_created", entity_type: "store_category", entity_id: created.id, metadata: { name: category.name.trim(), slug: category.slug, is_active: category.is_active ?? true } });
@@ -281,7 +281,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const access = await requireStudioPermission("catalog.manage");
+  const access = await requireCommercePermission("catalog.manage");
   if (!access.ok) return access.response;
   const { supabase, user } = access;
   let body: { entity?: string; id?: string; action?: string; data?: CategoryInput | ProductInput; product_ids?: unknown; subcategory_id?: unknown };
@@ -290,20 +290,20 @@ export async function PATCH(request: Request) {
     if (!body.id || !Array.isArray(body.product_ids) || body.product_ids.length > 1000 || !body.product_ids.every((id) => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id))) return jsonError("Choose valid category items.");
     const subcategoryId = typeof body.subcategory_id === "string" ? body.subcategory_id : null;
     if (subcategoryId) {
-      const { data: subcategory, error } = await supabase.from("store_subcategories").select("id,category_id").eq("id", subcategoryId).eq("category_id", body.id).maybeSingle();
+      const { data: subcategory, error } = await supabase.from("subcategories").select("id,category_id").eq("id", subcategoryId).eq("category_id", body.id).maybeSingle();
       if (error || !subcategory) return jsonError("The selected subcategory is unavailable.", 404);
     } else {
-      const { data: category, error } = await supabase.from("store_categories").select("id").eq("id", body.id).maybeSingle();
+      const { data: category, error } = await supabase.from("categories").select("id").eq("id", body.id).maybeSingle();
       if (error || !category) return jsonError("The selected category is unavailable.", 404);
     }
-    const { error: assignmentError } = await supabase.rpc("studio_assign_products_to_category", {
+    const { error: assignmentError } = await supabase.rpc("assign_products_to_category", {
       p_category_id: body.id,
       p_subcategory_id: subcategoryId,
       p_product_ids: body.product_ids,
     });
     if (assignmentError) {
       if (assignmentError.code === "P0002") return jsonError("One or more selected products no longer exist.", 404);
-      if (assignmentError.code === "42501") return jsonError("Studio access required.", 403);
+      if (assignmentError.code === "42501") return jsonError("Commerce access required.", 403);
       return jsonError("Category items could not be updated atomically.", 503);
     }
     revalidateStoreCatalog();
@@ -312,12 +312,12 @@ export async function PATCH(request: Request) {
   }
   if (body.entity === "product" && body.action === "restore") {
     if (!body.id) return jsonError("A product is required.");
-    const { data: deleted, error: findError } = await supabase.from("store_products").select("id,slug,deleted_at,purge_after,deleted_from_status").eq("id", body.id).maybeSingle();
+    const { data: deleted, error: findError } = await supabase.from("products").select("id,slug,deleted_at,purge_after,deleted_from_status").eq("id", body.id).maybeSingle();
     if (findError) return jsonError("The deleted product could not be loaded.", 503);
     if (!deleted) return jsonError("This product has already been permanently removed.", 404);
     if (!deleted.deleted_at) return jsonError("This product is not in Recently deleted.", 409);
     if (new Date(deleted.purge_after).getTime() <= Date.now()) return jsonError("The restore window has expired.", 410);
-    const { error: restoreError } = await supabase.from("store_products").update({ status: deleted.deleted_from_status || "draft", deleted_at: null, purge_after: null, deleted_from_status: null, updated_at: new Date().toISOString() }).eq("id", body.id).not("deleted_at", "is", null);
+    const { error: restoreError } = await supabase.from("products").update({ status: deleted.deleted_from_status || "draft", deleted_at: null, purge_after: null, deleted_from_status: null, updated_at: new Date().toISOString() }).eq("id", body.id).not("deleted_at", "is", null);
     if (restoreError) return jsonError("The product could not be restored.", 400);
     revalidateStoreCatalog(deleted.slug);
     await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.product_restored", entity_type: "store_product", entity_id: body.id, metadata: { restored_status: deleted.deleted_from_status || "draft" } });
@@ -328,7 +328,7 @@ export async function PATCH(request: Request) {
   if (body.entity === "subcategory") {
     const subcategory = data as SubcategoryInput;
     if (!subcategory.category_id || !subcategory.name?.trim() || !validSlug(subcategory.slug)) return jsonError("A parent category, name, and valid URL slug are required.");
-    const { error } = await supabase.from("store_subcategories").update({ category_id: subcategory.category_id, name: subcategory.name.trim(), slug: subcategory.slug, description: subcategory.description || "", image_url: subcategory.image_url || "", sort_order: subcategory.sort_order ?? 0, is_active: subcategory.is_active ?? true, updated_at: new Date().toISOString() }).eq("id", body.id);
+    const { error } = await supabase.from("subcategories").update({ category_id: subcategory.category_id, name: subcategory.name.trim(), slug: subcategory.slug, description: subcategory.description || "", image_url: subcategory.image_url || "", sort_order: subcategory.sort_order ?? 0, is_active: subcategory.is_active ?? true, updated_at: new Date().toISOString() }).eq("id", body.id);
     if (!error) {
       revalidateStoreCatalog();
       await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.subcategory_updated", entity_type: "store_subcategory", entity_id: body.id, metadata: { name: subcategory.name.trim(), slug: subcategory.slug, category_id: subcategory.category_id, is_active: subcategory.is_active ?? true } });
@@ -338,7 +338,7 @@ export async function PATCH(request: Request) {
   if (body.entity === "category") {
     const category = data as CategoryInput;
     if (!category.name?.trim() || !validSlug(category.slug)) return jsonError("A category name and valid URL slug are required.");
-    const { error } = await supabase.from("store_categories").update({ name: category.name.trim(), slug: category.slug, description: category.description || "", image_url: category.image_url || "", is_active: category.is_active ?? true, updated_at: new Date().toISOString() }).eq("id", body.id);
+    const { error } = await supabase.from("categories").update({ name: category.name.trim(), slug: category.slug, description: category.description || "", image_url: category.image_url || "", is_active: category.is_active ?? true, updated_at: new Date().toISOString() }).eq("id", body.id);
     if (!error) {
       revalidateStoreCatalog(category.slug);
       await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.category_updated", entity_type: "store_category", entity_id: body.id, metadata: { name: category.name.trim(), slug: category.slug, is_active: category.is_active ?? true } });
@@ -347,7 +347,7 @@ export async function PATCH(request: Request) {
   }
   if (body.entity !== "product") return jsonError("Choose a valid store record type.");
   const { data: editableProduct, error: editableProductError } = await supabase
-    .from("store_products")
+    .from("products")
     .select("id,deleted_at")
     .eq("id", body.id)
     .maybeSingle();
@@ -370,7 +370,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const access = await requireStudioPermission("catalog.manage");
+  const access = await requireCommercePermission("catalog.manage");
   if (!access.ok) return access.response;
   const { supabase, user } = access;
   let body: { entity?: string; id?: string };
@@ -378,7 +378,7 @@ export async function DELETE(request: Request) {
   if (!body.id || !["product", "category", "subcategory"].includes(body.entity || "")) return jsonError("Choose a valid store record.");
   let changes: Record<string, unknown>;
   if (body.entity === "product") {
-    const { data: existing, error: existingError } = await supabase.from("store_products").select("status,deleted_at").eq("id", body.id).maybeSingle();
+    const { data: existing, error: existingError } = await supabase.from("products").select("status,deleted_at").eq("id", body.id).maybeSingle();
     if (existingError) return jsonError("The product could not be loaded.", 503);
     if (!existing) return jsonError("Product not found.", 404);
     if (existing.deleted_at) return Response.json({ ok: true, deleted: true });
@@ -387,8 +387,8 @@ export async function DELETE(request: Request) {
   } else if (body.entity === "category" || body.entity === "subcategory") {
     if (!/^[0-9a-f-]{36}$/i.test(body.id)) return jsonError("Choose a valid category.");
     const { error } = body.entity === "category"
-      ? await supabase.rpc("studio_soft_delete_store_category", { p_category_id: body.id })
-      : await supabase.rpc("studio_soft_delete_store_subcategory", { p_subcategory_id: body.id });
+      ? await supabase.rpc("soft_delete_store_category", { p_category_id: body.id })
+      : await supabase.rpc("soft_delete_store_subcategory", { p_subcategory_id: body.id });
     if (error) {
       if (error.code === "P0002") return jsonError("Category not found.", 404);
       return jsonError("The category could not be moved to Recently deleted.", 503);
@@ -405,7 +405,7 @@ export async function DELETE(request: Request) {
   } else {
     return jsonError("Choose a valid store record.");
   }
-  const { error } = await supabase.from("store_products").update(changes).eq("id", body.id);
+  const { error } = await supabase.from("products").update(changes).eq("id", body.id);
   if (!error) {
     revalidateStoreCatalog();
     await recordCatalogAudit(supabase, { actor_id: user.id, action: "catalog.product_deleted", entity_type: "store_product", entity_id: body.id, metadata: { retention_days: 15 } });

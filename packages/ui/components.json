@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-nova",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "@zerocraft/tailwind-config",
+    "css": "src/styles.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "tabler",
+  "rtl": false,
+  "aliases": {
+    "components": "@zerocraft/components",
+    "utils": "@zerocraft/lib/cn",
+    "ui": "@zerocraft/components/ui",
+    "lib": "@zerocraft/lib",
+    "hooks": "@zerocraft/hooks"
+  }
+}

@@ -587,6 +587,6 @@ Every route must implement:
 ## Source documents
 
 - [SHOPIFY_ADMIN_UI_UX_ANALYSIS_PLAN.md](./SHOPIFY_ADMIN_UI_UX_ANALYSIS_PLAN.md)
-- [studio-sidebar.tsx](../../apps/cms/components/layout/studio-sidebar.tsx)
-- [studio-shell.tsx](../../apps/cms/app/studio-shell.tsx)
-- [admin-routes.ts](../../apps/cms/lib/admin-routes.ts)
+- [studio-sidebar.tsx](../../apps/studio/components/layout/studio-sidebar.tsx)
+- [studio-shell.tsx](../../apps/studio/app/studio-shell.tsx)
+- [admin-routes.ts](../../apps/studio/lib/admin-routes.ts)

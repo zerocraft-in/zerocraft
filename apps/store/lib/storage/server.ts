@@ -33,12 +33,12 @@ export function safeObjectKey(prefix: string, extension: string) {
   return `${prefix}/${crypto.randomUUID()}${extension}`;
 }
 
-export async function requireStudioStorageClient() {
+export async function requireCommerceStorageClient() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Studio access required.");
-  const { data: allowed, error } = await supabase.rpc("is_studio_member");
-  if (error || !allowed) throw new Error("Studio access required.");
+  if (!user) throw new Error("Commerce access required.");
+  const { data: allowed, error } = await supabase.rpc("is_member");
+  if (error || !allowed) throw new Error("Commerce access required.");
   return { supabase, user };
 }
 

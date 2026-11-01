@@ -8,7 +8,7 @@ The CMS currently implements a broad studio control surface with authenticated c
 
 | Capability                                    | Status                      | Evidence                                             | Notes                                                                                         |
 | --------------------------------------------- | --------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Authentication and route protection           | Implemented                 | `apps/cms/proxy.ts`, `apps/cms/lib/studio-auth.ts`   | Root CMS routes are protected; login and callback remain public.                              |
+| Authentication and route protection           | Implemented                 | `apps/studio/proxy.ts`, `apps/studio/lib/studio-auth.ts`   | Studio workspace routes are protected; login and callback remain public.                              |
 | Studio dashboard                              | Implemented                 | `apps/cms/app/page.tsx`, `/api/studio/overview`      | Includes setup progress, operational pulse, and recent activity.                              |
 | Works, blogs, clients, appointments           | Implemented                 | Corresponding route pages and studio APIs/components | Requires deployed tables and policies.                                                        |
 | Product CRUD                                  | Implemented                 | `product-editor.tsx`, `/api/studio/store`            | Uses atomic product RPC plus taxonomy update.                                                 |

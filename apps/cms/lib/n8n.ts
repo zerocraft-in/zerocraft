@@ -1,7 +1,7 @@
 // The browser sends only an appointment ID. Contact details stay server-side.
 export async function sendWhatsAppViaN8n(appointmentId: string): Promise<{ success: boolean; message: string }> {
   try {
-    const response = await fetch("/api/studio/notify-appointment", {
+    const response = await fetch("/api/admin/notify-appointment", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ appointmentId }),
     });

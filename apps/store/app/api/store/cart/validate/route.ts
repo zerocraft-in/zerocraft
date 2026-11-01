@@ -1,6 +1,7 @@
+import { getRequestStoreConfig } from "@zerocraft/supabase/store-server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { isSameOrigin } from "@/lib/request-origin";
-import { createClient } from "@/apps/studio/utils/supabase/server";
+import { createClient } from "@zerocraft/supabase/server";
 import { isCustomerCustomizationPath } from "@/lib/storage/server";
 import { parseCartValidationPayload } from "@/lib/commerce/cart";
 import {
@@ -29,8 +30,7 @@ export async function POST(request: Request) {
   if ("error" in parsed)
     return Response.json({ error: parsed.error }, { status: 400 });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { url: supabaseUrl, serviceKey } = await getRequestStoreConfig();
   if (!supabaseUrl || !serviceKey)
     return Response.json(
       { error: "Cart validation is not configured." },
@@ -41,9 +41,9 @@ export async function POST(request: Request) {
   });
   const productIds = [...new Set(parsed.items.map((item) => item.productId))];
   const { data: products, error: productError } = await supabase
-    .from("store_products")
+    .from("products")
     .select(
-      "id,title,status,product_type,price,price_paise,currency,currency_code,stock,image_url,store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)",
+      "id,title,status,product_type,price,price_paise,currency,currency_code,stock,image_url,variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)",
     )
     .in("id", productIds);
   if (productError)
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   const inventory = new Map<string, number>();
   if (variantIds.length) {
     const { data: levels, error: inventoryError } = await supabase
-      .from("store_inventory_levels")
+      .from("inventory_levels")
       .select("variant_id,on_hand,reserved")
       .in("variant_id", variantIds);
     if (inventoryError)

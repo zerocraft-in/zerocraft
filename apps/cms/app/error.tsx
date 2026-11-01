@@ -7,8 +7,8 @@ import {
   IconArrowLeft,
   IconRefresh,
 } from "@tabler/icons-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@zerocraft/components/ui/badge";
+import { Button } from "@zerocraft/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,9 +16,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@zerocraft/components/ui/card";
 
-export default function StudioError({
+export default function CommerceError({
   error,
   reset,
 }: {
@@ -36,7 +36,7 @@ export default function StudioError({
           <div className="mb-2 flex size-12 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
             <IconAlertTriangle className="size-6" />
           </div>
-          <Badge variant="destructive">Studio error</Badge>
+          <Badge variant="destructive">Commerce error</Badge>
           <CardTitle className="text-xl">We couldn’t load this page</CardTitle>
           <CardDescription>
             {error.message ||

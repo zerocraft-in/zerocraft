@@ -1,5 +1,5 @@
-import StudioStore from "@/components/studio/studio-store";
+import CommerceStore from "@/components/commerce/commerce-store";
 
-export default function StudioStorePage() {
-  return <StudioStore />;
+export default function CommerceStorePage() {
+  return <CommerceStore />;
 }

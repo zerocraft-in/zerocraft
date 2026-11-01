@@ -66,7 +66,7 @@ export default async function Shop({
             "Free shipping above ₹999",
             "Code FIRSTSHOW10",
             "7-day easy exchange",
-            "Studio printed in India",
+            "Commerce printed in India",
           ]}
         />
       </section>

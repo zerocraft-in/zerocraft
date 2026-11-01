@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/apps/studio/utils/supabase/server";
+import { createClient } from "@zerocraft/supabase/server";
 import { resolveCatalogMoney, resolveCurrencyCode } from "@/lib/commerce/money";
 import { normalizeVariantOptions } from "@/lib/commerce/variant-options";
 
@@ -203,7 +203,7 @@ function mapProduct(row: ProductRow): CatalogProduct {
     subcategorySlug: subcategory?.slug ?? "",
     designOrigin: row.design_origin ?? "original_zerocraft",
     rightsStatus: row.rights_status ?? "not_applicable",
-    brand: "Zerocraft Studio",
+    brand: "Zerocraft Commerce",
     price: money.price,
     originalPrice: money.originalPrice,
     pricePaise: money.pricePaise,
@@ -226,8 +226,8 @@ function mapProduct(row: ProductRow): CatalogProduct {
 
 async function getCollectionProductIds(supabase: Awaited<ReturnType<typeof createClient>>, slug: string) {
   const { data, error } = await supabase
-    .from("store_collection_products")
-    .select("product_id,collection:store_collections!inner(slug,status)")
+    .from("collection_products")
+    .select("product_id,collection:collections!inner(slug,status)")
     .eq("collection.slug", slug)
     .eq("collection.status", "published");
   if (error) throw new Error(`Collection query failed: ${error.message}`);
@@ -242,11 +242,11 @@ export async function getProducts(query: ProductQuery = {}): Promise<PaginatedPr
   const supabase = await createClient();
   const collectionIds = query.collectionSlug ? await getCollectionProductIds(supabase, query.collectionSlug) : null;
   const buildRequest = () => {
-    const select = "id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:store_categories!inner(name,slug,is_active),subcategory:store_subcategories!inner(name,slug,is_active),media:store_product_media(public_url,alt_text,sort_order),variants:store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)";
-    let request = supabase.from("store_products").select(select, { count: "exact" }).eq("status", "active").eq("store_categories.is_active", true).eq("store_subcategories.is_active", true);
+    const select = "id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:categories!inner(name,slug,is_active),subcategory:subcategories!inner(name,slug,is_active),media:product_media(public_url,alt_text,sort_order),variants:variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)";
+    let request = supabase.from("products").select(select, { count: "exact" }).eq("status", "active").eq("categories.is_active", true).eq("subcategories.is_active", true);
     if (collectionIds) request = request.in("id", collectionIds);
-    if (query.categorySlug) request = request.eq("store_categories.slug", query.categorySlug);
-    if (query.subcategorySlug) request = request.eq("store_subcategories.slug", query.subcategorySlug);
+    if (query.categorySlug) request = request.eq("categories.slug", query.categorySlug);
+    if (query.subcategorySlug) request = request.eq("subcategories.slug", query.subcategorySlug);
     if (query.query?.trim()) {
       const term = query.query.trim().replace(/[%(),]/g, " ").replace(/\s+/g, " ");
       request = request.or(`title.ilike.%${term}%,description.ilike.%${term}%,sku.ilike.%${term}%`);
@@ -270,14 +270,14 @@ export async function getProducts(query: ProductQuery = {}): Promise<PaginatedPr
 
 export async function getProductBySlug(slug: string): Promise<CatalogProduct | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("store_products").select("id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:store_categories!inner(name,slug,is_active),subcategory:store_subcategories!inner(name,slug,is_active),media:store_product_media(public_url,alt_text,sort_order),variants:store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)").eq("slug", slug).eq("status", "active").eq("store_categories.is_active", true).eq("store_subcategories.is_active", true).maybeSingle();
+  const { data, error } = await supabase.from("products").select("id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:categories!inner(name,slug,is_active),subcategory:subcategories!inner(name,slug,is_active),media:product_media(public_url,alt_text,sort_order),variants:variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)").eq("slug", slug).eq("status", "active").eq("categories.is_active", true).eq("subcategories.is_active", true).maybeSingle();
   if (error) throw new Error(`Product query failed: ${error.message}`);
   return data ? mapProduct(data as unknown as ProductRow) : null;
 }
 
 export async function getProductById(id: string): Promise<CatalogProduct | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("store_products").select("id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:store_categories!inner(name,slug,is_active),subcategory:store_subcategories!inner(name,slug,is_active),media:store_product_media(public_url,alt_text,sort_order),variants:store_product_variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)").eq("id", id).eq("status", "active").eq("store_categories.is_active", true).eq("store_subcategories.is_active", true).maybeSingle();
+  const { data, error } = await supabase.from("products").select("id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:categories!inner(name,slug,is_active),subcategory:subcategories!inner(name,slug,is_active),media:product_media(public_url,alt_text,sort_order),variants:variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)").eq("id", id).eq("status", "active").eq("categories.is_active", true).eq("subcategories.is_active", true).maybeSingle();
   if (error) throw new Error(`Product query failed: ${error.message}`);
   return data ? mapProduct(data as unknown as ProductRow) : null;
 }
@@ -285,14 +285,14 @@ export async function getProductById(id: string): Promise<CatalogProduct | null>
 export async function getCategories(): Promise<CatalogCategory[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("store_categories")
-    .select("id,name,slug,description,image_url,store_products(count),store_subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,store_products(count))")
+    .from("categories")
+    .select("id,name,slug,description,image_url,products(count),subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,products(count))")
     .eq("is_active", true)
     .order("name");
   if (error) throw new Error(`Category query failed: ${error.message}`);
   return (data ?? []).map((row) => {
-    const value = row as unknown as { id: string; name: string; slug: string; description: string; image_url: string; store_products?: { count: number }[] };
-    const subcategories = ((row as any).store_subcategories ?? []).filter((sub: any) => sub.is_active).map((sub: any) => ({ id: sub.id, categoryId: sub.category_id, name: sub.name, slug: sub.slug, description: sub.description, image: sub.image_url, itemCount: sub.store_products?.[0]?.count ?? 0 }));
+    const value = row as unknown as { id: string; name: string; slug: string; description: string; image_url: string; products?: { count: number }[] };
+    const subcategories = ((row as any).subcategories ?? []).filter((sub: any) => sub.is_active).map((sub: any) => ({ id: sub.id, categoryId: sub.category_id, name: sub.name, slug: sub.slug, description: sub.description, image: sub.image_url, itemCount: sub.products?.[0]?.count ?? 0 }));
     return { id: value.id, name: value.name, slug: value.slug, description: value.description, image: safeCatalogImage(value.image_url), itemCount: subcategories.reduce((total: number, subcategory: CatalogSubcategory) => total + subcategory.itemCount, 0), subcategories };
   }).filter((category) => category.subcategories.length > 0);
 }
@@ -304,7 +304,7 @@ export async function getSubcategories(categorySlug?: string): Promise<CatalogSu
 
 export async function getCollections(): Promise<CatalogCollection[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("store_collections").select("id,name,slug,tagline,description,image_url").eq("status", "published").order("name");
+  const { data, error } = await supabase.from("collections").select("id,name,slug,tagline,description,image_url").eq("status", "published").order("name");
   if (error) throw new Error(`Collection query failed: ${error.message}`);
   return (data ?? []).map((row) => {
     const value = row as unknown as { id: string; name: string; slug: string; tagline: string; description: string; image_url: string };
@@ -319,7 +319,7 @@ export async function getFeaturedProducts(limit = 8): Promise<CatalogProduct[]> 
 
 export async function getProductVariants(productId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("store_product_variants").select("id,product_id,label,sku,options,price,price_paise,currency_code,stock,is_active").eq("product_id", productId).eq("is_active", true).order("label");
+  const { data, error } = await supabase.from("variants").select("id,product_id,label,sku,options,price,price_paise,currency_code,stock,is_active").eq("product_id", productId).eq("is_active", true).order("label");
   if (error) throw new Error(`Variant query failed: ${error.message}`);
   return data ?? [];
 }

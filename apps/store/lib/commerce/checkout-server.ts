@@ -1,6 +1,7 @@
+import { getRequestStoreConfig } from "@zerocraft/supabase/store-server";
 import { createHash } from "node:crypto";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { createClient } from "@/apps/studio/utils/supabase/server";
+import { createClient } from "@zerocraft/supabase/server";
 import { isCustomerCustomizationPath } from "@/lib/storage/server";
 import { canonicalCheckoutPayload, type CheckoutRequest } from "./checkout";
 
@@ -35,7 +36,7 @@ async function verifyCustomizationReferences(supabase: Awaited<ReturnType<typeof
     if (!item.customizationReference) continue;
     if (!isCustomerCustomizationPath(item.customizationReference, userId)) throw new CheckoutError("CUSTOMIZATION_OWNERSHIP", "A customization does not belong to this customer.");
     const { data: ownership, error: ownershipError } = await supabase
-      .from("store_customizations")
+      .from("customizations")
       .select("id,product_id,status")
       .eq("object_path", item.customizationReference)
       .eq("customer_id", userId)
@@ -59,8 +60,7 @@ export async function executeTransactionalCheckout(request: CheckoutRequest): Pr
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new CheckoutError("UNAUTHORIZED", "Sign in before checkout.", 401);
   await verifyCustomizationReferences(supabase, request, user.id);
-  const serviceUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { url: serviceUrl, serviceKey } = await getRequestStoreConfig();
   if (!serviceUrl || !serviceKey) throw new CheckoutError("CHECKOUT_UNAVAILABLE", "Secure checkout is temporarily unavailable.", 503);
   const serviceClient = createServiceClient(serviceUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const fingerprint = createHash("sha256").update(canonicalCheckoutPayload(request)).digest("hex");

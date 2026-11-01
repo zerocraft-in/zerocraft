@@ -29,9 +29,6 @@
       "@/components/*": [
         "./components/*"
       ],
-      "@/apps/studio/utils/supabase/*": [
-        "../cms/utils/supabase/*"
-      ],
       "@/store/*": [
         "../cms/store/*"
       ],

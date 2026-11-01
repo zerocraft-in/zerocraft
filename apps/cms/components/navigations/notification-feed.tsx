@@ -2,17 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { IconBell, IconCheck, IconFilter, IconInfoCircle, IconPackage, IconX } from "@tabler/icons-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@zerocraft/components/ui/popover";
+import { ScrollArea } from "@zerocraft/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import type { StudioNotification } from "@/lib/supabase-client";
+import type { CommerceNotification } from "@/lib/supabase-client";
 
 type Props = {
-  notices: StudioNotification[];
+  notices: CommerceNotification[];
   unread: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onRead: (item: StudioNotification) => void;
+  onRead: (item: CommerceNotification) => void;
   onMarkAllRead: () => void;
   onRefresh: () => void;
   onClearRead: () => void;
@@ -42,7 +42,7 @@ export function NotificationFeed({ notices, unread, open, onOpenChange, onRead, 
       <PopoverTrigger
         aria-label="Alerts"
         title="Alerts"
-        className={cn("relative grid size-8 shrink-0 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground", collapsed && "mx-auto")}
+        className={cn("relative grid size-8 shrink-0 place-items-center rounded-xl text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", collapsed && "mx-auto")}
       >
         <IconBell className="size-4" />
         {unread > 0 && <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-destructive px-1 text-center text-[10px] font-semibold leading-4 text-destructive-foreground">{unread > 99 ? "99+" : unread}</span>}

@@ -16,6 +16,7 @@ function normalizeSourcePath(sourcePath: string) {
 }
 
 export function isR2Configured() {
+  if (process.env.NEXT_PUBLIC_STORE_CONNECTIONS) return false;
   return Boolean(
     process.env.CLOUDFLARE_R2_ACCOUNT_ID?.trim() &&
       process.env.CLOUDFLARE_R2_ACCESS_KEY_ID?.trim() &&
@@ -26,6 +27,7 @@ export function isR2Configured() {
 }
 
 function requireR2Config() {
+  if (process.env.NEXT_PUBLIC_STORE_CONNECTIONS) throw new Error("Multi-store mode uses isolated Supabase Storage.");
   const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID?.trim();
   const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID?.trim();
   const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY?.trim();

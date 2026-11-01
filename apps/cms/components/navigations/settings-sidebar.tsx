@@ -27,17 +27,18 @@ import {
   IconSearch,
   IconChevronLeft,
 } from "@tabler/icons-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@zerocraft/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@zerocraft/components/ui/popover";
 import { isAdminRouteActive } from "@/lib/admin-navigation";
-import { Button, buttonVariants } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button, buttonVariants } from "@zerocraft/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@zerocraft/components/ui/avatar";
 import { IconDots } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import { scopedPath, unscopedPath } from "@/lib/platform/scope";
 const SETTINGS_LINKS = [
   ["General", "general", IconSettings],
   ["Plan", "plan", IconCreditCard],
@@ -67,6 +68,7 @@ export function SettingsSidebar({
   pathname: string;
   user?: { name: string; email: string };
 }) {
+  const routePath = unscopedPath(pathname);
   const [query, setQuery] = useState("");
   const [backLinkHovered, setBackLinkHovered] = useState(false);
   const links = useMemo(
@@ -82,7 +84,7 @@ export function SettingsSidebar({
       aria-label="Settings navigation"
     >
       <Link
-        href="/studio"
+        href={scopedPath("/store", pathname)}
         aria-label="Back to workspace"
         onMouseEnter={() => setBackLinkHovered(true)}
         onMouseLeave={() => setBackLinkHovered(false)}
@@ -164,24 +166,38 @@ export function SettingsSidebar({
         aria-label="Settings sections"
       >
         {links.map(([label, key, Icon]) => {
-          const href = `/settings/${key}`;
-          const active =
+          const href = key === "general" ? "/settings" : key === "policies" ? "/settings/legal" : `/settings/${key}`;
+          const scopedHref = scopedPath(href, pathname);
+          const active = key === "policies"
+            ? routePath === "/settings/legal" || routePath === "/settings/policies"
+            :
             key === "general"
-              ? pathname === "/settings"
-              : isAdminRouteActive(pathname, href);
+              ? routePath === "/settings"
+              : isAdminRouteActive(routePath, href);
           return (
-            <Link
-              key={key}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              className={`flex min-h-7 items-center gap-2 rounded-lg px-2 py-1 text-[12px] transition-colors ${active ? "bg-[#303033] font-semibold text-[#f1f1f1]" : "text-[#d0d0d3] hover:bg-[#242426] hover:text-[#f1f1f1]"}`}
-            >
-              <Icon className="size-3.5 shrink-0 text-[#a7a7ac]" stroke={1.7} />
-              <span className="truncate">{label}</span>
-              {active && (
-                <IconChevronRight className="ml-auto size-3.5 shrink-0" />
+            <div key={key}>
+              <Link
+                href={scopedHref}
+                aria-current={active && key !== "users" ? "page" : undefined}
+                className={`flex min-h-7 items-center gap-2 rounded-lg px-2 py-1 text-[12px] transition-colors ${active ? "bg-[#303033] font-semibold text-[#f1f1f1]" : "text-[#d0d0d3] hover:bg-[#242426] hover:text-[#f1f1f1]"}`}
+              >
+                <Icon className="size-3.5 shrink-0 text-[#a7a7ac]" stroke={1.7} />
+                <span className="truncate">{label}</span>
+                {active && key !== "users" && <IconChevronRight className="ml-auto size-3.5 shrink-0" />}
+              </Link>
+              {key === "users" && active && (
+                <div className="ml-7 mt-0.5 space-y-0.5 border-l border-[#454548] pl-2">
+                  {[
+                    ["Users", "/settings/users"],
+                    ["Roles", "/settings/users/roles"],
+                    ["Security", "/settings/users/security"],
+                  ].map(([childLabel, childHref]) => {
+                    const childActive = routePath === childHref;
+                    return <Link key={childHref} href={scopedPath(childHref, pathname)} aria-current={childActive ? "page" : undefined} className={`block rounded-md px-2 py-1 text-[11px] ${childActive ? "bg-[#303033] font-semibold text-[#f1f1f1]" : "text-[#a7a7ac] hover:bg-[#242426] hover:text-[#f1f1f1]"}`}>{childLabel}</Link>;
+                  })}
+                </div>
               )}
-            </Link>
+            </div>
           );
         })}
       </nav>

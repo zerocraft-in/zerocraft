@@ -1,5 +1,6 @@
+import { getRequestStoreConfig } from "@zerocraft/supabase/store-server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { requireStudioPermission } from "@/lib/studio-auth";
+import { requireCommercePermission } from "@/lib/commerce-auth";
 import { PRODUCT_MEDIA_BUCKET } from "@/lib/storage/server";
 import { deleteR2Object, r2PublicUrl } from "@/lib/r2/server";
 import { isSameOrigin } from "@/lib/request-origin";
@@ -8,8 +9,8 @@ import { revalidatePath } from "next/cache";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type StudioSupabase = Extract<
-  Awaited<ReturnType<typeof requireStudioPermission>>,
+type CommerceSupabase = Extract<
+  Awaited<ReturnType<typeof requireCommercePermission>>,
   { ok: true }
 >["supabase"];
 
@@ -20,9 +21,8 @@ function jsonError(message: string, status = 400) {
   );
 }
 
-function storageClient(fallback: StudioSupabase) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+async function storageClient(fallback: CommerceSupabase) {
+  const { url, serviceKey: key } = await getRequestStoreConfig();
   return url && key
     ? createServiceClient(url, key, {
         auth: { persistSession: false, autoRefreshToken: false },
@@ -30,15 +30,15 @@ function storageClient(fallback: StudioSupabase) {
     : fallback;
 }
 
-async function purgeExpiredAssets(supabase: StudioSupabase) {
+async function purgeExpiredAssets(supabase: CommerceSupabase) {
   const { data: expired, error: listError } = await supabase
-    .from("store_recycle_bin_assets")
+    .from("deleted_files")
     .select("storage_path")
     .lte("purge_after", new Date().toISOString());
   if (listError) throw new Error("Expired gallery assets could not be loaded.");
   if (!expired?.length) return;
 
-  const storage = storageClient(supabase) as typeof supabase;
+  const storage = await storageClient(supabase) as typeof supabase;
   for (let index = 0; index < expired.length; index += 100) {
     const batch = expired.slice(index, index + 100);
     const r2Assets = batch.filter((asset) => asset.storage_path.startsWith("r2/"));
@@ -57,7 +57,7 @@ async function purgeExpiredAssets(supabase: StudioSupabase) {
       if (storageError) throw new Error("Expired gallery files could not be permanently removed.");
     }
     const { error: deleteError } = await supabase
-      .from("store_recycle_bin_assets")
+      .from("deleted_files")
       .delete()
       .in(
         "storage_path",
@@ -68,12 +68,12 @@ async function purgeExpiredAssets(supabase: StudioSupabase) {
 }
 
 export async function GET() {
-  const access = await requireStudioPermission("catalog.read");
+  const access = await requireCommercePermission("catalog.read");
   if (!access.ok) return access.response;
 
   try {
     const { data: canManage, error: permissionError } =
-      await access.supabase.rpc("studio_has_permission", {
+      await access.supabase.rpc("has_permission", {
         p_permission: "catalog.manage",
       });
     if (permissionError) {
@@ -82,22 +82,22 @@ export async function GET() {
     if (canManage) await purgeExpiredAssets(access.supabase);
     const [products, categories, subcategories, assets] = await Promise.all([
       access.supabase
-        .from("store_products")
+        .from("products")
         .select("id,title,sku,product_type,deleted_at,purge_after")
         .not("deleted_at", "is", null)
         .order("deleted_at", { ascending: false }),
       access.supabase
-        .from("store_categories")
+        .from("categories")
         .select("id,name,slug,deleted_at,purge_after")
         .not("deleted_at", "is", null)
         .order("deleted_at", { ascending: false }),
       access.supabase
-        .from("store_subcategories")
+        .from("subcategories")
         .select("id,category_id,name,slug,deleted_at,purge_after")
         .not("deleted_at", "is", null)
         .order("deleted_at", { ascending: false }),
       access.supabase
-        .from("store_recycle_bin_assets")
+        .from("deleted_files")
         .select("storage_path,file_name,folder,mime_type,size_bytes,deleted_at,purge_after")
         .order("deleted_at", { ascending: false }),
     ]);
@@ -110,7 +110,7 @@ export async function GET() {
       return jsonError("Recycle bin history could not be loaded.", 503);
     }
 
-    const storage = storageClient(access.supabase);
+    const storage = await storageClient(access.supabase);
     const recycledAssets = (assets.data || []).map((asset) => ({
       ...asset,
       url: asset.storage_path.startsWith("r2/")
@@ -139,7 +139,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   if (!isSameOrigin(request)) return jsonError("Invalid request origin.", 403);
-  const access = await requireStudioPermission("catalog.manage");
+  const access = await requireCommercePermission("catalog.manage");
   if (!access.ok) return access.response;
 
   let body: { type?: unknown; id?: unknown; storagePath?: unknown };
@@ -155,10 +155,10 @@ export async function PATCH(request: Request) {
     }
     const { error } =
       body.type === "category"
-        ? await access.supabase.rpc("studio_restore_store_category", {
+        ? await access.supabase.rpc("restore_store_category", {
             p_category_id: body.id,
           })
-        : await access.supabase.rpc("studio_restore_store_subcategory", {
+        : await access.supabase.rpc("restore_store_subcategory", {
             p_subcategory_id: body.id,
           });
     if (error) {
@@ -173,7 +173,7 @@ export async function PATCH(request: Request) {
 
   if (body.type === "asset" && typeof body.storagePath === "string") {
     const { data: asset, error: assetError } = await access.supabase
-      .from("store_recycle_bin_assets")
+      .from("deleted_files")
       .select("storage_path")
       .eq("storage_path", body.storagePath)
       .maybeSingle();
@@ -181,7 +181,7 @@ export async function PATCH(request: Request) {
     if (!asset) return jsonError("Deleted gallery item not found.", 404);
 
     const { error } = await access.supabase
-      .from("store_recycle_bin_assets")
+      .from("deleted_files")
       .delete()
       .eq("storage_path", asset.storage_path);
     if (error) return jsonError("The gallery item could not be restored.", 503);

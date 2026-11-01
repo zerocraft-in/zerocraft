@@ -11,8 +11,8 @@ import { createClient } from "@zerocraft/supabase/client";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "@/lib/toast";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@zerocraft/components/ui/button";
+import { Input } from "@zerocraft/components/ui/input";
 import {
   Card,
   CardContent,
@@ -20,7 +20,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@zerocraft/components/ui/card";
 import {
   Field,
   FieldDescription,
@@ -28,13 +28,13 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSet,
-} from "@/components/ui/field";
+} from "@zerocraft/components/ui/field";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
+} from "@zerocraft/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 
 export function OtpLoginForm() {
@@ -174,17 +174,6 @@ export function OtpLoginForm() {
         if (!signupRes.error) {
           data = signupRes.data;
           verifyError = null;
-        } else {
-          // Fallback to "magiclink" type
-          const magicRes = await supabase.auth.verifyOtp({
-            email,
-            token: otp,
-            type: "magiclink",
-          });
-          if (!magicRes.error) {
-            data = magicRes.data;
-            verifyError = null;
-          }
         }
       }
 

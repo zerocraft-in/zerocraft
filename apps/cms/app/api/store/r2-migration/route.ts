@@ -1,7 +1,8 @@
+import { getRequestStoreConfig } from "@zerocraft/supabase/store-server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { isSameOrigin } from "@/lib/request-origin";
 import { isR2Configured, putR2Object, verifyR2Connection } from "@/lib/r2/server";
-import { PRODUCT_MEDIA_BUCKET, requireStudioStorageClient } from "@/lib/storage/server";
+import { PRODUCT_MEDIA_BUCKET, requireCommerceStorageClient } from "@/lib/storage/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,12 +26,11 @@ async function listObjects(storage: any, prefix = ""): Promise<Array<{ path: str
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return response({ error: "Invalid request origin." }, 403);
   try {
-    await requireStudioStorageClient();
+    await requireCommerceStorageClient();
   } catch (error) {
-    return response({ error: error instanceof Error ? error.message : "Studio access required." }, 403);
+    return response({ error: error instanceof Error ? error.message : "Commerce access required." }, 403);
   }
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { url, serviceKey: key } = await getRequestStoreConfig();
   if (!url || !key) return response({ error: "Supabase service credentials are not configured." }, 503);
   const body = await request.json().catch(() => ({})) as { mode?: "dry-run" | "execute" };
   const mode = body.mode === "execute" ? "execute" : "dry-run";
@@ -56,10 +56,10 @@ export async function POST(request: Request) {
         const uploaded = await putR2Object({ sourcePath: object.path, body: new Uint8Array(await data.arrayBuffer()), contentType: object.mimeType });
         const oldUrl = storage.storage.from(PRODUCT_MEDIA_BUCKET).getPublicUrl(object.path).data.publicUrl;
         await Promise.all([
-          storage.from("store_product_media").update({ storage_path: uploaded.storagePath, public_url: uploaded.publicUrl }).eq("storage_path", object.path),
-          storage.from("store_products").update({ image_url: uploaded.publicUrl }).eq("image_url", oldUrl),
-          storage.from("store_categories").update({ image_url: uploaded.publicUrl }).eq("image_url", oldUrl),
-          storage.from("store_subcategories").update({ image_url: uploaded.publicUrl }).eq("image_url", oldUrl),
+          storage.from("product_media").update({ storage_path: uploaded.storagePath, public_url: uploaded.publicUrl }).eq("storage_path", object.path),
+          storage.from("products").update({ image_url: uploaded.publicUrl }).eq("image_url", oldUrl),
+          storage.from("categories").update({ image_url: uploaded.publicUrl }).eq("image_url", oldUrl),
+          storage.from("subcategories").update({ image_url: uploaded.publicUrl }).eq("image_url", oldUrl),
         ]);
         migrated += 1;
       } catch (error) {

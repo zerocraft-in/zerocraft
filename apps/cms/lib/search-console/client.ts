@@ -44,8 +44,8 @@ export async function exchangeSearchConsoleCode(code: string, verifier: string) 
 let accessTokenCache: { token: string; expiresAt: number; fingerprint: string } | null = null;
 
 async function getAccessToken() {
-  const service = createServiceClient();
-  const { data, error } = await service.from("studio_integrations").select("encrypted_credentials,enabled,status").eq("provider", "search_console").maybeSingle();
+  const service = await createServiceClient();
+  const { data, error } = await service.from("integrations").select("encrypted_credentials,enabled,status").eq("provider", "search_console").maybeSingle();
   if (error) throw new SearchConsoleError("Search Console connection storage is unavailable.", 503, "storage_unavailable");
   if (!data?.enabled || data.status !== "connected" || !data.encrypted_credentials) throw new SearchConsoleError("Connect Google Search Console before loading SEO data.", 409, "not_connected");
   let refreshToken: string;

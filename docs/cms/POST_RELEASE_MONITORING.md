@@ -4,9 +4,9 @@ Use this checklist after every production CMS deployment.
 
 ## First 5 minutes
 
-- Open `/system-health` and confirm database, schema, cron, SMTP, storage, and deployment checks.
-- Open `/automations` and confirm the low-stock schedule has a recent successful run.
-- Open `/audit-logs` and confirm the deployment/diagnostic activity is recorded.
+- Open `/system/health` and confirm database, schema, cron, SMTP, storage, and deployment checks.
+- Open `/system/automations` and confirm the low-stock schedule has a recent successful run.
+- Open `/system/audit-logs` and confirm the deployment/diagnostic activity is recorded.
 - Run the protected-route smoke test and confirm unauthenticated API requests return `401`.
 
 ## First 30 minutes

@@ -4,16 +4,15 @@
   "private": true,
   "packageManager": "npm@11.17.0",
   "workspaces": [
-    "apps/*",
+    "apps/cms",
+    "apps/store",
     "packages/*"
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "dev:studio": "turbo run dev --filter=@zerocraft/studio",
     "dev:store": "turbo run dev --filter=@zerocraft/store",
     "dev:cms": "turbo run dev --filter=@zerocraft/cms",
     "build": "turbo run build --concurrency=1",
-    "build:studio": "turbo run build --concurrency=1 --filter=@zerocraft/studio",
     "build:store": "turbo run build --concurrency=1 --filter=@zerocraft/store",
     "build:cms": "turbo run build --concurrency=1 --filter=@zerocraft/cms",
     "build:cms:release": "node scripts/release/build-cms.mjs",
@@ -91,7 +90,7 @@
     "eslint-config-next": "^16.3.0",
     "supabase": "^2.121.0",
     "tailwindcss": "^4.3.3",
-    "turbo": "^2.11.9",
+    "turbo": "^2.11.10",
     "typescript": "^5"
   },
   "allowScripts": {

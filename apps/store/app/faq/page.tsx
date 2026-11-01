@@ -9,7 +9,7 @@ const faq: PolicyFaq[] = [
   { question: 'What payment methods are available?', answer: 'The payment methods available for your order are shown at checkout and may include UPI and cards. Never share your UPI PIN, card PIN, password, or one-time password with anyone.' },
   { question: 'Can I change my delivery address?', answer: 'Contact support as soon as possible using the details in your order confirmation. Address changes cannot be guaranteed after an order has been dispatched.' },
   { question: 'What should I do if my payment was debited but I have no confirmation?', answer: 'Do not immediately place a duplicate order. Keep the payment reference and contact support using the details in your order confirmation so the payment can be checked safely.' },
-  { question: 'Do you accept custom orders?', answer: 'The Custom Studio supports made-to-order designs. Custom or personalised pieces may have different production times and may not be eligible for change-of-mind exchanges, except for defects or where applicable law requires otherwise.' },
+  { question: 'Do you accept custom orders?', answer: 'The Custom Commerce supports made-to-order designs. Custom or personalised pieces may have different production times and may not be eligible for change-of-mind exchanges, except for defects or where applicable law requires otherwise.' },
 ];
 
 export default function FAQPage() {

@@ -21,7 +21,7 @@ export default function Footer() {
     <footer id="site-footer" className="minimal-footer" data-region="footer">
       <div className="site-container minimal-footer__inner">
         <div className="minimal-footer__meta">
-          <span>© 2026 ZeroCraft Studio</span>
+          <span>© 2026 ZeroCraft Commerce</span>
           <span>Original cinema culture · Designed and printed in India</span>
           <nav aria-label="Footer links">
             {[...FOOTER_LINKS, ...POLICY_LINKS].map((link) => (

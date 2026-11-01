@@ -5,10 +5,10 @@ import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEq
 const AAD = Buffer.from("zerocraft:analytics:refresh-token:v1");
 
 function key() {
-  const encoded = process.env.STUDIO_CREDENTIALS_ENCRYPTION_KEY;
-  if (!encoded) throw new Error("Studio credential encryption is not configured.");
+  const encoded = process.env.COMMERCE_CREDENTIALS_ENCRYPTION_KEY || process.env.STUDIO_CREDENTIALS_ENCRYPTION_KEY;
+  if (!encoded) throw new Error("Commerce credential encryption is not configured.");
   const value = Buffer.from(encoded, "base64");
-  if (value.length !== 32) throw new Error("STUDIO_CREDENTIALS_ENCRYPTION_KEY must be a base64-encoded 32-byte key.");
+  if (value.length !== 32) throw new Error("COMMERCE_CREDENTIALS_ENCRYPTION_KEY must be a base64-encoded 32-byte key.");
   return value;
 }
 

@@ -573,11 +573,11 @@ Do not mix multiple competing page headers, oversized hero cards, or unrelated d
 | Orders | Title, centered subscription/empty state, one primary CTA, learn-more action | `/orders` |
 | Products | Title, View as, saved view tabs, disabled/enabled search/filter/sort, add/import empty state, discovery panel | `/store/products` |
 | Customers | Export/import/add actions, segment composer, editor toggle, search, display options, reset/save view, table/no-match state | `/clients`, `/leads` |
-| Growth | Intro banner, performance controls, metric cards, campaign automation, recent campaigns | `/growth` |
+| Growth | Intro banner, performance controls, metric cards, campaign automation, recent campaigns | `/system/growth` |
 | Discounts | Export/create actions, discount-type chooser, channel publishing controls | `/offers` or feature-gated `/discounts` |
 | Content | Definition/status cards, recent entries, search, saved-view toolbar, table | `/content`, `/blogs`, `/media-library` |
 | Markets | Tree/sidebar context, graph/create actions, search/filter/sort, status/customization table | `/markets` or future service-area route |
-| Analytics | Refresh metadata, goals/exploration actions, date/compare/currency controls, linked metric cards and chart modules | `/reports`, `/growth`, `/search-console` |
+| Analytics | Refresh metadata, goals/exploration actions, date/compare/currency controls, linked metric cards and chart modules | `/reports`, `/system/growth`, `/system/search-console` |
 | Online Store | Visibility status, preview, more actions, current theme hero, publish/edit action, theme gallery | `/store/customization` and future `/channels/website` |
 | Settings | Back control, settings search, identity block, category navigation, focused detail panel | `/settings` |
 
@@ -626,7 +626,7 @@ Live Shopify observations used for this pass:
 | --- | --- |
 | Primary navigation + disclosure affordances | `StudioSidebar` grouped navigation |
 | Sales channels | Website route under `/channels` |
-| Apps | Integrations route under `/integrations` |
+| Apps | Integrations route under `/settings/integrations` |
 | Settings and alert utilities | `/settings` and `/notifications` footer actions |
 | Compact rail | Controlled `SidebarProvider` state with `w-16` rail |
 

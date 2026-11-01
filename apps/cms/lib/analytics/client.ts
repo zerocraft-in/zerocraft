@@ -38,8 +38,8 @@ export async function exchangeAnalyticsCode(code: string, verifier: string) {
 
 let accessTokenCache: { token: string; expiresAt: number; fingerprint: string } | null = null;
 async function getAccessToken() {
-  const service = createServiceClient();
-  const { data, error } = await service.from("studio_integrations").select("encrypted_credentials,enabled,status").eq("provider", "ga4").maybeSingle();
+  const service = await createServiceClient();
+  const { data, error } = await service.from("integrations").select("encrypted_credentials,enabled,status").eq("provider", "ga4").maybeSingle();
   if (error) throw new AnalyticsError("Google Analytics connection storage is unavailable.", 503, "storage_unavailable");
   if (!data?.enabled || data.status !== "connected" || !data.encrypted_credentials) throw new AnalyticsError("Connect Google Analytics before loading Live View.", 409, "not_connected");
   let refreshToken: string;

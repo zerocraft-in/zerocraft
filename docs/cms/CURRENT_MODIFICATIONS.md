@@ -12,13 +12,13 @@ The working tree contains 17 modified source files, 1 new category-media API dir
 
 - `apps/cms/app/store/categories/page.tsx` now renders the new category manager.
 - `apps/cms/components/studio/store-categories-manager.tsx` is a new full-screen category/subcategory CRUD and assignment interface.
-- `apps/cms/app/api/studio/store/route.ts` adds `category_items` assignment handling and supports the category workflow.
-- `apps/cms/app/api/studio/store/category-media/route.ts` is a new upload endpoint for category images.
+- `apps/cms/app/api/store/route.ts` adds `category_items` assignment handling and supports the category workflow.
+- `apps/cms/app/api/store/category-media/route.ts` is a new upload endpoint for category images.
 
 ### Shell and navigation
 
-- `apps/cms/app/studio-shell.tsx` replaces the previous GSAP mobile-menu path with sheet navigation and adds keyboard-aware search result navigation.
-- `apps/cms/components/layout/studio-sidebar.tsx` provides collapsible route-backed navigation, a 280px Square-inspired rail with the ZeroCraft SVG mark, and compact Settings / Help & support / Log out footer controls.
+- `apps/studio/app/studio-shell.tsx` replaces the previous GSAP mobile-menu path with sheet navigation and adds keyboard-aware search result navigation.
+- `apps/studio/components/layout/studio-sidebar.tsx` provides collapsible route-backed navigation, a 280px Square-inspired rail with the ZeroCraft SVG mark, and compact Settings / Help & support / Log out footer controls.
 - `apps/cms/components/layout/studio-header.tsx` provides contextual page identity, global Create actions, page search, and notifications without duplicating operator details.
 - Provider, appearance, table, and global layout/style files contain related visual or interaction updates.
 

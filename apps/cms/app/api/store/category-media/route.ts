@@ -1,8 +1,9 @@
+import { getRequestStoreConfig } from "@zerocraft/supabase/store-server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { isSameOrigin } from "@/lib/request-origin";
 import {
   PRODUCT_MEDIA_BUCKET,
-  requireStudioStorageClient,
+  requireCommerceStorageClient,
   safeObjectKey,
   validateStorageFile,
 } from "@/lib/storage/server";
@@ -19,9 +20,9 @@ export async function POST(request: Request) {
   if (!isSameOrigin(request)) return errorResponse("Invalid request origin.", 403);
   let client;
   try {
-    client = await requireStudioStorageClient();
+    client = await requireCommerceStorageClient("catalog.manage");
   } catch (error) {
-    return errorResponse(error instanceof Error ? error.message : "Studio access required.", 403);
+    return errorResponse(error instanceof Error ? error.message : "Commerce access required.", 403);
   }
   const form = await request.formData();
   const file = form.get("file");
@@ -32,8 +33,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return errorResponse(error instanceof Error ? error.message : "The image is invalid.");
   }
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { url, serviceKey: key } = await getRequestStoreConfig();
   const storage = url && key
     ? createServiceClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
     : client.supabase;

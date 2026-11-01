@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/studio/notifications/reports/worker",
+      "path": "/api/admin/notifications/reports/worker",
       "schedule": "0 9 * * 1"
     }
   ]

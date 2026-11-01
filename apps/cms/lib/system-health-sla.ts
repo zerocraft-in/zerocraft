@@ -9,14 +9,14 @@ type IncidentRow = { first_seen_at: string; resolved_at: string | null; status: 
 
 export async function evaluateSystemHealthSla(input: { supabase: Client; actorId?: string | null; notify?: boolean }) {
   const { supabase, actorId = null, notify: notifyAdmins = true } = input;
-  const { data: settings } = await supabase.from("studio_system_health_sla_settings").select("enabled,uptime_target,failure_rate_max,mttr_max_minutes,notify_admins").eq("id", true).maybeSingle();
+  const { data: settings } = await supabase.from("health_settings").select("enabled,uptime_target,failure_rate_max,mttr_max_minutes,notify_admins").eq("id", true).maybeSingle();
   if (!settings?.enabled) return { enabled: false, breaches: [] };
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const [{ data: runs }, { data: failedRuns }, { data: failedEmails }, { data: incidents }] = await Promise.all([
-    supabase.from("studio_system_health_runs").select("overall,created_at").gte("created_at", since),
-    supabase.from("studio_automation_runs").select("id").eq("status", "failed").eq("is_test", false).gte("created_at", since),
-    supabase.from("studio_email_events").select("id").in("status", ["failed", "dead_letter"]).eq("is_test", false).gte("created_at", since),
-    supabase.from("studio_system_health_incidents").select("first_seen_at,resolved_at,status").gte("created_at", since),
+    supabase.from("health_checks").select("overall,created_at").gte("created_at", since),
+    supabase.from("automation_runs").select("id").eq("status", "failed").eq("is_test", false).gte("created_at", since),
+    supabase.from("email_events").select("id").in("status", ["failed", "dead_letter"]).eq("is_test", false).gte("created_at", since),
+    supabase.from("health_incidents").select("first_seen_at,resolved_at,status").gte("created_at", since),
   ]);
   const healthRuns = (runs || []) as HealthRunRow[];
   const healthIncidents = (incidents || []) as IncidentRow[];
@@ -31,27 +31,27 @@ export async function evaluateSystemHealthSla(input: { supabase: Client; actorId
   const breaches = measures.filter((item) => item.breach);
   for (const breach of measures) {
     const fingerprint = `sla:${breach.key}`;
-    const { data: existing } = await supabase.from("studio_system_health_incidents").select("id,status,notification_sent_at,notification_attempts").eq("fingerprint", fingerprint).maybeSingle();
+    const { data: existing } = await supabase.from("health_incidents").select("id,status,notification_sent_at,notification_attempts").eq("fingerprint", fingerprint).maybeSingle();
     if (!breach.breach) {
-      if (existing?.status === "open") await supabase.from("studio_system_health_incidents").update({ status: "resolved", resolved_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", existing.id);
+      if (existing?.status === "open") await supabase.from("health_incidents").update({ status: "resolved", resolved_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", existing.id);
       continue;
     }
     const now = new Date().toISOString();
     const incident = { fingerprint, status: "open", severity: "degraded", component: `SLA · ${breach.label}`, last_seen_at: now, latest_message: breach.detail, resolved_at: null, updated_at: now };
-    if (existing) await supabase.from("studio_system_health_incidents").update(incident).eq("id", existing.id);
-    else await supabase.from("studio_system_health_incidents").insert({ ...incident, first_seen_at: now });
+    if (existing) await supabase.from("health_incidents").update(incident).eq("id", existing.id);
+    else await supabase.from("health_incidents").insert({ ...incident, first_seen_at: now });
     const notify = notifyAdmins && Boolean(settings.notify_admins) && (!existing || existing.status !== "open" || !existing.notification_sent_at || Date.now() - new Date(existing.notification_sent_at).getTime() >= 30 * 60 * 1000);
     if (!notify) continue;
-    const { data: recipients } = await supabase.from("profiles").select("id,email").in("role", ["admin", "manager"]).eq("is_active", true).not("email", "is", null);
+    const { data: recipients } = await supabase.from("accounts").select("id,email").in("role", ["admin", "manager"]).eq("is_active", true).not("email", "is", null);
     let errorMessage: string | null = null;
     for (const recipient of recipients || []) {
       const email = String(recipient.email || "").trim().toLowerCase();
       if (!email) continue;
       const dedupeKey = `sla-breach:${breach.key}:${recipient.id}:${Math.floor(Date.now() / (30 * 60 * 1000))}`;
-      await supabase.from("notifications").upsert({ title: `SLA breached: ${breach.label}`, message: breach.detail, category: "system", type: "warning", read: false, link: "/system-health", recipient_id: recipient.id, dedupe_key: dedupeKey, metadata: { slaKey: breach.key, value: breach.value, target: breach.target } }, { onConflict: "dedupe_key" });
+      await supabase.from("notifications").upsert({ title: `SLA breached: ${breach.label}`, message: breach.detail, category: "system", type: "warning", read: false, link: "/system/health", recipient_id: recipient.id, dedupe_key: dedupeKey, metadata: { slaKey: breach.key, value: breach.value, target: breach.target } }, { onConflict: "dedupe_key" });
       try { await sendTrackedEmail({ supabase, actorId, kind: "system.health.sla", message: systemHealthSlaEmail({ recipient: email, label: breach.label, detail: breach.detail }), metadata: { slaKey: breach.key, recipientId: recipient.id } }); } catch (error) { errorMessage = error instanceof Error ? error.message.slice(0, 500) : "SMTP delivery failed"; }
     }
-    await supabase.from("studio_system_health_incidents").update({ notification_sent_at: now, notification_attempts: (existing?.notification_attempts || 0) + 1, last_error: errorMessage, updated_at: now }).eq("fingerprint", fingerprint);
+    await supabase.from("health_incidents").update({ notification_sent_at: now, notification_attempts: (existing?.notification_attempts || 0) + 1, last_error: errorMessage, updated_at: now }).eq("fingerprint", fingerprint);
   }
   return { enabled: true, metrics: { uptime, failureRate, mttr }, settings, breaches };
 }

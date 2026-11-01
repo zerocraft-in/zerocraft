@@ -38,7 +38,7 @@ export type ValidationProduct = {
   currency_code: string | null;
   stock: number | null;
   image_url: string | null;
-  store_product_variants?: ValidationVariant[];
+  variants?: ValidationVariant[];
 };
 
 export type ValidationVariant = {
@@ -78,7 +78,7 @@ export function validateCartLine(item: CartValidationItem, product: ValidationPr
     return result;
   }
 
-  const activeVariants = (product.store_product_variants ?? []).filter((variant) => variant.is_active);
+  const activeVariants = (product.variants ?? []).filter((variant) => variant.is_active);
   const variant = item.variantId
     ? activeVariants.find((candidate) => candidate.id === item.variantId)
     : activeVariants.length === 1 ? activeVariants[0] : undefined;

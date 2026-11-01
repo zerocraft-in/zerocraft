@@ -1,1 +1,1 @@
-export { StudioSidekick as SidekickLauncher } from "@/components/studio/studio-sidekick";
+export { CommerceSidekick as SidekickLauncher } from "@/components/commerce/commerce-sidekick";

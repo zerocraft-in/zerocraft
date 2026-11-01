@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/apps/studio/utils/supabase/server";
+import { createClient } from "@zerocraft/supabase/server";
 
 export type StoreBundle = {
   id: string;
@@ -21,7 +21,7 @@ export type StoreBundle = {
 export async function getPublishedBundles(): Promise<StoreBundle[]> {
   const supabase = await createClient();
   const { data: bundles, error: bundleError } = await supabase
-    .from("store_bundles")
+    .from("bundles")
     .select("id,slug,name,description,discount_percent,image_url")
     .eq("status", "published")
     .order("created_at", { ascending: true });
@@ -31,9 +31,9 @@ export async function getPublishedBundles(): Promise<StoreBundle[]> {
 
   const bundleIds = bundles.map((bundle) => bundle.id);
   const { data: items, error: itemError } = await supabase
-    .from("store_bundle_items")
+    .from("bundle_items")
     .select(
-      "bundle_id,product_id,quantity,sort_order,product:store_products!inner(id,slug,title,price,price_paise,status)",
+      "bundle_id,product_id,quantity,sort_order,product:products!inner(id,slug,title,price,price_paise,status)",
     )
     .in("bundle_id", bundleIds)
     .eq("product.status", "active")

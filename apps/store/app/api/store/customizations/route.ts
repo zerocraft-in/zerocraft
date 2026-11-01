@@ -67,7 +67,7 @@ export async function POST(request: Request) {
   }
   const storagePath = safeObjectKey(client.user.id, extension);
   const { data: template, error: templateError } = await client.supabase
-    .from("store_customization_templates")
+    .from("customization_templates")
     .select("id,product_id,status")
     .eq("id", templateId)
     .eq("product_id", productId)
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     );
   const { data: customization, error: customizationError } =
     await client.supabase
-      .from("store_customizations")
+      .from("customizations")
       .insert({
         customer_id: client.user.id,
         product_id: productId,

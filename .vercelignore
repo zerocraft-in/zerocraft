@@ -16,7 +16,6 @@ coverage
 !.env.example
 *.log
 *.tsbuildinfo
-.git
 .vercel
 **/.vercel
 .github

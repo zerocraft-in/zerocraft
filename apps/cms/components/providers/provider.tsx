@@ -2,7 +2,7 @@
 
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { CurrencyProvider } from "@/lib/currency-context";
-import { Toaster } from "@/components/ui/toast";
+import { Toaster } from "@zerocraft/components/ui/toast";
 interface ProvidersProps {
   children: React.ReactNode;
 }

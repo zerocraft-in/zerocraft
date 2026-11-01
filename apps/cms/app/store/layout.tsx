@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
 /**
- * Canonical Store workspace boundary.
- * The authenticated CMS shell is provided by the root layout; this nested
- * layout keeps Store routes isolated from Studio route composition.
+ * Canonical Commerce workspace boundary for /store/*.
+ * CmsFrame provides the Shopify-style CommerceShell; this boundary labels the
+ * workspace without adding a second navigation shell.
  */
 export default function StoreWorkspaceLayout({ children }: { children: ReactNode }) {
   return (

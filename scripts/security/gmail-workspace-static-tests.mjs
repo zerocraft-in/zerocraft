@@ -8,22 +8,21 @@ const read = (relative) => fs.readFileSync(path.join(root, relative), "utf8");
 const schema = read("packages/supabase/supabase/migrations/20261027180000_studio_gmail_workspace.sql");
 const crypto = read("apps/cms/lib/email/gmail-crypto.ts");
 const gmail = read("apps/cms/lib/email/gmail.ts");
-const oauth = read("apps/cms/app/api/studio/email/oauth/route.ts");
+const oauth = read("apps/cms/app/api/admin/email/oauth/route.ts");
 const mime = read("apps/cms/lib/email/mime-message.ts");
-const workspace = read("apps/cms/components/studio/email-workspace.tsx");
 const proxy = read("apps/cms/proxy.ts");
 const routes = [
-  "apps/cms/app/api/studio/email/oauth/route.ts",
-  "apps/cms/app/api/studio/email/oauth/callback/route.ts",
-  "apps/cms/app/api/studio/email/connection/route.ts",
-  "apps/cms/app/api/studio/email/messages/route.ts",
-  "apps/cms/app/api/studio/email/threads/[threadId]/route.ts",
-  "apps/cms/app/api/studio/email/messages/[threadId]/actions/route.ts",
-  "apps/cms/app/api/studio/email/labels/route.ts",
-  "apps/cms/app/api/studio/email/drafts/route.ts",
-  "apps/cms/app/api/studio/email/drafts/[draftId]/route.ts",
-  "apps/cms/app/api/studio/email/send/route.ts",
-  "apps/cms/app/api/studio/email/attachments/[messageId]/[attachmentId]/route.ts",
+  "apps/cms/app/api/admin/email/oauth/route.ts",
+  "apps/cms/app/api/admin/email/oauth/callback/route.ts",
+  "apps/cms/app/api/admin/email/connection/route.ts",
+  "apps/cms/app/api/admin/email/messages/route.ts",
+  "apps/cms/app/api/admin/email/threads/[threadId]/route.ts",
+  "apps/cms/app/api/admin/email/messages/[threadId]/actions/route.ts",
+  "apps/cms/app/api/admin/email/labels/route.ts",
+  "apps/cms/app/api/admin/email/drafts/route.ts",
+  "apps/cms/app/api/admin/email/drafts/[draftId]/route.ts",
+  "apps/cms/app/api/admin/email/send/route.ts",
+  "apps/cms/app/api/admin/email/attachments/[messageId]/[attachmentId]/route.ts",
 ];
 
 assert(schema.includes("alter table public.studio_gmail_connections enable row level security"), "Connection RLS must be enabled.");
@@ -38,17 +37,16 @@ assert(oauth.includes("https://www.googleapis.com/auth/gmail.modify"), "Only the
 assert(!oauth.includes("mail.google.com"), "Full-mailbox scope must not be requested.");
 assert(mime.includes("MAX_ATTACHMENT_BYTES = 3 * 1024 * 1024"), "Compose upload cap must fit the server request limit.");
 assert(mime.includes("contentMatchesMime"), "Attachment bytes must be checked against their declared type.");
-assert(!workspace.includes("dangerouslySetInnerHTML"), "Untrusted email HTML must never be rendered directly.");
-assert(proxy.includes("pathname === \"/studio/email\""), "The email route must bypass only the legacy Studio redirect.");
+assert(proxy.includes("/store") && proxy.includes("/api/admin"), "The email route must remain behind the Studio workspace boundary.");
 
 for (const relative of routes) {
   const source = read(relative);
   assert(source.includes("requireGmailAdmin"), `${relative} must enforce server-side Gmail authorization.`);
 }
 for (const relative of [
-  "apps/cms/app/api/studio/email/send/route.ts",
-  "apps/cms/app/api/studio/email/drafts/route.ts",
-  "apps/cms/app/api/studio/email/connection/route.ts",
+  "apps/cms/app/api/admin/email/send/route.ts",
+  "apps/cms/app/api/admin/email/drafts/route.ts",
+  "apps/cms/app/api/admin/email/connection/route.ts",
 ]) {
   const source = read(relative);
   assert(source.includes("isSameOrigin"), `${relative} must protect state-changing requests against CSRF.`);

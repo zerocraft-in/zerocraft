@@ -5,10 +5,10 @@ import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEq
 const TOKEN_AAD = Buffer.from("zerocraft:gmail:refresh-token:v1");
 
 function encryptionKey() {
-  const encoded = process.env.STUDIO_CREDENTIALS_ENCRYPTION_KEY;
+  const encoded = process.env.COMMERCE_CREDENTIALS_ENCRYPTION_KEY || process.env.STUDIO_CREDENTIALS_ENCRYPTION_KEY;
   if (!encoded) throw new Error("Gmail credential encryption is not configured.");
   const key = Buffer.from(encoded, "base64");
-  if (key.length !== 32) throw new Error("STUDIO_CREDENTIALS_ENCRYPTION_KEY must be a base64-encoded 32-byte key.");
+  if (key.length !== 32) throw new Error("COMMERCE_CREDENTIALS_ENCRYPTION_KEY must be a base64-encoded 32-byte key.");
   return key;
 }
 

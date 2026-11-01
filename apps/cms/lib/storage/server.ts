@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@zerocraft/supabase/server";
+import { requireCommerceAccess, requireCommercePermission, type CommercePermission } from "@/lib/commerce-auth";
 
 export const PRODUCT_MEDIA_BUCKET = "product-media" as const;
 export const CUSTOMER_CUSTOMIZATIONS_BUCKET = "customer-customizations" as const;
@@ -45,13 +46,10 @@ export function safeObjectKey(prefix: string, extension: string) {
   return `${prefix}/${crypto.randomUUID()}${extension}`;
 }
 
-export async function requireStudioStorageClient() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Studio access required.");
-  const { data: allowed, error } = await supabase.rpc("is_studio_member");
-  if (error || !allowed) throw new Error("Studio access required.");
-  return { supabase, user };
+export async function requireCommerceStorageClient(permission?: CommercePermission) {
+  const access = permission ? await requireCommercePermission(permission) : await requireCommerceAccess();
+  if (!access.ok) throw new Error(access.response.status === 401 ? "Sign in to use Commerce." : "You do not have permission to manage this resource.");
+  return { supabase: access.supabase, user: access.user };
 }
 
 export async function requireCustomerStorageClient() {

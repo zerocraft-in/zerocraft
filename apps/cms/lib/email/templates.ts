@@ -29,18 +29,11 @@ export async function sendTestEmail(recipient: string, senderName: string) {
 
 const dateLabel = (value: string) => new Intl.DateTimeFormat("en-IN", { dateStyle: "full", timeStyle: "short", timeZone: "Asia/Kolkata" }).format(new Date(value));
 
-export function appointmentEmail(input: { recipient: string; clientName: string; service: string; scheduledAt: string; status: string; notes?: string }) {
-  const subject = `Appointment ${input.status}: ${input.service}`;
-  const text = `Hi ${input.clientName},\n\nYour ZeroCraft appointment is ${input.status}.\nService: ${input.service}\nScheduled: ${dateLabel(input.scheduledAt)}\n${input.notes ? `Notes: ${input.notes}\n` : ""}\nRegards,\nZeroCraft Studio`;
-  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b"><h2>ZeroCraft Studio appointment</h2><p>Hi ${escapeHtml(input.clientName)},</p><p>Your appointment is <strong>${escapeHtml(input.status)}</strong>.</p><p><strong>Service:</strong> ${escapeHtml(input.service)}<br/><strong>Scheduled:</strong> ${escapeHtml(dateLabel(input.scheduledAt))}</p>${input.notes ? `<p><strong>Notes:</strong> ${escapeHtml(input.notes)}</p>` : ""}<p>Regards,<br/>ZeroCraft Studio</p></div>`;
-  return { to: input.recipient, subject, text, html };
-}
-
 export function orderEmail(input: { recipient: string; customerName: string; orderNumber: string; status: string; paymentStatus: string; total: number; currency: string }) {
   const subject = `Order ${input.orderNumber} is ${input.status}`;
   const total = new Intl.NumberFormat("en-IN", { style: "currency", currency: input.currency || "INR" }).format(input.total);
-  const text = `Hi ${input.customerName},\n\nYour ZeroCraft order ${input.orderNumber} is now ${input.status}.\nPayment: ${input.paymentStatus}\nTotal: ${total}\n\nRegards,\nZeroCraft Studio`;
-  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b"><h2>ZeroCraft order update</h2><p>Hi ${escapeHtml(input.customerName)},</p><p>Order <strong>${escapeHtml(input.orderNumber)}</strong> is now <strong>${escapeHtml(input.status)}</strong>.</p><p><strong>Payment:</strong> ${escapeHtml(input.paymentStatus)}<br/><strong>Total:</strong> ${escapeHtml(total)}</p><p>Regards,<br/>ZeroCraft Studio</p></div>`;
+  const text = `Hi ${input.customerName},\n\nYour ZeroCraft order ${input.orderNumber} is now ${input.status}.\nPayment: ${input.paymentStatus}\nTotal: ${total}\n\nRegards,\nZeroCraft Commerce`;
+  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b"><h2>ZeroCraft order update</h2><p>Hi ${escapeHtml(input.customerName)},</p><p>Order <strong>${escapeHtml(input.orderNumber)}</strong> is now <strong>${escapeHtml(input.status)}</strong>.</p><p><strong>Payment:</strong> ${escapeHtml(input.paymentStatus)}<br/><strong>Total:</strong> ${escapeHtml(total)}</p><p>Regards,<br/>ZeroCraft Commerce</p></div>`;
   return { to: input.recipient, subject, text, html };
 }
 
@@ -87,8 +80,8 @@ export function teamInvitationEmail(input: { recipient: string; role: string; in
   const role = input.role || "staff";
   const inviter = input.inviterName || "A ZeroCraft administrator";
   const expiry = dateLabel(input.expiresAt);
-  const subject = `You’re invited to ZeroCraft Studio as ${role}`;
-  const text = `You’ve been invited to ZeroCraft Studio as ${role} by ${inviter}.\n\nAccept your invitation: ${input.inviteUrl}\n\nThis invitation expires on ${expiry}.`;
-  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b;max-width:620px;margin:0 auto;padding:28px"><p style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#666">ZeroCraft Studio · Team access</p><h2 style="margin:18px 0 8px">You’re invited to ZeroCraft Studio</h2><p>${escapeHtml(inviter)} invited you to join the CMS as <strong>${escapeHtml(role)}</strong>.</p><p><a href="${escapeHtml(input.inviteUrl)}" style="display:inline-block;background:#18181b;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px">Accept invitation</a></p><p style="font-size:13px;color:#666">This invitation expires on ${escapeHtml(expiry)}.</p></div>`;
+  const subject = `You’re invited to ZeroCraft Commerce as ${role}`;
+  const text = `You’ve been invited to ZeroCraft Commerce as ${role} by ${inviter}.\n\nAccept your invitation: ${input.inviteUrl}\n\nThis invitation expires on ${expiry}.`;
+  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b;max-width:620px;margin:0 auto;padding:28px"><p style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#666">ZeroCraft Commerce · Team access</p><h2 style="margin:18px 0 8px">You’re invited to ZeroCraft Commerce</h2><p>${escapeHtml(inviter)} invited you to join the CMS as <strong>${escapeHtml(role)}</strong>.</p><p><a href="${escapeHtml(input.inviteUrl)}" style="display:inline-block;background:#18181b;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px">Accept invitation</a></p><p style="font-size:13px;color:#666">This invitation expires on ${escapeHtml(expiry)}.</p></div>`;
   return { to: input.recipient, subject, text, html };
 }

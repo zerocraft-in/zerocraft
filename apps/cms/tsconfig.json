@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -18,8 +22,21 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@zerocraft/supabase/*": ["../../packages/supabase/src/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@zerocraft/supabase/*": [
+        "../../packages/supabase/src/*"
+      ],
+      "@zerocraft/components/ui/*": [
+        "../../packages/ui/src/components/*"
+      ],
+      "@zerocraft/hooks/*": [
+        "../../packages/ui/src/hooks/*"
+      ],
+      "@zerocraft/lib/cn": [
+        "../../packages/ui/src/cn.ts"
+      ]
     },
     "incremental": true
   },
@@ -33,5 +50,8 @@
     ".next-local/types/**/*.ts",
     ".next-local/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "components/sections"]
+  "exclude": [
+    "node_modules",
+    "components/sections"
+  ]
 }

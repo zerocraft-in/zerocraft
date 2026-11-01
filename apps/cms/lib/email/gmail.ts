@@ -102,12 +102,12 @@ export async function getGmailEmail(accessToken: string) {
 async function getAccessToken() {
   let service;
   try {
-    service = createServiceClient();
+    service = await createServiceClient();
   } catch {
     throw new GmailError("Gmail token storage is not configured on the server.", 503, "storage_not_configured");
   }
   const { data: connection, error } = await service
-    .from("studio_gmail_connections")
+    .from("email_accounts")
     .select("encrypted_refresh_token")
     .eq("connection_id", "workspace")
     .maybeSingle();
@@ -270,7 +270,7 @@ export async function consumeGmailRateLimit(
   limit: number,
   windowSeconds: number,
 ) {
-  const { data, error } = await supabase.rpc("studio_gmail_consume_rate_limit", {
+  const { data, error } = await supabase.rpc("gmail_consume_rate_limit", {
     p_action: action,
     p_limit: limit,
     p_window_seconds: windowSeconds,
@@ -290,7 +290,7 @@ export async function recordGmailAudit(
     detailCode?: string;
   },
 ) {
-  const { error } = await supabase.from("studio_gmail_audit_events").insert({
+  const { error } = await supabase.from("email_audit_logs").insert({
     actor_id: input.actorId,
     action: input.action,
     outcome: input.outcome,

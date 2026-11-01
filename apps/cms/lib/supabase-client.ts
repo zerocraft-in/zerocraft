@@ -8,266 +8,12 @@ export const supabase = createClient();
 // Role Based Access Control Types
 export type UserRole = "admin" | "manager" | "staff" | "client";
 
-export interface StudioUser {
+export interface CommerceUser {
   id: string;
   email: string;
   fullName: string;
   role: UserRole;
   avatarUrl?: string;
-}
-
-// LIVE SUPABASE FETCH & MUTATION HELPERS
-
-// --- BLOGS ---
-export async function fetchBlogsFromSupabase(strict = false) {
-  try {
-    const { data, error } = await supabase
-      .from("blogs")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) { if (strict) throw error; return []; }
-    if (!data) return [];
-    return data;
-  } catch (cause) {
-    if (strict) throw cause;
-    return [];
-  }
-}
-
-export async function createBlogInSupabase(blog: Record<string, any>) {
-  const { data, error } = await supabase
-    .from("blogs")
-    .insert([blog])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function updateBlogInSupabase(
-  id: string,
-  updates: Record<string, any>,
-) {
-  const { data, error } = await supabase
-    .from("blogs")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteBlogInSupabase(id: string) {
-  const { error } = await supabase.from("blogs").delete().eq("id", id).select("id").single();
-  if (error) throw error;
-  return true;
-}
-
-// --- WORKS ---
-export async function fetchWorksFromSupabase(strict = false) {
-  try {
-    const { data, error } = await supabase
-      .from("works")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) { if (strict) throw error; return []; }
-    if (!data) return [];
-    return data;
-  } catch (cause) {
-    if (strict) throw cause;
-    return [];
-  }
-}
-
-export async function createWorkInSupabase(work: Record<string, any>) {
-  const { data, error } = await supabase
-    .from("works")
-    .insert([work])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function updateWorkInSupabase(
-  id: string,
-  updates: Record<string, any>,
-) {
-  const { data, error } = await supabase
-    .from("works")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteWorkInSupabase(id: string) {
-  const { error } = await supabase.from("works").delete().eq("id", id).select("id").single();
-  if (error) throw error;
-  return true;
-}
-
-// --- REVIEWS ---
-export async function fetchReviewsFromSupabase(strict = false) {
-  try {
-    const { data, error } = await supabase
-      .from("reviews")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) { if (strict) throw error; return []; }
-    if (!data) return [];
-    return data;
-  } catch (cause) {
-    if (strict) throw cause;
-    return [];
-  }
-}
-
-export async function createReviewInSupabase(review: Record<string, any>) {
-  const { data, error } = await supabase
-    .from("reviews")
-    .insert([review])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function updateReviewInSupabase(
-  id: string,
-  updates: Record<string, any>,
-) {
-  const { data, error } = await supabase
-    .from("reviews")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteReviewInSupabase(id: string) {
-  const { error } = await supabase.from("reviews").delete().eq("id", id);
-  if (error) throw error;
-  return true;
-}
-
-// --- CLIENTS ---
-export async function fetchClientsFromSupabase(strict = false) {
-  try {
-    const { data, error } = await supabase
-      .from("clients")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) { if (strict) throw error; return []; }
-    if (!data) return [];
-    return data;
-  } catch (cause) {
-    if (strict) throw cause;
-    return [];
-  }
-}
-
-export async function fetchClientByIdFromSupabase(id: string) {
-  try {
-    const { data, error } = await supabase
-      .from("clients")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error || !data) return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
-
-export async function createClientInSupabase(client: Record<string, any>) {
-  const { data, error } = await supabase
-    .from("clients")
-    .insert([client])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function updateClientInSupabase(
-  id: string,
-  updates: Record<string, any>,
-) {
-  const { data, error } = await supabase
-    .from("clients")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteClientInSupabase(id: string) {
-  const { error } = await supabase.from("clients").delete().eq("id", id).select("id").single();
-  if (error) throw error;
-  return true;
-}
-
-// --- APPOINTMENTS ---
-export async function fetchAppointmentsFromSupabase(strict = false) {
-  try {
-    const { data, error } = await supabase
-      .from("appointments")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) { if (strict) throw error; return []; }
-    if (!data) return [];
-    return data;
-  } catch (cause) {
-    if (strict) throw cause;
-    return [];
-  }
-}
-
-export async function createAppointmentInSupabase(
-  appointment: Record<string, any>,
-) {
-  const { data, error } = await supabase
-    .from("appointments")
-    .insert([appointment])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function updateAppointmentInSupabase(
-  id: string,
-  updates: Record<string, any>,
-) {
-  const { data, error } = await supabase
-    .from("appointments")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteAppointmentInSupabase(id: string) {
-  const { error } = await supabase.from("appointments").delete().eq("id", id).select("id").single();
-  if (error) throw error;
-  return true;
 }
 
 // --- PROFILES & USER MANAGEMENT (RBAC) ---
@@ -285,7 +31,7 @@ export interface Profile {
 export async function fetchProfilesFromSupabase(): Promise<Profile[]> {
   try {
     const { data, error } = await supabase
-      .from("profiles")
+      .from("accounts")
       .select("*")
       .order("created_at", { ascending: false });
 
@@ -298,7 +44,7 @@ export async function fetchProfilesFromSupabase(): Promise<Profile[]> {
 
 export async function updateProfileRoleInSupabase(id: string, role: UserRole) {
   const { data, error } = await supabase
-    .from("profiles")
+    .from("accounts")
     .update({ role, updated_at: new Date().toISOString() })
     .eq("id", id)
     .select()
@@ -327,13 +73,13 @@ export async function ensureUserProfile(user: {
 
   try {
     const { data: existing } = await supabase
-      .from("profiles")
+      .from("accounts")
       .select("*")
       .eq("id", user.id)
       .maybeSingle();
     if (existing) return existing;
     const { data } = await supabase
-      .from("profiles")
+      .from("accounts")
       .insert(payload)
       .select()
       .single();
@@ -345,11 +91,11 @@ export async function ensureUserProfile(user: {
 }
 
 // --- NOTIFICATIONS SYSTEM ---
-export interface StudioNotification {
+export interface CommerceNotification {
   id: string;
   title: string;
   message: string;
-  category: "orders" | "inventory" | "payments" | "clients" | "projects" | "appointments" | "works" | "blogs" | "automation" | "system" | string;
+  category: string;
   type: "info" | "success" | "warning" | "error";
   read: boolean;
   link?: string;
@@ -358,7 +104,7 @@ export interface StudioNotification {
 }
 
 export async function fetchNotificationsFromSupabase(): Promise<
-  StudioNotification[]
+  CommerceNotification[]
 > {
   try {
     const { data: authData } = await supabase.auth.getUser();
@@ -370,7 +116,7 @@ export async function fetchNotificationsFromSupabase(): Promise<
       .order("created_at", { ascending: false });
 
     if (error || !data) return [];
-    return data as StudioNotification[];
+    return data as CommerceNotification[];
   } catch {
     return [];
   }
@@ -423,7 +169,7 @@ export async function clearReadNotificationsInSupabase() {
 }
 
 export async function createNotificationInSupabase(
-  notification: Omit<StudioNotification, "id" | "created_at">,
+  notification: Omit<CommerceNotification, "id" | "created_at">,
 ) {
   try {
     const { data, error } = await supabase

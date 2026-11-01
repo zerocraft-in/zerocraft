@@ -1,16 +1,16 @@
 import "server-only";
 
-import { requireStudioPermission, type StudioPermission } from "@/lib/studio-auth";
+import { requireCommercePermission, type CommercePermission } from "@/lib/commerce-auth";
 import { GmailError } from "./gmail";
 
-export async function requireGmailAdmin(permission: StudioPermission) {
-  const access = await requireStudioPermission(permission);
+export async function requireGmailAdmin(permission: CommercePermission) {
+  const access = await requireCommercePermission(permission);
   if (!access.ok) return access;
   if (access.role !== "admin") {
     return {
       ok: false as const,
       response: Response.json(
-        { error: "Gmail workspace access is restricted to Studio admins." },
+        { error: "Gmail workspace access is restricted to Commerce admins." },
         { status: 403, headers: { "Cache-Control": "private, no-store" } },
       ),
     };

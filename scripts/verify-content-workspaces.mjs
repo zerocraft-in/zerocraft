@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import { validateContent, validLink } from '../apps/cms/lib/content-model.ts';
+const base = { title: 'Main menu', handle: 'main-menu', status: 'active', data: {} };
+assert.equal(validateContent('menus', { ...base, data: { items: [{ id: 'a', label: 'Home', url: '/', depth: 0 }, { id: 'b', label: 'Catalog', url: '/collections/all', depth: 1 }] } }), null);
+for (const url of ['javascript:alert(1)', '//evil.test', '/\\evil.test', 'data:text/html,a']) assert.equal(validLink(url), false, url);
+for (const url of ['/', '/collections/all', 'https://example.com', 'mailto:hello@example.com']) assert.equal(validLink(url), true, url);
+assert.match(validateContent('menus', { ...base, data: { items: [{ label: 'Bad', url: '/', depth: 1 }] } }), /nesting/);
+assert.match(validateContent('menus', { ...base, data: { items: [null] } }), /label/);
+assert.match(validateContent('redirects', { ...base, data: { from: '/old', to: '/old' } }), /different/);
+assert.equal(validateContent('redirects', { ...base, data: { from: '/old', to: '/new' } }), null);
+const field = { key: 'color', name: 'Color', type: 'text', required: true };
+assert.equal(validateContent('definitions', { ...base, data: { fields: [field] } }), null);
+assert.match(validateContent('definitions', { ...base, data: { fields: [field, field] } }), /unique/);
+assert.match(validateContent('articles', { ...base, data: { content: '', author: '' } }), /blog/);
+assert.match(validateContent('menus', { ...base, handle: 'Bad Handle' }), /handle/);
+console.log('Content validation: 17 checks passed.');
