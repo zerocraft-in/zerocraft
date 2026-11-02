@@ -1,3 +1,4 @@
+import { isCurrencyCode, STORE_CURRENCY } from "@/lib/currency";
 import { createClient } from "@zerocraft/supabase/server";
 import { createServiceClient } from "@/lib/supabase-service";
 import { isSameOrigin } from "@/lib/request-origin";
@@ -57,13 +58,15 @@ function buildCatalogHealth(categories: any[], products: any[]) {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const access = await requireCommercePermission("catalog.read");
   if (!access.ok) return access.response;
   const { supabase, user } = access;
+  const currency = new URL(request.url).searchParams.get("currency") ?? STORE_CURRENCY;
+  if (!isCurrencyCode(currency)) return jsonError("Unsupported reporting currency.");
   const [categories, products, recentOrders, analyticsOrders, orderSummary, inventoryLocations] = await Promise.all([
     supabase.from("categories").select("id,name,slug,description,image_url,is_active,created_at,updated_at,deleted_at,purge_after,deleted_from_is_active,subcategories(id,category_id,name,slug,description,image_url,sort_order,is_active,created_at,updated_at,deleted_at,purge_after,deleted_from_is_active)").order("name"),
-    supabase.from("products").select("id,category_id,subcategory_id,design_origin,rights_status,title,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,digital_delivery,write_version,created_at,updated_at,deleted_at,purge_after,deleted_from_status,product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),digital_files(id,product_id,variant_id,file_name,mime_type,size_bytes,sort_order,created_at),variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,inventory_levels(location_id,on_hand,reserved,reorder_point)),collection_products(collection:collections(id,name,slug,status))").order("updated_at", { ascending: false }),
+    supabase.from("products").select("id,category_id,subcategory_id,design_origin,rights_status,title,vendor,merchandise_type,tags,slug,description,product_type,status,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,digital_delivery,write_version,created_at,updated_at,deleted_at,purge_after,deleted_from_status,product_media(id,storage_path,public_url,alt_text,sort_order,media_type,is_primary),digital_files(id,product_id,variant_id,file_name,mime_type,size_bytes,sort_order,created_at),variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active,inventory_levels(location_id,on_hand,reserved,reorder_point)),collection_products(collection:collections(id,name,slug,status))").order("updated_at", { ascending: false }),
     supabase.from("orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(10),
     supabase.from("orders").select("id,total,currency,status,payment_status,created_at").order("created_at", { ascending: false }).limit(1000),
     supabase.rpc("order_summary"),
@@ -72,21 +75,21 @@ export async function GET() {
   const catalogReady = !categories.error && !products.error;
   const orderReady = !recentOrders.error && !analyticsOrders.error && !orderSummary.error;
   const paidByCurrency = (orderSummary.data?.paidByCurrency || {}) as Record<string, number>;
-  const legacyPaidByCurrency = Object.fromEntries(Object.entries(paidByCurrency).filter(([currency]) => currency !== "INR"));
+  const legacyPaidByCurrency = Object.fromEntries(Object.entries(paidByCurrency).filter(([code]) => code !== currency));
   return Response.json({
     configured: catalogReady,
     catalogError: catalogReady ? null : catalogErrorMessage(categories.error || products.error),
     categories: categories.data || [], products: products.data || [],
     catalogHealth: catalogReady ? buildCatalogHealth(categories.data || [], products.data || []) : null,
     inventoryLocations: inventoryLocations.error ? [] : inventoryLocations.data || [],
-    orders: { available: orderReady, count: orderReady ? Number(orderSummary.data.count) : null, pending: orderReady ? Number(orderSummary.data.pending) : null, paidTotal: orderReady ? Number(paidByCurrency.INR || 0) : null, currencyCount: orderReady ? 1 : 0, currency: "INR", paidByCurrency: orderReady ? { INR: Number(paidByCurrency.INR || 0) } : {}, legacyPaidByCurrency: orderReady ? legacyPaidByCurrency : {}, recent: orderReady ? recentOrders.data || [] : [], analytics: orderReady ? analyticsOrders.data || [] : [] },
+    orders: { available: orderReady, count: orderReady ? Number(orderSummary.data.count) : null, pending: orderReady ? Number(orderSummary.data.pending) : null, paidTotal: orderReady ? Number(paidByCurrency[currency] || 0) : null, currencyCount: orderReady ? 1 : 0, currency, paidByCurrency: orderReady ? { [currency]: Number(paidByCurrency[currency] || 0) } : {}, legacyPaidByCurrency: orderReady ? legacyPaidByCurrency : {}, recent: orderReady ? recentOrders.data || [] : [], analytics: orderReady ? analyticsOrders.data || [] : [] },
   }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 type CategoryInput = { name?: string; slug?: string; description?: string; image_url?: string; is_active?: boolean };
 type SubcategoryInput = { category_id?: string; name?: string; slug?: string; description?: string; image_url?: string; sort_order?: number; is_active?: boolean };
 type VariantInput = { id?: string; label: string; sku: string; options?: Record<string, string | string[]>; price: number; price_paise?: number | null; stock?: number | null; is_active?: boolean; inventory?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[]; inventory_levels?: { location_id: string; on_hand: number; reserved?: number; reorder_point?: number }[] };
-type ProductInput = { id?: string; write_version?: number; title?: string; slug?: string; category_id?: string | null; subcategory_id?: string | null; design_origin?: "original_zerocraft" | "licensed" | "fan_inspired"; rights_status?: "not_applicable" | "approved_license" | "review_required"; description?: string; product_type?: "physical" | "digital"; status?: "draft" | "active" | "archived"; sku?: string; price?: number; price_paise?: number | null; compare_at_price?: number | null; compare_at_price_paise?: number | null; currency?: string; currency_code?: string | null; stock?: number | null; image_url?: string; digital_delivery?: { mode?: "instant" | "manual"; download_limit?: number; link_expiry_hours?: number }; collection_ids?: string[]; variants?: VariantInput[] };
+type ProductInput = { vendor?: string; merchandise_type?: string; tags?: string[]; id?: string; write_version?: number; title?: string; slug?: string; category_id?: string | null; subcategory_id?: string | null; design_origin?: "original_zerocraft" | "licensed" | "fan_inspired"; rights_status?: "not_applicable" | "approved_license" | "review_required"; description?: string; product_type?: "physical" | "digital"; status?: "draft" | "active" | "archived"; sku?: string; price?: number; price_paise?: number | null; compare_at_price?: number | null; compare_at_price_paise?: number | null; currency?: string; currency_code?: string | null; stock?: number | null; image_url?: string; digital_delivery?: { mode?: "instant" | "manual"; download_limit?: number; link_expiry_hours?: number }; collection_ids?: string[]; variants?: VariantInput[] };
 
 function validSlug(slug: unknown): slug is string { return typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug); }
 function validVariants(value: unknown): value is VariantInput[] {
@@ -94,8 +97,9 @@ function validVariants(value: unknown): value is VariantInput[] {
 }
 
 function validateProductInput(product: ProductInput) {
+  if ((product.vendor !== undefined && (typeof product.vendor !== "string" || product.vendor.length > 100)) || (product.merchandise_type !== undefined && (typeof product.merchandise_type !== "string" || product.merchandise_type.length > 100)) || (product.tags !== undefined && (!Array.isArray(product.tags) || product.tags.length > 50 || product.tags.some(tag => typeof tag !== "string" || !tag.trim() || tag.length > 100)))) return "Check vendor, product type, and tags (maximum 50 tags).";
   if (!product.title?.trim() || !validSlug(product.slug) || !product.sku?.trim() || !["physical", "digital"].includes(product.product_type || "") || !["draft", "active", "archived"].includes(product.status || "") || !Number.isFinite(Number(product.price)) || Number(product.price) < 0 || (product.stock != null && (!Number.isInteger(Number(product.stock)) || Number(product.stock) < 0)) || (product.variants && !validVariants(product.variants))) return "Check the product name, SKU, type, status, price, stock, and variants.";
-  if ((product.currency_code || product.currency || "INR").toUpperCase() !== "INR") return "Store products support Indian Rupees (INR) only.";
+  if (!isCurrencyCode(product.currency_code ?? product.currency ?? STORE_CURRENCY)) return "Choose INR or USD for this product.";
   const delivery = product.digital_delivery;
   if (delivery && (!['instant', 'manual'].includes(delivery.mode || '') || !Number.isInteger(Number(delivery.download_limit)) || Number(delivery.download_limit) < 0 || !Number.isInteger(Number(delivery.link_expiry_hours)) || Number(delivery.link_expiry_hours) < 0)) return "Check the digital delivery settings.";
   if (product.status === "active" && product.rights_status === "review_required") return "Products awaiting rights review cannot be published.";
@@ -164,7 +168,7 @@ function atomicError(error: { code?: string; message?: string } | null) {
 
 async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createClient>>, action: "create" | "edit", id: string | null, product: ProductInput) {
   const variants = product.variants || [];
-  const currency = "INR";
+  const currency = product.currency_code ?? product.currency ?? STORE_CURRENCY;
   const atomicProduct: Record<string, unknown> = {
     category_id: product.category_id || null,
     title: product.title!.trim(),
@@ -180,8 +184,8 @@ async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createC
     stock: product.stock ?? null,
     image_url: product.image_url || "",
   };
-  atomicProduct.price_paise = Math.round(Number(product.price) * 100);
-  if (product.compare_at_price != null) atomicProduct.compare_at_price_paise = Math.round(Number(product.compare_at_price) * 100);
+  if (currency === "INR") atomicProduct.price_paise = Math.round(Number(product.price) * 100);
+  if (currency === "INR" && product.compare_at_price != null) atomicProduct.compare_at_price_paise = Math.round(Number(product.compare_at_price) * 100);
   if (product.collection_ids) atomicProduct.collection_ids = product.collection_ids;
 
   let locationId: string | null = null;
@@ -204,7 +208,7 @@ async function saveProductAtomically(supabase: Awaited<ReturnType<typeof createC
       is_active: variant.is_active ?? true,
       stock: variant.stock ?? null,
     };
-    item.price_paise = Math.round(Number(variant.price) * 100);
+    if (currency === "INR") item.price_paise = Math.round(Number(variant.price) * 100);
     if (!variant.id && product.product_type === "physical") {
       item.inventory = variant.inventory?.length
         ? variant.inventory.map((level) => ({ location_id: level.location_id, on_hand: level.on_hand, reserved: 0, reorder_point: level.reorder_point ?? 0 }))
@@ -230,7 +234,7 @@ async function saveProductTaxonomy(supabase: Awaited<ReturnType<typeof createCli
     const { data, error } = await supabase.from("subcategories").select("id,category_id").eq("id", subcategoryId).eq("is_active", true).maybeSingle();
     if (error || !data || data.category_id !== categoryId) return { error: { code: "22023", message: "VALIDATION_ERROR: subcategory must belong to the selected category." } };
   }
-  const { error } = await supabase.from("products").update({ subcategory_id: subcategoryId, design_origin: product.design_origin || "original_zerocraft", rights_status: product.rights_status || "not_applicable", digital_delivery: product.digital_delivery || { mode: "instant", download_limit: 0, link_expiry_hours: 0 } }).eq("id", productId);
+  const { error } = await supabase.from("products").update({ ...(product.vendor !== undefined ? { vendor: product.vendor.trim() } : {}), ...(product.merchandise_type !== undefined ? { merchandise_type: product.merchandise_type.trim() } : {}), ...(product.tags !== undefined ? { tags: [...new Set(product.tags.map(tag => tag.trim()))] } : {}), subcategory_id: subcategoryId, design_origin: product.design_origin || "original_zerocraft", rights_status: product.rights_status || "not_applicable", digital_delivery: product.digital_delivery || { mode: "instant", download_limit: 0, link_expiry_hours: 0 } }).eq("id", productId);
   return { error };
 }
 

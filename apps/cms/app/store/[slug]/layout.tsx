@@ -1,3 +1,5 @@
+import { CurrencyProvider } from "@/lib/currency-context";
+import { storeCurrency } from "@/lib/currency";
 import type { ReactNode } from "react";
 import { storePage } from "@/lib/platform/page-access";
 
@@ -10,6 +12,6 @@ export default async function StoreTenantLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  await storePage(slug);
-  return children;
+  const { store } = await storePage(slug);
+  return <CurrencyProvider currency={storeCurrency(store.settings?.currency)}>{children}</CurrencyProvider>;
 }

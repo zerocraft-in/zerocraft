@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import { SettingsScrollHeader } from "@/components/navigations/settings-scroll-header";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -356,6 +357,7 @@ export default function CommerceShell({ children, user }: Props) {
                   : "relative z-10 h-full w-auto min-h-0 overflow-y-auto overscroll-y-contain outline-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-xl border border-border/70 bg-secondary",
             )}
           >
+            {isSettingsRoute && <SettingsScrollHeader />}
             <div
               data-studio-content
               className={

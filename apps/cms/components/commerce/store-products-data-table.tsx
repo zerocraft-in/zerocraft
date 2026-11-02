@@ -74,7 +74,7 @@ import {
   TableRow,
 } from "@zerocraft/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@zerocraft/components/ui/tabs";
-import { formatStoreMoney } from "@/lib/currency";
+import { formatRecordedMoney } from "@/lib/currency";
 
 export type StoreProduct = {
   id: string;
@@ -131,7 +131,7 @@ type TableMeta = {
   onBulkDelete?: (products: StoreProduct[]) => void | Promise<void>;
   onBulkStatus?: (
     products: StoreProduct[],
-    status: "active" | "archived",
+    status: "active" | "draft" | "archived",
   ) => void;
 };
 
@@ -149,6 +149,11 @@ const features = tableFeatures({
 });
 type ProductTableFeatures = typeof features;
 const column = createColumnHelper<ProductTableFeatures, StoreProduct>();
+
+function ProductThumbnail({ src }: { src: string }) {
+  const [failed, setFailed] = React.useState(false);
+  return src && !failed ? <img src={src} alt="" className="size-full object-cover" onError={() => setFailed(true)} /> : <IconPackage className="size-4" />;
+}
 
 function availableStock(product: StoreProduct) {
   if (product.product_type === "digital") return null;
@@ -190,19 +195,10 @@ const productColumns = column.columns([
       return (
         <div className="flex min-w-52 items-center gap-3">
           <div className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-md border bg-muted text-muted-foreground">
-            {row.original.image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={row.original.image_url}
-                alt=""
-                className="size-full object-cover"
-              />
-            ) : (
-              <IconPackage className="size-4" />
-            )}
+            <ProductThumbnail key={row.original.image_url} src={row.original.image_url} />
           </div>
           <div className="min-w-0">
-            <p className="truncate font-medium">{row.original.title}</p>
+            <button type="button" className="truncate text-left font-medium hover:underline" onClick={() => meta.onEdit(row.original)}>{row.original.title}</button>
             <p className="truncate text-xs text-muted-foreground">
               SKU {row.original.sku || "—"}
             </p>
@@ -263,7 +259,7 @@ const productColumns = column.columns([
     header: ({ column }) => <SortHeader column={column} label="Price" />,
     cell: ({ row }) => (
       <span className="font-medium tabular-nums">
-        {formatStoreMoney(Number(row.original.price))}
+        {formatRecordedMoney(Number(row.original.price), row.original.currency)}
       </span>
     ),
     sortFn: "alphanumeric",
@@ -283,7 +279,7 @@ const productColumns = column.columns([
       return product.product_type === "digital" ? (
         <span className="text-muted-foreground">Unlimited</span>
       ) : (
-        <span className="tabular-nums">{stock ?? "Not tracked"}</span>
+        <span className={stock !== null && stock <= 10 ? "tabular-nums text-red-600" : "tabular-nums"}>{stock === null ? "Not tracked" : `${stock} in stock${product.variants?.length > 1 ? ` for ${product.variants.length} variants` : ""}`}</span>
       );
     },
     sortFn: "alphanumeric",
@@ -400,7 +396,7 @@ export function StoreProductsDataTable({
   onBulkDelete?: (products: StoreProduct[]) => void | Promise<void>;
   onBulkStatus?: (
     products: StoreProduct[],
-    status: "active" | "archived",
+    status: "active" | "draft" | "archived",
   ) => void;
 }) {
   const router = useRouter();
@@ -608,7 +604,7 @@ export function StoreProductsDataTable({
               aria-label="Search products"
               value={search}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search products, SKU, or slug"
+              placeholder="Search and filter"
               className="pl-9"
             />
           </div>
@@ -695,7 +691,7 @@ export function StoreProductsDataTable({
           ref={bulkBarRef}
           role="toolbar"
           aria-label="Selected product actions"
-          className="fixed bottom-25 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 flex-wrap items-center gap-2 rounded-2xl border border-border bg-background/95 px-3 py-2.5 shadow-2xl backdrop-blur-xl sm:w-auto sm:px-4"
+          className="flex flex-wrap items-center gap-2 rounded-lg bg-muted/70 px-3 py-1.5"
         >
           <span className="mr-2 text-sm font-medium">
             {selectedCount} selected
@@ -709,7 +705,7 @@ export function StoreProductsDataTable({
                 className="gap-1.5"
                 onClick={() => onBulkStatus?.(selectedActiveProducts, "active")}
               >
-                <IconCheck className="size-3.5" /> Mark active
+                <IconCheck className="size-3.5" /> Set as active
               </Button>
               <Button
                 type="button"
@@ -720,6 +716,7 @@ export function StoreProductsDataTable({
               >
                 <IconArchive className="size-3.5" /> Archive
               </Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => onBulkStatus?.(selectedActiveProducts, "draft")}>Set as draft</Button>
               <Button
                 type="button"
                 size="sm"
@@ -749,7 +746,7 @@ export function StoreProductsDataTable({
         className="min-h-0 overflow-x-auto rounded-xl border border-border bg-card"
       >
         <Table className="min-w-[900px]" style={{ width: "100%" }}>
-          <TableHeader className="bg-muted/40">
+          <TableHeader className={selectedCount ? "hidden" : "bg-muted/40"}>
             {table.getHeaderGroups().map((group) => (
               <TableRow key={group.id}>
                 {group.headers.map((header) => (

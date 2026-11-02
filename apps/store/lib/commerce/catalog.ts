@@ -243,7 +243,7 @@ export async function getProducts(query: ProductQuery = {}): Promise<PaginatedPr
   const collectionIds = query.collectionSlug ? await getCollectionProductIds(supabase, query.collectionSlug) : null;
   const buildRequest = () => {
     const select = "id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:categories!inner(name,slug,is_active),subcategory:subcategories!inner(name,slug,is_active),media:product_media(public_url,alt_text,sort_order),variants:variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)";
-    let request = supabase.from("products").select(select, { count: "exact" }).eq("status", "active").eq("categories.is_active", true).eq("subcategories.is_active", true);
+    let request = supabase.from("products").select(select, { count: "exact" }).eq("status", "active").eq("is_listed", true).contains("sales_channels", ["online_store"]).eq("categories.is_active", true).eq("subcategories.is_active", true);
     if (collectionIds) request = request.in("id", collectionIds);
     if (query.categorySlug) request = request.eq("categories.slug", query.categorySlug);
     if (query.subcategorySlug) request = request.eq("subcategories.slug", query.subcategorySlug);
@@ -253,8 +253,8 @@ export async function getProducts(query: ProductQuery = {}): Promise<PaginatedPr
     }
     if (query.designOrigin) request = request.eq("design_origin", query.designOrigin);
     if (query.availability === "in-stock") request = request.gt("stock", 0);
-    if (query.sort === "price-asc") request = request.order("price_paise", { ascending: true, nullsFirst: false });
-    else if (query.sort === "price-desc") request = request.order("price_paise", { ascending: false, nullsFirst: false });
+    if (query.sort === "price-asc") request = request.order("price", { ascending: true, nullsFirst: false });
+    else if (query.sort === "price-desc") request = request.order("price", { ascending: false, nullsFirst: false });
     else if (query.sort === "title") request = request.order("title", { ascending: true });
     else request = request.order("created_at", { ascending: false });
     // Every sort needs a unique tie-breaker. Without it, products sharing the
@@ -270,14 +270,14 @@ export async function getProducts(query: ProductQuery = {}): Promise<PaginatedPr
 
 export async function getProductBySlug(slug: string): Promise<CatalogProduct | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("products").select("id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:categories!inner(name,slug,is_active),subcategory:subcategories!inner(name,slug,is_active),media:product_media(public_url,alt_text,sort_order),variants:variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)").eq("slug", slug).eq("status", "active").eq("categories.is_active", true).eq("subcategories.is_active", true).maybeSingle();
+  const { data, error } = await supabase.from("products").select("id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:categories!inner(name,slug,is_active),subcategory:subcategories!inner(name,slug,is_active),media:product_media(public_url,alt_text,sort_order),variants:variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)").eq("slug", slug).eq("status", "active").contains("sales_channels", ["online_store"]).eq("categories.is_active", true).eq("subcategories.is_active", true).maybeSingle();
   if (error) throw new Error(`Product query failed: ${error.message}`);
   return data ? mapProduct(data as unknown as ProductRow) : null;
 }
 
 export async function getProductById(id: string): Promise<CatalogProduct | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("products").select("id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:categories!inner(name,slug,is_active),subcategory:subcategories!inner(name,slug,is_active),media:product_media(public_url,alt_text,sort_order),variants:variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)").eq("id", id).eq("status", "active").eq("categories.is_active", true).eq("subcategories.is_active", true).maybeSingle();
+  const { data, error } = await supabase.from("products").select("id,slug,title,description,sku,price,compare_at_price,price_paise,compare_at_price_paise,currency,currency_code,stock,image_url,created_at,design_origin,rights_status,category:categories!inner(name,slug,is_active),subcategory:subcategories!inner(name,slug,is_active),media:product_media(public_url,alt_text,sort_order),variants:variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)").eq("id", id).eq("status", "active").contains("sales_channels", ["online_store"]).eq("categories.is_active", true).eq("subcategories.is_active", true).maybeSingle();
   if (error) throw new Error(`Product query failed: ${error.message}`);
   return data ? mapProduct(data as unknown as ProductRow) : null;
 }

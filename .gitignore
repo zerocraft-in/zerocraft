@@ -61,3 +61,7 @@ next-env.d.ts
 
 # Private pre-removal snapshots (may contain application configuration)
 /.local-backups/
+
+# Local currency verification build cache
+/apps/cms/.next-currency-local/
+/packages/supabase/supabase/.temp/

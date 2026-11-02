@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     .select(
       "id,title,status,product_type,price,price_paise,currency,currency_code,stock,image_url,variants(id,label,sku,options,price,price_paise,currency_code,stock,is_active)",
     )
-    .in("id", productIds);
+    .in("id", productIds).contains("sales_channels", ["online_store"]).is("deleted_at", null);
   if (productError)
     return Response.json(
       { error: "The catalog could not be checked." },

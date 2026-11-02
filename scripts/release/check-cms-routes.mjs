@@ -11,6 +11,8 @@ const contracts = {
     ["/store", "app/store/page.tsx"], ["/store/[slug]", "app/store/[slug]/page.tsx"],
     ...["products", "categories", "orders", "inventory", "content", "media", "analytics", "settings", "bin"]
       .map(section => [`/store/[slug]/${section}`, `app/store/[slug]/${section}/page.tsx`]),
+    ["/store/[slug]/point-of-sales", "app/store/[slug]/point-of-sales/page.tsx"],
+    ["/api/admin/pos-analytics", "app/api/admin/pos-analytics/route.ts"],
     ["/store/[slug]/media/library", "app/store/[slug]/media/library/page.tsx"],
     ...["metaobjects", "files", "menus", "articles"].map(section => [`/store/[slug]/content/${section}`, `app/store/[slug]/content/${section}/page.tsx`]),
     ["/api/store/content/[kind]", "app/api/store/content/[kind]/route.ts"],

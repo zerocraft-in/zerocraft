@@ -1,49 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
-import { CurrencyCode, CurrencyConfig, CURRENCIES, formatCurrency } from "./currency";
+import { createContext, useContext, type ReactNode } from "react";
+import { CURRENCIES, formatCurrency, STORE_CURRENCY, type CurrencyCode } from "./currency";
 
-interface CurrencyContextType {
-  currency: CurrencyCode;
-  setCurrency: (code: CurrencyCode) => void;
-  formatAmount: (amountInUSD: number) => string;
-  activeConfig: CurrencyConfig;
-}
+const CurrencyContext = createContext<CurrencyCode>(STORE_CURRENCY);
 
-const CurrencyContext = createContext<CurrencyContextType>({
-  currency: "USD",
-  setCurrency: () => {},
-  formatAmount: (usd: number) => `$${usd.toLocaleString()}`,
-  activeConfig: CURRENCIES.USD,
-});
-
-export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<CurrencyCode>(() => {
-    if (typeof window === "undefined") return "USD";
-    const saved = localStorage.getItem("zerocraft_selected_currency") as CurrencyCode;
-    return saved && CURRENCIES[saved] ? saved : "USD";
-  });
-
-  const setCurrency = (code: CurrencyCode) => {
-    if (CURRENCIES[code]) {
-      setCurrencyState(code);
-      localStorage.setItem("zerocraft_selected_currency", code);
-    }
-  };
-
-  const formatAmount = (amountInUSD: number) => {
-    return formatCurrency(amountInUSD, currency);
-  };
-
-  const activeConfig = CURRENCIES[currency] || CURRENCIES.USD;
-
-  return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, formatAmount, activeConfig }}>
-      {children}
-    </CurrencyContext.Provider>
-  );
+export function CurrencyProvider({ children, currency = STORE_CURRENCY }: { children: ReactNode; currency?: CurrencyCode }) {
+  return <CurrencyContext.Provider value={currency}>{children}</CurrencyContext.Provider>;
 }
 
 export function useCurrency() {
-  return useContext(CurrencyContext);
+  const currency = useContext(CurrencyContext);
+  return { currency, activeConfig: CURRENCIES[currency], formatAmount: (amount: number) => formatCurrency(amount, currency) };
 }

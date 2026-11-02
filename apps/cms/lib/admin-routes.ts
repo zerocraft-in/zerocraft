@@ -15,7 +15,7 @@ export const ADMIN_ROUTES = {
     media: "/media",
     mediaLibrary: "/media/library",
     inventory: "/store/inventory",
-    channels: "/channels",
+    channels: "/point-of-sales",
   },
   operations: {
     orders: "/store/orders",

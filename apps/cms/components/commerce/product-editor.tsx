@@ -1,5 +1,7 @@
 "use client";
 
+import { useCurrency } from "@/lib/currency-context";
+import { CURRENCIES, storeCurrency } from "@/lib/currency";
 import {
   useEffect,
   useMemo,
@@ -120,6 +122,9 @@ type ProductDraft = {
   id?: string;
   write_version?: number;
   title: string;
+  vendor: string;
+  merchandise_type: string;
+  tags: string[];
   slug: string;
   description: string;
   category_id: string | null;
@@ -188,6 +193,9 @@ const productSteps: Array<{
 
 const emptyProduct: ProductDraft = {
   title: "",
+  vendor: "",
+  merchandise_type: "",
+  tags: [],
   slug: "",
   description: "",
   category_id: null,
@@ -278,6 +286,7 @@ export function ProductEditor({
   mode: "create" | "edit";
   productId?: string;
 }) {
+  const { currency } = useCurrency();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -288,7 +297,7 @@ export function ProductEditor({
     ? (requestedStep as ProductStep)
     : "basics";
   const stepIndex = productSteps.findIndex((item) => item.id === step);
-  const [product, setProduct] = useState<ProductDraft>(emptyProduct);
+  const [product, setProduct] = useState<ProductDraft>(() => ({ ...emptyProduct, currency }));
   const [categories, setCategories] = useState<Category[]>([]);
   const [inventoryLocations, setInventoryLocations] = useState<
     InventoryLocation[]
@@ -341,7 +350,10 @@ export function ProductEditor({
           if (current.deleted_at) throw new Error("This product is in Recently deleted. Restore it before editing.");
           setProduct({
             ...current,
-            currency: "INR",
+            vendor: current.vendor || "",
+            merchandise_type: current.merchandise_type || "",
+            tags: current.tags || [],
+            currency: current.currency,
             media: current.product_media || current.media || [],
             digital_files:
               current.digital_files ||
@@ -1567,7 +1579,7 @@ export function ProductEditor({
               <label className={fieldClass}>
                 Currency
                 <div className="flex h-10 items-center rounded-md border border-input bg-muted/40 px-3 text-sm font-medium">
-                  ₹ Indian Rupee (INR)
+                  {CURRENCIES[storeCurrency(product.currency)].name} ({product.currency})
                 </div>
               </label>
             </div>
@@ -1993,7 +2005,7 @@ export function ProductEditor({
               />
             </label>
             <label className={fieldClass}>
-              Product type
+              Product kind
               <ProductSelect
                 value={product.product_type}
                 onValueChange={(value) =>
@@ -2006,6 +2018,9 @@ export function ProductEditor({
                 ]}
               />
             </label>
+            <label className={fieldClass}>Vendor<Input value={product.vendor} maxLength={100} onChange={(event) => update("vendor", event.target.value)} /></label>
+            <label className={fieldClass}>Product type<Input value={product.merchandise_type} maxLength={100} onChange={(event) => update("merchandise_type", event.target.value)} /></label>
+            <label className={fieldClass}>Tags<Input key={product.id || "new"} defaultValue={product.tags.join(", ")} placeholder="Summer, Featured" onChange={(event) => update("tags", event.target.value.split(",").map(value => value.trim()).filter(Boolean))} /><span className="text-xs text-muted-foreground">Separate tags with commas.</span></label>
           </section>
 
           <section

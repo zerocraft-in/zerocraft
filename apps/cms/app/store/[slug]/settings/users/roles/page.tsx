@@ -1,5 +1,6 @@
 "use client";
 
+import { UsersPageHeader } from "../_components/users-page-header";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { IconArrowLeft, IconDownload, IconPlus, IconSearch, IconArrowsSort } from "@tabler/icons-react";
@@ -29,6 +30,8 @@ function downloadCsv(rows: RoleRow[]) {
 }
 
 export default function RolesPage() {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [descending, setDescending] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -45,14 +48,12 @@ export default function RolesPage() {
   const rows = useMemo(() => (Object.keys(ROLE_META) as Member["role"][]).map((key) => ({ key, ...ROLE_META[key], users: members.filter((member) => member.role === key).length })).filter((row) => !query.trim() || `${row.name} ${row.category}`.toLowerCase().includes(query.trim().toLowerCase())), [members, query]);
 
   return <main className="mx-auto flex w-full max-w-[920px] flex-col gap-7 pb-20">
-    <header className="flex items-start justify-between gap-4 border-b border-border/70 pb-6">
-      <div className="flex items-start gap-3"><Button variant="ghost" size="icon" nativeButton={false} render={<Link href="/settings/users" />}><IconArrowLeft /></Button><div><p className="text-xs text-muted-foreground">Users</p><h1 className="mt-1 text-2xl font-semibold tracking-tight">Roles</h1><p className="mt-1 text-sm text-muted-foreground">Configure the access levels available to your users.</p></div></div>
-      <div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => downloadCsv(rows)}><IconDownload />Export</Button><Button size="sm" disabled title="Custom roles require a dedicated role definition in the current RBAC model"><IconPlus />Add role</Button></div>
-    </header>
+    <UsersPageHeader title="Roles" back actions={<><Button variant="outline" size="sm" onClick={() => downloadCsv(rows)}>Export</Button><Button size="sm" disabled title="Custom role definitions are unavailable in the current RBAC model">Add role</Button></>} />
+
     {error && <p className="rounded-lg border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
-    <section className="space-y-3"><div className="flex items-center justify-between gap-3"><Badge variant="secondary">All</Badge><div className="flex gap-2"><div className="relative"><IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search roles" className="w-56 pl-9" /></div><Button variant="outline" size="icon" aria-label="Sort roles"><IconArrowsSort /></Button></div></div>
-      <Card className="overflow-hidden border-border/80 shadow-none"><CardContent className="p-0">{loading ? <PageState kind="loading" title="Loading roles…" /> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-border/70 bg-muted/25 text-xs text-muted-foreground"><tr><th className="w-12 px-5 py-3"><input type="checkbox" aria-label="Select all roles" /></th><th className="px-3 py-3 font-medium">Name</th><th className="px-3 py-3 font-medium">Category</th><th className="px-5 py-3 text-right font-medium">Users</th></tr></thead><tbody>{rows.map((row) => <tr key={row.key} className="border-b border-border/60 last:border-0 hover:bg-muted/25"><td className="px-5 py-3"><input type="checkbox" aria-label={`Select ${row.name}`} disabled={row.system} /></td><td className="px-3 py-3"><p className="font-medium">{row.name}</p><p className="mt-1 text-xs text-muted-foreground">{row.description}</p></td><td className="px-3 py-3 text-muted-foreground">{row.category}</td><td className="px-5 py-3 text-right">{row.users}</td></tr>)}{!rows.length && <tr><td colSpan={4} className="px-5 py-12 text-center text-sm text-muted-foreground">No roles match your search.</td></tr>}</tbody></table></div>}</CardContent></Card>
-      <p className="text-xs text-muted-foreground">System roles are backed by the active RBAC configuration. User-specific permission overrides remain available from a user profile.</p>
+    <section className="space-y-3">
+      <Card className="overflow-hidden border-border/80 shadow-none"><CardContent className="p-0"><div className="users-table-toolbar"><Badge variant="secondary" className="rounded-full px-3 py-1 font-normal">All</Badge><div className="flex gap-2">{searchOpen && <Input aria-label="Search roles" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search roles" className="w-44" />}<Button variant="secondary" size="icon" aria-label="Search roles" onClick={() => setSearchOpen(open => !open)}><IconSearch size={15} /></Button><Button variant="secondary" size="icon" aria-label="Reverse role order" onClick={() => setDescending(value => !value)}><IconArrowsSort size={15} /></Button></div></div>{loading ? <PageState kind="loading" title="Loading roles…" /> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-border/70 bg-muted/25 text-xs text-muted-foreground"><tr><th className="w-12 px-5 py-3"><input type="checkbox" aria-label="Select all roles" /></th><th className="px-3 py-3 font-medium">Name</th><th className="px-3 py-3 font-medium">Category</th><th className="px-5 py-3 text-right font-medium">Users</th></tr></thead><tbody>{(descending ? [...rows].reverse() : rows).map((row) => <tr key={row.key} className="border-b border-border/60 last:border-0 hover:bg-muted/25"><td className="px-5 py-3"><input type="checkbox" aria-label={`Select ${row.name}`} disabled={row.system} /></td><td className="px-3 py-3"><p className="font-medium">{row.name}</p></td><td className="px-3 py-3 text-muted-foreground">{row.category}</td><td className="px-5 py-3 text-right">{row.users}</td></tr>)}{!rows.length && <tr><td colSpan={4} className="px-5 py-12 text-center text-sm text-muted-foreground">No roles match your search.</td></tr>}</tbody></table></div>}</CardContent></Card>
+      <p className="users-help"><Link href="/docs">Learn more about <span className="underline">roles</span></Link></p>
     </section>
   </main>;
 }

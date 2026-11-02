@@ -35,11 +35,15 @@ import {
 } from "@zerocraft/components/ui/popover";
 import { isAdminRouteActive } from "@/lib/admin-navigation";
 import { Button, buttonVariants } from "@zerocraft/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@zerocraft/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@zerocraft/components/ui/avatar";
 import { IconDots } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { scopedPath, unscopedPath } from "@/lib/platform/scope";
-const SETTINGS_LINKS = [
+export const SETTINGS_LINKS = [
   ["General", "general", IconSettings],
   ["Plan", "plan", IconCreditCard],
   ["Billing", "billing", IconReceipt],
@@ -80,7 +84,7 @@ export function SettingsSidebar({
   );
   return (
     <aside
-        className="hidden w-[216px] shrink-0 border-l border-[#2b2b2e] bg-[#0b0b0c] px-3 py-3 text-[#f1f1f1] lg:flex lg:flex-col"
+      className="hidden w-[216px] shrink-0 border-l border-[#2b2b2e] bg-primary px-3 py-3 text-[#f1f1f1] lg:flex lg:flex-col"
       aria-label="Settings navigation"
     >
       <Link
@@ -88,13 +92,10 @@ export function SettingsSidebar({
         aria-label="Back to workspace"
         onMouseEnter={() => setBackLinkHovered(true)}
         onMouseLeave={() => setBackLinkHovered(false)}
-        className={cn(
-          buttonVariants({ variant: "ghost", size: "sm" }),
-          "group mb-2 flex items-center justify-start gap-2 rounded-xl p-2",
-        )}
+        className="group/button shrink-0 border border-transparent bg-clip-padding font-medium whitespace-nowrap transition-colors outline-none select-none active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 h-8 text-sm in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-4 group mb-2 flex items-center justify-start gap-2 rounded-xl p-2"
       >
         <IconChevronLeft className="size-4 shrink-0" />
-        <span className="relative inline-flex h-4 min-w-14 overflow-hidden">
+        <span className="relative inline-flex h-5 min-w-14 overflow-hidden">
           <motion.span
             className="absolute inset-0"
             animate={{
@@ -140,21 +141,42 @@ export function SettingsSidebar({
           }
         >
           <Avatar className="size-6 rounded-md">
-            <AvatarImage src="https://github.com/shadcn.png" className="rounded-md" />
+            <AvatarImage
+              src="https://github.com/shadcn.png"
+              className="rounded-md"
+            />
             <AvatarFallback>MS</AvatarFallback>
           </Avatar>
           <span className="min-w-0 flex-1 leading-tight">
-            <span className="block truncate text-[12px] font-semibold">My Store</span>
-            <span className="block truncate text-[10px] text-[#a7a7ac]">zerocraft.studio</span>
+            <span className="block truncate text-[12px] font-semibold">
+              My Store
+            </span>
+            <span className="block truncate text-[10px] text-[#a7a7ac]">
+              zerocraft.studio
+            </span>
           </span>
           <IconDots className="size-4 shrink-0 text-[#a7a7ac]" />
         </PopoverTrigger>
-        <PopoverContent className="w-40 gap-1 rounded-xl border-[#303033] bg-[#1b1b1d] p-1.5" side="right" align="start">
-          <Button variant="ghost" size="xs" type="button" className="w-full justify-start text-[#f1f1f1] hover:bg-[#303033]">
+        <PopoverContent
+          className="w-40 gap-1 rounded-xl border-[#303033] bg-[#1b1b1d] p-1.5"
+          side="right"
+          align="start"
+        >
+          <Button
+            variant="ghost"
+            size="xs"
+            type="button"
+            className="w-full justify-start text-[#f1f1f1] hover:bg-[#303033]"
+          >
             <IconPencil className="size-3.5" />
             Edit store icon
           </Button>
-          <Button variant="ghost" size="xs" type="button" className="w-full justify-start text-[#f1f1f1] hover:bg-[#303033]">
+          <Button
+            variant="ghost"
+            size="xs"
+            type="button"
+            className="w-full justify-start text-[#f1f1f1] hover:bg-[#303033]"
+          >
             <IconWorld className="size-3.5" />
             Edit domain
           </Button>
@@ -166,14 +188,20 @@ export function SettingsSidebar({
         aria-label="Settings sections"
       >
         {links.map(([label, key, Icon]) => {
-          const href = key === "general" ? "/settings" : key === "policies" ? "/settings/legal" : `/settings/${key}`;
-          const scopedHref = scopedPath(href, pathname);
-          const active = key === "policies"
-            ? routePath === "/settings/legal" || routePath === "/settings/policies"
-            :
+          const href =
             key === "general"
-              ? routePath === "/settings"
-              : isAdminRouteActive(routePath, href);
+              ? "/settings"
+              : key === "policies"
+                ? "/settings/legal"
+                : `/settings/${key}`;
+          const scopedHref = scopedPath(href, pathname);
+          const active =
+            key === "policies"
+              ? routePath === "/settings/legal" ||
+                routePath === "/settings/policies"
+              : key === "general"
+                ? routePath === "/settings"
+                : isAdminRouteActive(routePath, href);
           return (
             <div key={key}>
               <Link
@@ -181,19 +209,32 @@ export function SettingsSidebar({
                 aria-current={active && key !== "users" ? "page" : undefined}
                 className={`flex min-h-7 items-center gap-2 rounded-lg px-2 py-1 text-[12px] transition-colors ${active ? "bg-[#303033] font-semibold text-[#f1f1f1]" : "text-[#d0d0d3] hover:bg-[#242426] hover:text-[#f1f1f1]"}`}
               >
-                <Icon className="size-3.5 shrink-0 text-[#a7a7ac]" stroke={1.7} />
+                <Icon
+                  className="size-3.5 shrink-0 text-[#a7a7ac]"
+                  stroke={1.7}
+                />
                 <span className="truncate">{label}</span>
-                {active && key !== "users" && <IconChevronRight className="ml-auto size-3.5 shrink-0" />}
+                {active && key !== "users" && (
+                  <IconChevronRight className="ml-auto size-3.5 shrink-0" />
+                )}
               </Link>
               {key === "users" && active && (
-                <div className="ml-7 mt-0.5 space-y-0.5 border-l border-[#454548] pl-2">
+                <div className="ml-0 mt-0.5 space-y-1">
                   {[
-                    ["Users", "/settings/users"],
                     ["Roles", "/settings/users/roles"],
                     ["Security", "/settings/users/security"],
                   ].map(([childLabel, childHref]) => {
                     const childActive = routePath === childHref;
-                    return <Link key={childHref} href={scopedPath(childHref, pathname)} aria-current={childActive ? "page" : undefined} className={`block rounded-md px-2 py-1 text-[11px] ${childActive ? "bg-[#303033] font-semibold text-[#f1f1f1]" : "text-[#a7a7ac] hover:bg-[#242426] hover:text-[#f1f1f1]"}`}>{childLabel}</Link>;
+                    return (
+                      <Link
+                        key={childHref}
+                        href={scopedPath(childHref, pathname)}
+                        aria-current={childActive ? "page" : undefined}
+                        className={`block rounded-lg pl-8 pr-2 py-1.5 text-[12px] ${childActive ? "bg-[#303033] font-semibold text-[#f1f1f1]" : "text-[#a7a7ac] hover:bg-[#242426] hover:text-[#f1f1f1]"}`}
+                      >
+                        {childLabel}
+                      </Link>
+                    );
                   })}
                 </div>
               )}

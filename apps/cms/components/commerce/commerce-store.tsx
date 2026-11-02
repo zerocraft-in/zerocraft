@@ -1,7 +1,8 @@
 "use client";
 
+import { useCurrency } from "@/lib/currency-context";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { DateRange } from "react-day-picker";
 import {
   IconArrowUpRight,
@@ -16,6 +17,7 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
+import { ProductTransfer } from "@/components/commerce/product-transfer";
 import { StoreProductsDataTable } from "@/components/commerce/store-products-data-table";
 import { StoreOverviewDashboard } from "@/components/commerce/store-overview-dashboard";
 import { Badge } from "@zerocraft/components/ui/badge";
@@ -201,7 +203,9 @@ export default function CommerceStore({
 }: {
   initialView?: "overview" | "products" | "categories";
 }) {
+  const { currency } = useCurrency();
   const router = useRouter();
+  const pathname = usePathname();
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -229,12 +233,12 @@ export default function CommerceStore({
   }));
 
   const requestStore = useCallback(async () => {
-    const response = await fetch("/api/store", { cache: "no-store" });
+    const response = await fetch(`/api/store?currency=${currency}`, { cache: "no-store" });
     const result = await response.json();
     if (!response.ok)
       throw new Error(result.error || "Store data could not be loaded.");
     return result as Payload;
-  }, []);
+  }, [currency]);
   const load = useCallback(
     async (showLoading = false) => {
       if (showLoading) setLoading(true);
@@ -332,7 +336,7 @@ export default function CommerceStore({
   });
   const periodSales = periodOrders
     .filter(
-      (order) => (order.payment_status === "paid" || order.status === "paid") && (order.currency || "INR") === "INR",
+      (order) => (order.payment_status === "paid" || order.status === "paid") && (order.currency || "INR") === currency,
     )
     .reduce((sum, order) => sum + Number(order.total || 0), 0);
   const displayedSales =
@@ -472,7 +476,7 @@ export default function CommerceStore({
 
   async function bulkUpdateStatus(
     selected: Product[],
-    status: "active" | "archived",
+    status: "active" | "draft" | "archived",
   ) {
     if (busy || !selected.length) return;
     setBusy(true);
@@ -514,7 +518,9 @@ export default function CommerceStore({
   }
 
   function editProduct(product?: Product) {
-    router.push(product ? `/store/products/${product.id}` : "/store/products/new");
+    const match = pathname.match(/^\/store\/([^/]+)\/products(?:\/|$)/);
+    const base = match ? `/store/${match[1]}/products` : "/store/products";
+    router.push(product ? `${base}/${product.id}` : `${base}/new`);
   }
 
   async function uploadProductMedia(file: File) {
@@ -614,7 +620,7 @@ export default function CommerceStore({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 pb-14">
+    <div className={view === "products" ? "products-workspace flex w-full min-w-0 flex-col gap-4 pb-14" : "mx-auto flex w-full max-w-7xl flex-col gap-6 pb-14"}>
       {error && (
         <p
           className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
@@ -668,7 +674,7 @@ export default function CommerceStore({
               </div>
               <p className="mt-1 text-sm text-muted-foreground">Manage listings, pricing, variants, and inventory in one place.</p>
             </div>
-            {canManageCatalog && <Button type="button" disabled={!data?.configured} onClick={() => editProduct()} className="shrink-0"><IconPlus size={16} /> New product</Button>}
+            <div className="flex items-center gap-2"><ProductTransfer products={products} canImport={canManageCatalog && Boolean(data?.configured)} onComplete={() => load()} />{canManageCatalog && <Button type="button" disabled={!data?.configured} onClick={() => editProduct()} className="shrink-0"><IconPlus size={16} /> Add product</Button>}</div>
           </header>
           <StoreProductsDataTable
             data={products}
@@ -1043,7 +1049,7 @@ export default function CommerceStore({
                     <label>
                       Currency
                       <div className="flex h-10 items-center rounded-md border border-input bg-muted/40 px-3 text-sm font-medium">
-                        ₹ Indian Rupee (INR)
+                        {editor.value.currency}
                       </div>
                     </label>
                     {editor.value.product_type === "physical" && (

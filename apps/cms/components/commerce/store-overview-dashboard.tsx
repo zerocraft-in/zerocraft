@@ -61,7 +61,8 @@ import {
   TableRow,
 } from "@zerocraft/components/ui/table";
 import { Progress } from "@zerocraft/components/ui/progress";
-import { formatRecordedMoney, formatStoreMoney, STORE_CURRENCY } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
+import { formatRecordedMoney, STORE_CURRENCY } from "@/lib/currency";
 
 type StoreOrder = {
   id: string;
@@ -210,6 +211,7 @@ export function StoreOverviewDashboard({
   onRefresh,
   openHealthFilter,
 }: Props) {
+  const { currency, formatAmount: formatStoreMoney } = useCurrency();
   const activeProducts = products.filter((product) => product.status === "active");
   const physicalProducts = activeProducts.filter(
     (product) => product.product_type === "physical",
@@ -223,11 +225,11 @@ export function StoreOverviewDashboard({
     0,
   );
   const inventoryValue = formatStoreMoney(
-    physicalProducts.reduce((sum, product) => sum + getInventoryValue(product), 0),
+    physicalProducts.filter(product => product.currency === currency).reduce((sum, product) => sum + getInventoryValue(product), 0),
   );
-  const currency = STORE_CURRENCY;
+
   const paidOrders = periodOrders.filter(
-    (order) => (order.payment_status === "paid" || order.status === "paid") && (order.currency || STORE_CURRENCY) === STORE_CURRENCY,
+    (order) => (order.payment_status === "paid" || order.status === "paid") && (order.currency || STORE_CURRENCY) === currency,
   );
   const orderTrend = periodOrders
     .slice()
@@ -239,7 +241,7 @@ export function StoreOverviewDashboard({
       }),
       sales:
         order.payment_status === "paid" || order.status === "paid"
-          ? (order.currency || STORE_CURRENCY) === STORE_CURRENCY ? Number(order.total || 0) : 0
+          ? (order.currency || STORE_CURRENCY) === currency ? Number(order.total || 0) : 0
           : 0,
       orders: 1,
     }));
@@ -519,7 +521,7 @@ export function StoreOverviewDashboard({
 
       {Object.keys(legacyPaidByCurrency).length > 0 && (
         <p className="-mt-2 text-xs text-muted-foreground">
-          Historical non-INR payments are kept separate for accounting accuracy: {Object.entries(legacyPaidByCurrency).map(([code, amount]) => formatRecordedMoney(Number(amount), code)).join(" · ")}.
+          Payments in other currencies are kept separate for accounting accuracy: {Object.entries(legacyPaidByCurrency).map(([code, amount]) => formatRecordedMoney(Number(amount), code)).join(" · ")}.
         </p>
       )}
 
@@ -785,7 +787,7 @@ export function StoreOverviewDashboard({
                       <TableCell className="pr-6 text-right font-medium tabular-nums">
                         <span className="inline-flex items-center justify-end gap-2">
                           {formatRecordedMoney(Number(order.total), order.currency || currency)}
-                          {(order.currency || currency) !== STORE_CURRENCY && <Badge variant="outline">Legacy</Badge>}
+                          {(order.currency || currency) !== currency && <Badge variant="outline">Other currency</Badge>}
                         </span>
                       </TableCell>
                     </TableRow>

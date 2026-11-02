@@ -1,15 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import { IconArrowLeft, IconExternalLink, IconPlus, IconRefresh, IconTrash, IconUserShield } from "@tabler/icons-react";
+import { IconSearch, IconArrowsSort, IconShieldOff } from "@tabler/icons-react";
 import { Button } from "@zerocraft/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@zerocraft/components/ui/card";
+import { Card } from "@zerocraft/components/ui/card";
+import { UsersPageHeader } from "../_components/users-page-header";
+
+function AccessAccounts({ title, description, action, emptyTitle, emptyDescription }: {
+  title: string; description: string; action: string; emptyTitle: string; emptyDescription: string;
+}) {
+  return <section className="security-section">
+    <div className="flex items-center justify-between gap-3">
+      <div><h2>{title}</h2><p className="mt-1 text-muted-foreground">{description}</p></div>
+      <Button variant="secondary" size="sm" disabled title="This access feature is not configured for this deployment">{action}</Button>
+    </div>
+    <Card>
+      <div className="users-table-toolbar justify-end">
+        <span className="flex gap-2 text-muted-foreground" aria-hidden="true"><IconSearch size={16} /><IconArrowsSort size={16} /></span>
+      </div>
+      <div className="security-empty"><p className="font-medium">{emptyTitle}</p><p>{emptyDescription}</p></div>
+    </Card>
+  </section>;
+}
 
 export default function UsersSecurityPage() {
-  return <main className="mx-auto flex w-full max-w-[920px] flex-col gap-7 pb-20">
-    <header className="flex items-start gap-3 border-b border-border/70 pb-6"><Button variant="ghost" size="icon" nativeButton={false} render={<Link href="/settings/users" />}><IconArrowLeft /></Button><div><p className="text-xs text-muted-foreground">Users</p><h1 className="mt-1 text-2xl font-semibold tracking-tight">Security</h1><p className="mt-1 text-sm text-muted-foreground">Review access activity and organization-level access tools.</p></div></header>
-    <section className="space-y-3"><h2 className="text-[15px] font-semibold">User activity logs</h2><Card className="border-border/80 shadow-none"><CardContent className="flex items-center justify-between gap-4 p-4"><div><p className="font-medium">Monitor and review user activities</p><p className="mt-1 text-xs text-muted-foreground">Review changes made by staff and connected applications.</p></div><Button variant="outline" size="sm" nativeButton={false} render={<Link href="/system/audit-logs" />}><IconExternalLink />View</Button></CardContent></Card></section>
-    <section className="space-y-3"><div className="flex items-end justify-between gap-3"><div><h2 className="text-[15px] font-semibold">Organization service accounts</h2><p className="mt-1 text-xs text-muted-foreground">Organization access for developer automations and agents.</p></div><Button variant="outline" size="sm" disabled title="Service accounts are not enabled in the current deployment"><IconPlus />Add service account</Button></div><Card className="border-border/80 shadow-none"><CardContent className="flex min-h-36 flex-col items-center justify-center p-6 text-center"><IconUserShield className="size-7 text-muted-foreground" /><p className="mt-2 font-medium">No service accounts</p><p className="mt-1 text-xs text-muted-foreground">Service accounts let automation act for this organization.</p></CardContent></Card></section>
-    <section className="space-y-3"><div><h2 className="text-[15px] font-semibold">Collaborators</h2><p className="mt-1 text-xs text-muted-foreground">Give designers, developers, and marketers access without adding them as staff users.</p></div><Card className="border-border/80 shadow-none"><CardHeader className="flex-row items-center justify-between border-b"><CardTitle className="text-sm">My Store</CardTitle><div className="flex gap-2"><Button variant="outline" size="sm" disabled><IconRefresh />Generate new code</Button><Button variant="outline" size="icon" aria-label="Remove collaborator code" disabled><IconTrash /></Button></div></CardHeader><CardContent className="p-4"><p className="text-sm text-muted-foreground">Collaborator access codes are not configured for this deployment. Use a user invitation and role assignment for controlled access.</p></CardContent></Card></section>
+  return <main className="mx-auto flex w-full flex-col pb-20">
+    <UsersPageHeader title="Security" back />
+    <section className="security-section">
+      <h2>Organization security</h2>
+      <div className="flex items-center justify-between gap-4"><h3>Secure sign-in requirements</h3><Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/settings/users" />}>Manage users</Button></div>
+      <Card><div className="flex items-start gap-3 p-4"><IconShieldOff className="mt-0.5 size-4 shrink-0" /><p>Review each user’s secure sign-in requirements from their user page.</p></div></Card>
+    </section>
+    <section className="security-section">
+      <h2>User activity logs</h2>
+      <Card><div className="security-row"><p className="text-muted-foreground">Monitor and review user activities</p><Button variant="secondary" size="sm" nativeButton={false} render={<Link href="/system/audit-logs" />}>View</Button></div></Card>
+    </section>
+    <AccessAccounts title="Organization service accounts" description="Organization access for developer automations and agents" action="Add service account" emptyTitle="No service accounts" emptyDescription="Service accounts let automation act for this organization." />
+    <AccessAccounts title="Partner API clients" description="Manage apps and integrations for this organization" action="Add Partner API client" emptyTitle="No Partner API clients" emptyDescription="Partner API clients are not configured for this deployment." />
+    <section className="security-section">
+      <h2>Store security</h2>
+      <div><h3>Collaborators</h3><p className="mt-1 text-muted-foreground">Give designers, developers, and marketers access to this store through a user invitation.</p></div>
+      <Card><div className="security-row"><p>Collaborator access</p><Button variant="secondary" size="sm" nativeButton={false} render={<Link href="/settings/users/new" />}>Invite user</Button></div><div className="border-t bg-muted/30 px-4 py-3"><p className="text-muted-foreground">Collaborator codes are not configured. Invitations and role assignments are available from <Link href="/settings/users" className="underline">Users</Link>.</p></div></Card>
+    </section>
   </main>;
 }

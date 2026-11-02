@@ -1,5 +1,2 @@
-import CommerceStore from "@/components/commerce/commerce-store";
-
-export default function CommerceStoreProductsPage() {
-  return <CommerceStore initialView="products" />;
-}
+import ProductsWorkspace from "@/components/commerce/products-workspace";
+export default function CommerceStoreProductsPage() { return <ProductsWorkspace />; }

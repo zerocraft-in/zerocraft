@@ -131,7 +131,7 @@ const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
   "/media": "catalog.read",
   "/media/library": "catalog.read",
   "/store/inventory": "inventory.read",
-  "/channels": "catalog.read",
+  "/point-of-sales": "orders.read",
   "/store/orders": "orders.read",
   "/transactions": "billing.read",
   "/subscriptions": "billing.read",
