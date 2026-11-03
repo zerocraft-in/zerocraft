@@ -6,15 +6,18 @@
   "workspaces": [
     "apps/cms",
     "apps/store",
+    "apps/studio",
     "packages/*"
   ],
   "scripts": {
     "dev": "turbo run dev",
     "dev:store": "turbo run dev --filter=@zerocraft/store",
     "dev:cms": "turbo run dev --filter=@zerocraft/cms",
+    "dev:studio": "turbo run dev --filter=@zerocraft/studio",
     "build": "turbo run build --concurrency=1",
     "build:store": "turbo run build --concurrency=1 --filter=@zerocraft/store",
     "build:cms": "turbo run build --concurrency=1 --filter=@zerocraft/cms",
+    "build:studio": "turbo run build --concurrency=1 --filter=@zerocraft/studio",
     "build:cms:release": "node scripts/release/build-cms.mjs",
     "typecheck": "turbo run typecheck --concurrency=1",
     "lint": "eslint .",
@@ -45,8 +48,6 @@
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "@fontsource/inter": "^5.3.0",
-    "@heroui/react": "^3.2.6",
-    "@heroui/styles": "^3.2.6",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.0",
     "@tabler/icons": "^3.36.0",

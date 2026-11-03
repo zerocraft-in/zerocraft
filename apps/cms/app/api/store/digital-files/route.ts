@@ -73,13 +73,25 @@ export async function PATCH(request: Request) {
   let body: { productId?: unknown; fileId?: unknown; sortOrder?: unknown; variantId?: unknown };
   try { body = await request.json(); } catch { return fail("Invalid digital file request."); }
   if (!validId(body.productId) || !validId(body.fileId)) return fail("A product and digital file are required.");
+  if (body.variantId !== undefined && body.variantId !== null && body.variantId !== "") {
+    if (!validId(body.variantId)) return fail("The selected variant is invalid.");
+    const { data: variant, error: variantError } = await client.supabase
+      .from("variants")
+      .select("id")
+      .eq("id", body.variantId)
+      .eq("product_id", body.productId)
+      .maybeSingle();
+    if (variantError) return fail("The selected variant could not be verified.", 503);
+    if (!variant) return fail("The selected variant does not belong to this product.", 404);
+  }
   const changes: Record<string, unknown> = {};
   if (Number.isInteger(body.sortOrder) && Number(body.sortOrder) >= 0) changes.sort_order = Number(body.sortOrder);
   if (body.variantId === null || body.variantId === "") changes.variant_id = null;
   else if (validId(body.variantId)) changes.variant_id = body.variantId;
   if (!Object.keys(changes).length) return fail("Choose a valid digital file update.");
-  const { error } = await client.supabase.from("digital_files").update(changes).eq("id", body.fileId).eq("product_id", body.productId);
+  const { data: updated, error } = await client.supabase.from("digital_files").update(changes).eq("id", body.fileId).eq("product_id", body.productId).select("id").maybeSingle();
   if (error) return fail("The digital file could not be updated.", 503);
+  if (!updated) return fail("Digital file not found.", 404);
   return Response.json({ ok: true }, { headers: { "Cache-Control": "private, no-store" } });
 }
 

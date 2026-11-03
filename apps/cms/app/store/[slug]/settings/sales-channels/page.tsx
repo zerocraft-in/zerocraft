@@ -42,7 +42,7 @@ export default async function SalesChannelsSettingsPage({ params }: { params: Pr
   const storeName = store.name || slug;
 
   return (
-    <main className="mx-auto w-full max-w-[800px] pb-16">
+    <main className="mx-auto w-full max-w-[640px] pb-16">
       <div className="-mx-3 mb-8 flex min-h-11 flex-wrap items-center justify-between gap-3 border-b border-border/70 px-3 pb-3 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6">
         <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
           <Link href={`/store/${slug}/settings`} aria-label="Back to settings" className="grid size-8 shrink-0 place-items-center rounded-full border bg-background text-foreground shadow-sm transition hover:bg-muted">

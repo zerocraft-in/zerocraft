@@ -2,6 +2,12 @@ export const ADMIN_ROUTES = {
   overview: "/store",
   store: {
     overview: "/store",
+    onlineStore: "/online_store",
+    onlineStorePages: "/online_store/pages",
+    onlineStorePreferences: "/online_store/preferences",
+    pointOfSaleDevices: "/point-of-sales/devices",
+    pointOfSaleRegisterSessions: "/point-of-sales/register-sessions",
+    pointOfSaleSettings: "/point-of-sales/settings",
     products: "/store/products",
     customers: "/store/customers",
     content: "/store/content",

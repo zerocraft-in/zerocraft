@@ -10,7 +10,7 @@ export function CreateStoreForm(){
  return <Card><CardContent className="pt-6"><form onSubmit={submit} className="grid gap-5 sm:grid-cols-2">
  {([{name:'name',label:'Store name',placeholder:'My store',required:true},{name:'slug',label:'Store handle',placeholder:'my-store',pattern:'[a-z0-9]+(-[a-z0-9]+)*',required:true},{name:'contactEmail',label:'Contact email',type:'email',required:true},{name:'country',label:'Country code',defaultValue:'IN',pattern:'[A-Z]{2}'},{name:'timezone',label:'Time zone',defaultValue:'Asia/Kolkata'}] as const).map(field=><label key={field.name} className="text-sm font-medium">{field.label}<Input className="mt-2" {...field} maxLength={100} /></label>)}
  <label className="text-sm font-medium">Currency<select name="currency" defaultValue="INR" className="mt-2 block h-10 w-full rounded-md border bg-background px-3">{currencyOptions.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</select></label>
- <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="starterCatalog" defaultChecked />Add sample products and categories after database setup</label>
+ <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="starterCatalog" />Add starter products and categories after database setup</label>
  {error&&<p role="alert" className="text-sm text-red-700 sm:col-span-2">{error}</p>}
  <div className="sm:col-span-2"><Button type="submit" disabled={busy}>{busy?'Creating store…':'Create store'}</Button></div>
  </form></CardContent></Card>;

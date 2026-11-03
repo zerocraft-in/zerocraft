@@ -1,6 +1,5 @@
 "use client";
 
-import { AuthProvider } from "@/components/providers/auth-provider";
 import { CurrencyProvider } from "@/lib/currency-context";
 import { Toaster } from "@zerocraft/components/ui/toast";
 interface ProvidersProps {
@@ -9,11 +8,9 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <AuthProvider>
-      <CurrencyProvider>
-        {children}
-        <Toaster />
-      </CurrencyProvider>
-    </AuthProvider>
+    <CurrencyProvider>
+      {children}
+      <Toaster />
+    </CurrencyProvider>
   );
 }

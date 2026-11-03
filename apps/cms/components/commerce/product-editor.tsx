@@ -241,8 +241,8 @@ const formatBytes = (value: number) =>
     ? `${Math.max(1, Math.round(value / 1024))} KB`
     : `${(value / (1024 * 1024)).toFixed(1)} MB`;
 
-const fieldClass = "grid gap-2 text-[15px] font-medium";
-const cardClass = "border-b border-border bg-transparent shadow-none";
+const fieldClass = "grid gap-1.5 text-xs font-medium";
+const cardClass = "rounded-xl border border-border bg-card shadow-sm";
 
 function ProductSelect({
   value,
@@ -250,7 +250,7 @@ function ProductSelect({
   placeholder,
   options,
   disabled,
-  className = "w-full h-9 rounded-xl!",
+  className = "h-8 w-full rounded-md! text-xs",
 }: {
   value: string;
   onValueChange: (value: string) => void;
@@ -950,9 +950,9 @@ export function ProductEditor({
   return (
     <form
       onSubmit={save}
-      className="min-h-screen w-full bg-background text-foreground pb-24"
+      className="min-h-screen w-full bg-background pb-16 text-foreground [&_input]:text-xs [&_textarea]:text-xs"
     >
-      <header className="sticky top-0 z-20 mb-8 flex min-h-[72px] items-center justify-between gap-5 border-b border-border bg-background/95 px-6 backdrop-blur sm:px-8">
+      <header className="sticky top-0 z-30 mb-5 flex min-h-14 items-center justify-between gap-4 border-b border-border/70 bg-background/95 px-4 py-2.5 shadow-sm backdrop-blur supports-[backdrop-filter]:backdrop-blur-md sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <Button
             type="button"
@@ -966,7 +966,7 @@ export function ProductEditor({
           </Button>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="truncate text-2xl font-semibold tracking-tight">
+              <h1 className="truncate text-sm font-semibold tracking-tight sm:text-base">
                 {mode === "create"
                   ? "Add product"
                   : product.title || "Edit product"}
@@ -977,7 +977,7 @@ export function ProductEditor({
                 </Badge>
               )}
             </div>
-            <p className="mt-1 text-[15px] text-muted-foreground">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {mode === "create"
                 ? "Create a product for your online store."
                 : "Update product details, pricing, inventory, and publishing."}
@@ -993,15 +993,9 @@ export function ProductEditor({
             Discard
           </Button>
           <Button
-            type={step === "variants" ? "submit" : "button"}
-            onClick={step === "variants" ? undefined : continueToNextStep}
-            variant="secondary"
-            className=""
-            disabled={
-              saving ||
-              (step === "variants" &&
-                (!product.title || !product.slug || !product.sku))
-            }
+            type="submit"
+            variant="default"
+            disabled={saving || !product.title || !product.slug || !product.sku}
           >
             {step === "variants" ? (
               <>
@@ -1012,7 +1006,7 @@ export function ProductEditor({
                     : "Save"}
               </>
             ) : (
-              "Continue"
+              "Save"
             )}
           </Button>
         </div>
@@ -1032,7 +1026,7 @@ export function ProductEditor({
 
       <nav
         aria-label="Product creation steps"
-        className="mx-auto mb-4 grid w-full max-w-[760px] grid-cols-3 gap-2 px-6 sm:px-8"
+        className="hidden"
       >
         {productSteps.map((item, index) => {
           const active = item.id === step;
@@ -1061,10 +1055,10 @@ export function ProductEditor({
         })}
       </nav>
 
-      <div className="mx-auto grid w-full max-w-[760px] items-start gap-6 px-6 sm:px-8">
-        <div className="grid gap-0">
+      <div className="mx-auto grid w-full max-w-6xl items-start gap-5 px-4 sm:px-6 lg:grid-cols-[minmax(0,760px)_280px] lg:px-8">
+        <div className="grid gap-5">
           <section
-            className={`${cardClass} ${step === "basics" ? "" : "hidden"} grid gap-5 p-6`}
+            className={`${cardClass} grid gap-5 p-6`}
           >
             <FieldGroup>
               <Field data-invalid={basicsAttempted && !product.title.trim()}>
@@ -1317,7 +1311,7 @@ export function ProductEditor({
           )}
 
           <section
-            className={`${cardClass} ${step === "basics" ? "" : "hidden"} p-6 lg:p-7`}
+            className={`${cardClass} p-6 lg:p-7`}
           >
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
@@ -1545,7 +1539,7 @@ export function ProductEditor({
           </section>
 
           <section
-            className={`${cardClass} ${step === "variants" ? "" : "hidden"} grid gap-5 p-6 lg:p-7`}
+            className={`${cardClass} grid gap-5 p-6 lg:p-7`}
           >
             <h2 className="font-semibold">Pricing</h2>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -1586,7 +1580,7 @@ export function ProductEditor({
           </section>
 
           <section
-            className={`${cardClass} ${step === "variants" ? "" : "hidden"} grid gap-5 p-6 lg:p-7`}
+            className={`${cardClass} grid gap-5 p-6 lg:p-7`}
           >
             <div>
               <h2 className="font-semibold">Inventory</h2>
@@ -1623,7 +1617,7 @@ export function ProductEditor({
           </section>
 
           <section
-            className={`${cardClass} ${step === "variants" ? "" : "hidden"} p-6 lg:p-7`}
+            className={`${cardClass} p-6 lg:p-7`}
           >
             <div className="mb-4 flex items-center justify-between">
               <div>
@@ -1828,7 +1822,7 @@ export function ProductEditor({
           </section>
 
           <section
-            className={`${cardClass} ${step === "basics" ? "" : "hidden"} grid gap-5 p-6 lg:p-7`}
+            className={`${cardClass} grid gap-5 p-6 lg:p-7`}
           >
             <h2 className="font-semibold">Search engine listing</h2>
             <div className="rounded-lg border bg-background p-4">
@@ -1857,9 +1851,9 @@ export function ProductEditor({
           </section>
         </div>
 
-        <aside className="grid gap-0">
+        <aside className="grid content-start gap-5 lg:sticky lg:top-[72px]">
           <section
-            className={`${cardClass} ${step === "options" ? "" : "hidden"} grid gap-5 p-6`}
+            className={`${cardClass} grid gap-5 p-6`}
           >
             <h2 className="font-semibold">Status</h2>
             <label className={fieldClass}>
@@ -1886,7 +1880,7 @@ export function ProductEditor({
           </section>
 
           <section
-            className={`${cardClass} ${step === "options" ? "" : "hidden"} grid gap-4 p-6`}
+            className={`${cardClass} grid gap-4 p-6`}
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -1962,7 +1956,7 @@ export function ProductEditor({
           </section>
 
           <section
-            className={`${cardClass} ${step === "options" ? "" : "hidden"} grid gap-5 p-6`}
+            className={`${cardClass} grid gap-5 p-6`}
           >
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Product organization</h2>
@@ -2024,7 +2018,7 @@ export function ProductEditor({
           </section>
 
           <section
-            className={`${cardClass} ${step === "options" ? "" : "hidden"} grid gap-5 p-6`}
+            className={`${cardClass} grid gap-5 p-6`}
           >
             <div className="flex items-center gap-2">
               <IconBox className="size-4" />
@@ -2070,7 +2064,7 @@ export function ProductEditor({
         </aside>
       </div>
 
-      <footer className="mx-auto mt-8 flex w-full max-w-[760px] items-center justify-between border-t border-border px-6 py-6 sm:px-8">
+      <footer className="hidden">
         <Button
           type="button"
           variant="outline"

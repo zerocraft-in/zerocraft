@@ -6,7 +6,6 @@ import { SettingsScrollHeader } from "@/components/navigations/settings-scroll-h
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient as createPlatformClient } from "@/lib/platform/auth-client";
 import {
   IconArrowUpRight,
   IconShoppingBag,
@@ -70,7 +69,6 @@ import {
 } from "@zerocraft/components/ui/breadcrumb";
 import { CmsSidebar } from "@/components/layout/cms-sidebar";
 import { SettingsSidebar } from "@/components/navigations/settings-sidebar";
-import { supabase } from "@/lib/supabase-client";
 import {
   getAdminBreadcrumbs,
   isAdminNavigationGroupActive,
@@ -102,6 +100,8 @@ type Props = {
   user: { name: string; email: string; role: string };
 };
 
+type PlatformStore = { name: string; slug: string; status?: string };
+
 export default function CommerceShell({ children, user }: Props) {
   const pathname = usePathname();
   const routePath = unscopedPath(pathname);
@@ -129,6 +129,7 @@ export default function CommerceShell({ children, user }: Props) {
   const [collapsedTriggerSuppressed, setCollapsedTriggerSuppressed] =
     useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [currentStore, setCurrentStore] = useState<PlatformStore | null>(null);
   const { features, navigation } = useCommerceAccess(user.role);
   const workspaceNavigation = useMemo(() => navigation, [navigation]);
   const navigationLinks = useMemo(
@@ -165,6 +166,20 @@ export default function CommerceShell({ children, user }: Props) {
     routePath === "/settings" || routePath.startsWith("/settings/");
   const isUsersSettingsRoute = routePath.startsWith("/settings/users");
   const effectiveSidebarOpen = isSettingsRoute ? false : sidebarOpen;
+
+  useEffect(() => {
+    const slug = routePath.split("/")[2];
+    if (!slug) {
+      setCurrentStore(null);
+      return;
+    }
+    const controller = new AbortController();
+    fetch("/api/platform/stores", { cache: "no-store", signal: controller.signal })
+      .then((response) => response.ok ? response.json() as Promise<{ stores?: PlatformStore[] }> : null)
+      .then((payload) => setCurrentStore(payload?.stores?.find((store) => store.slug === slug) || null))
+      .catch(() => setCurrentStore(null));
+    return () => controller.abort();
+  }, [routePath]);
 
   useEffect(() => {
     // Settings uses the dedicated settings rail, so keep the global rail
@@ -234,15 +249,15 @@ export default function CommerceShell({ children, user }: Props) {
     setIsSigningOut(true);
     setErrorMessage("");
     try {
-      // Store pages are protected by the platform Supabase session in proxy.ts.
-      // The legacy CMS session is separate, so signing out only that client
-      // leaves /store/* authenticated and the page appears to stay open.
-      const [platformResult, commerceResult] = await Promise.all([
-        createPlatformClient().auth.signOut(),
-        supabase.auth.signOut(),
-      ]);
-      if (platformResult.error) throw platformResult.error;
-      if (commerceResult.error) throw commerceResult.error;
+      const response = await fetch("/api/platform/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+      });
+      const result = await response.json().catch(() => null) as { error?: string; signedOut?: boolean } | null;
+      if (!response.ok || !result?.signedOut) {
+        throw new Error(result?.error || "The session could not be cleared.");
+      }
       window.location.replace("/login");
     } catch (error) {
       console.error("Sign out failed", error);
@@ -305,6 +320,7 @@ export default function CommerceShell({ children, user }: Props) {
             <SettingsSidebar
               pathname={pathname}
               user={{ name: user.name, email: user.email }}
+              store={currentStore}
             />
           </>
         ) : (
@@ -364,10 +380,10 @@ export default function CommerceShell({ children, user }: Props) {
                 isLiveView
                   ? "flex h-full min-h-0 w-full flex-col"
                   : isContentWorkspace
-                    ? "flex min-h-full w-full flex-col p-3 sm:p-4"
+                    ? "flex min-h-full w-full flex-col"
                   : isSettingsRoute
-                    ? "mx-auto flex min-h-full w-full max-w-4xl flex-col px-5 pb-10 pt-6 sm:px-8 lg:px-10 lg:pt-8"
-                    : "my-3 mx-auto flex min-h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)] flex-col px-4 pb-8 pt-8  sm:my-4 sm:min-h-[calc(100%-2rem)] sm:w-[calc(100%-2rem)] sm:px-6 sm:pb-10 lg:px-10 lg:pt-10 xl:px-14"
+                    ? "mx-auto flex min-h-full w-full flex-col "
+                    : "mx-auto flex min-h-[calc(100%-1.5rem)]  flex-col  sm:min-h-[calc(100%-2rem)]"
               }
             >
               {!isLiveView && !isSettingsRoute && !isContentWorkspace && breadcrumbs.length > 1 && (

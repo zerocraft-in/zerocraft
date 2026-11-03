@@ -1,6 +1,61 @@
-export const storePathPattern=/^\/store\/([0-9a-f-]{36})(?=\/|$)/i;
-export function currentStoreId(pathname:string){return pathname.match(storePathPattern)?.[1]||null;}
-export function currentStoreSlug(pathname:string){const match=pathname.match(/^\/store\/([^/]+)(?=\/|$)/);return match?.[1]||null;}
-export function scopedPath(href:string,pathname:string){const id=currentStoreId(pathname);const slug=currentStoreSlug(pathname);const store=id||slug;if(!store||!href.startsWith('/')||href.startsWith('//')||href.startsWith('/stores')||href.startsWith('/api/platform'))return href;const scopedStorePath=`/store/${store}`;if(href===scopedStorePath||href.startsWith(`${scopedStorePath}/`))return href;if(href==='/')return scopedStorePath;if(id&&href.startsWith('/api/store'))return `/api/stores/${id}/tenant/store${href.slice('/api/store'.length)}`;if(id&&href.startsWith('/api/admin'))return `/api/stores/${id}/tenant/admin${href.slice('/api/admin'.length)}`;if(href==='/store')return scopedStorePath;if(href.startsWith('/store/'))return `${scopedStorePath}${href.slice('/store'.length)}`;if(['/settings','/media','/analytics','/channels','/point-of-sales'].some(prefix=>href===prefix||href.startsWith(prefix+'/')))return `${scopedStorePath}${href}`;return href;}
-export function unscopedPath(pathname:string){const match=pathname.match(/^\/store\/([^/]+)(?=\/|$)/);if(!match)return pathname;const suffix=pathname.slice(match[0].length);if(!suffix)return '/store';return ['/settings','/media','/analytics','/channels','/point-of-sales'].some(p=>suffix===p||suffix.startsWith(p+'/'))?suffix:`/store${suffix}`;}
-export function storeFetch(input:RequestInfo|URL,init?:RequestInit){if(typeof window==='undefined')return fetch(input,init);if(typeof input==='string'&&!input.startsWith('/api/stores/'))return fetch(scopedPath(input,window.location.pathname),init);return fetch(input,init);}
+export const storePathPattern = /^\/store\/([0-9a-f-]{36})(?=\/|$)/i;
+export function currentStoreId(pathname: string) {
+  return pathname.match(storePathPattern)?.[1] || null;
+}
+export function currentStoreSlug(pathname: string) {
+  const match = pathname.match(/^\/store\/([^/]+)(?=\/|$)/);
+  return match?.[1] || null;
+}
+export function scopedPath(href: string, pathname: string) {
+  const id = currentStoreId(pathname);
+  const slug = currentStoreSlug(pathname);
+  const store = id || slug;
+  if (
+    !store ||
+    !href.startsWith("/") ||
+    href.startsWith("//") ||
+    href.startsWith("/stores") ||
+    href.startsWith("/api/platform")
+  )
+    return href;
+  const scopedStorePath = `/store/${store}`;
+  if (href === scopedStorePath || href.startsWith(`${scopedStorePath}/`))
+    return href;
+  if (href === "/") return scopedStorePath;
+  if (id && href.startsWith("/api/store"))
+    return `/api/stores/${id}/tenant/store${href.slice("/api/store".length)}`;
+  if (id && href.startsWith("/api/admin"))
+    return `/api/stores/${id}/tenant/admin${href.slice("/api/admin".length)}`;
+  if (href === "/store") return scopedStorePath;
+  if (href.startsWith("/store/"))
+    return `${scopedStorePath}${href.slice("/store".length)}`;
+  if (
+    ["/settings", "/media", "/analytics", "/channels", "/point-of-sales", "/online_store"].some(
+      (prefix) => href === prefix || href.startsWith(prefix + "/"),
+    )
+  )
+    return `${scopedStorePath}${href}`;
+  return href;
+}
+export function unscopedPath(pathname: string) {
+  const match = pathname.match(/^\/store\/([^/]+)(?=\/|$)/);
+  if (!match) return pathname;
+  const suffix = pathname.slice(match[0].length);
+  if (!suffix) return "/store";
+  return [
+    "/settings",
+    "/media",
+    "/analytics",
+    "/channels",
+    "/point-of-sales",
+    "/online_store",
+  ].some((p) => suffix === p || suffix.startsWith(p + "/"))
+    ? suffix
+    : `/store${suffix}`;
+}
+export function storeFetch(input: RequestInfo | URL, init?: RequestInit) {
+  if (typeof window === "undefined") return fetch(input, init);
+  if (typeof input === "string" && !input.startsWith("/api/stores/"))
+    return fetch(scopedPath(input, window.location.pathname), init);
+  return fetch(input, init);
+}

@@ -9,6 +9,8 @@ import {
   IconFileDescription,
   IconBox,
   IconArchive,
+  IconBuildingStore,
+  IconDeviceTablet,
 } from "@tabler/icons-react";
 import { ADMIN_ROUTES, type AdminRoute } from "@/lib/admin-routes";
 import type { CommerceFeatureKey } from "@/lib/commerce-features";
@@ -39,19 +41,37 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     label: "Home",
     href: ADMIN_ROUTES.overview,
     icon: IconHome,
-    links: [
-      { label: "Home", href: ADMIN_ROUTES.overview, icon: IconHome },
-    ],
+    links: [{ label: "Home", href: ADMIN_ROUTES.overview, icon: IconHome }],
   },
   {
     label: "Orders",
     href: ADMIN_ROUTES.operations.orders,
     icon: IconFileText,
     links: [
-      { label: "All orders", href: ADMIN_ROUTES.operations.orders, icon: IconFileText, feature: "commerce" },
-      { label: "Draft orders", href: ADMIN_ROUTES.operations.orderDrafts, icon: IconFileText, feature: "commerce" },
-      { label: "Abandoned checkouts", href: ADMIN_ROUTES.operations.abandonedCheckouts, icon: IconFileText, feature: "commerce" },
-      { label: "Purchase orders", href: ADMIN_ROUTES.operations.purchaseOrders, icon: IconFileText, feature: "commerce" },
+      {
+        label: "Orders",
+        href: ADMIN_ROUTES.operations.orders,
+        icon: IconFileText,
+        feature: "commerce",
+      },
+      {
+        label: "Draft orders",
+        href: ADMIN_ROUTES.operations.orderDrafts,
+        icon: IconFileText,
+        feature: "commerce",
+      },
+      {
+        label: "Abandoned checkouts",
+        href: ADMIN_ROUTES.operations.abandonedCheckouts,
+        icon: IconFileText,
+        feature: "commerce",
+      },
+      {
+        label: "Purchase orders",
+        href: ADMIN_ROUTES.operations.purchaseOrders,
+        icon: IconFileText,
+        feature: "commerce",
+      },
     ],
   },
   {
@@ -59,10 +79,30 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     href: ADMIN_ROUTES.store.products,
     icon: IconBox,
     links: [
-      { label: "Products", href: ADMIN_ROUTES.store.products, icon: IconBox, feature: "commerce" },
-      { label: "Categories", href: ADMIN_ROUTES.store.categories, icon: IconArchive, feature: "commerce" },
-      { label: "Inventory", href: ADMIN_ROUTES.store.inventory, icon: IconDatabase, feature: "commerce" },
-      { label: "Recycle bin", href: ADMIN_ROUTES.store.recycleBin, icon: IconArchive, feature: "commerce" },
+      {
+        label: "Products",
+        href: ADMIN_ROUTES.store.products,
+        icon: IconBox,
+        feature: "commerce",
+      },
+      {
+        label: "Categories",
+        href: ADMIN_ROUTES.store.categories,
+        icon: IconArchive,
+        feature: "commerce",
+      },
+      {
+        label: "Inventory",
+        href: ADMIN_ROUTES.store.inventory,
+        icon: IconDatabase,
+        feature: "commerce",
+      },
+      {
+        label: "Recycle bin",
+        href: ADMIN_ROUTES.store.recycleBin,
+        icon: IconArchive,
+        feature: "commerce",
+      },
     ],
   },
   {
@@ -70,7 +110,12 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     href: ADMIN_ROUTES.store.customers,
     icon: IconUser,
     links: [
-      { label: "Customers", href: ADMIN_ROUTES.store.customers, icon: IconUser, feature: "commerce" },
+      {
+        label: "Customers",
+        href: ADMIN_ROUTES.store.customers,
+        icon: IconUser,
+        feature: "commerce",
+      },
     ],
   },
   {
@@ -78,14 +123,65 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationGroup[] = [
     href: ADMIN_ROUTES.store.content,
     icon: IconFileDescription,
     links: [
-      { label: "Content", href: ADMIN_ROUTES.store.content, icon: IconFileDescription, feature: "content" },
-      { label: "Metaobjects", href: ADMIN_ROUTES.store.metaobjects, icon: IconDatabase, feature: "content" },
-      { label: "Media Manager", href: ADMIN_ROUTES.store.files, icon: IconPhoto, feature: "content" },
-      { label: "Menus", href: ADMIN_ROUTES.store.menus, icon: IconFileDescription, feature: "content" },
-      { label: "Blog posts", href: ADMIN_ROUTES.store.articles, icon: IconFileText, feature: "content" },
+      {
+        label: "Content",
+        href: ADMIN_ROUTES.store.content,
+        icon: IconFileDescription,
+        feature: "content",
+      },
+      {
+        label: "Metaobjects",
+        href: ADMIN_ROUTES.store.metaobjects,
+        icon: IconDatabase,
+        feature: "content",
+      },
+      {
+        label: "Media Manager",
+        href: ADMIN_ROUTES.store.files,
+        icon: IconPhoto,
+        feature: "content",
+      },
+      {
+        label: "Menus",
+        href: ADMIN_ROUTES.store.menus,
+        icon: IconFileDescription,
+        feature: "content",
+      },
+      {
+        label: "Blog posts",
+        href: ADMIN_ROUTES.store.articles,
+        icon: IconFileText,
+        feature: "content",
+      },
     ],
   },
-  { label: "Analytics", href: ADMIN_ROUTES.store.analytics, icon: IconChartBar, links: [{ label: "Analytics", href: ADMIN_ROUTES.store.analytics, icon: IconChartBar, feature: "analytics" }] },
+  {
+    label: "Sales channels",
+    href: ADMIN_ROUTES.store.onlineStore,
+    icon: IconBuildingStore,
+    links: [
+      { label: "Online Store", href: ADMIN_ROUTES.store.onlineStore, icon: IconBuildingStore, feature: "content" },
+      { label: "Pages", href: ADMIN_ROUTES.store.onlineStorePages, icon: IconFileDescription, feature: "content" },
+      { label: "Preferences", href: ADMIN_ROUTES.store.onlineStorePreferences, icon: IconFileDescription, feature: "content" },
+      { label: "Point of Sale", href: ADMIN_ROUTES.store.channels, icon: IconDeviceTablet, feature: "commerce" },
+      { label: "Devices", href: ADMIN_ROUTES.store.pointOfSaleDevices, icon: IconDeviceTablet, feature: "commerce" },
+      { label: "Register sessions", href: ADMIN_ROUTES.store.pointOfSaleRegisterSessions, icon: IconFileText, feature: "commerce" },
+      { label: "Settings", href: ADMIN_ROUTES.store.pointOfSaleSettings, icon: IconFileDescription, feature: "commerce" },
+    ],
+  },
+  {
+    label: "Analytics",
+    href: ADMIN_ROUTES.store.analytics,
+    icon: IconChartBar,
+    links: [
+      {
+        label: "Analytics",
+        href: ADMIN_ROUTES.store.analytics,
+        icon: IconChartBar,
+        feature: "analytics",
+      },
+    ],
+  },
 ] as const;
 
 export const ADMIN_NAVIGATION_LINKS = ADMIN_NAVIGATION.flatMap(
@@ -132,6 +228,12 @@ const ROUTE_PERMISSION: Partial<Record<AdminRoute, string>> = {
   "/media/library": "catalog.read",
   "/store/inventory": "inventory.read",
   "/point-of-sales": "orders.read",
+  "/point-of-sales/devices": "orders.read",
+  "/point-of-sales/register-sessions": "orders.read",
+  "/point-of-sales/settings": "orders.read",
+  "/online_store": "content.read",
+  "/online_store/pages": "content.read",
+  "/online_store/preferences": "settings.manage",
   "/store/orders": "orders.read",
   "/transactions": "billing.read",
   "/subscriptions": "billing.read",
@@ -224,6 +326,40 @@ export function isAdminNavigationGroupActive(
 }
 
 export function getAdminBreadcrumbs(pathname: string) {
+  const salesChannels = [
+    {
+      parent: ADMIN_ROUTES.store.onlineStore,
+      children: [
+        ADMIN_ROUTES.store.onlineStorePages,
+        ADMIN_ROUTES.store.onlineStorePreferences,
+      ],
+    },
+    {
+      parent: ADMIN_ROUTES.store.channels,
+      children: [
+        ADMIN_ROUTES.store.pointOfSaleDevices,
+        ADMIN_ROUTES.store.pointOfSaleRegisterSessions,
+        ADMIN_ROUTES.store.pointOfSaleSettings,
+      ],
+    },
+  ];
+  const parentGroup = salesChannels.find((item) => item.parent === pathname);
+  if (parentGroup) {
+    const parent = ADMIN_NAVIGATION_LINKS.find(
+      (item) => item.href === parentGroup.parent,
+    );
+    if (parent) return [parent];
+  }
+  for (const group of salesChannels) {
+    const childHref = group.children.find((href) => href === pathname);
+    if (!childHref) continue;
+    const parent = ADMIN_NAVIGATION_LINKS.find(
+      (item) => item.href === group.parent,
+    );
+    const child = ADMIN_NAVIGATION_LINKS.find((item) => item.href === childHref);
+    if (parent && child) return [parent, child];
+  }
+
   if (
     pathname === ADMIN_ROUTES.operations.analytics ||
     pathname === ADMIN_ROUTES.operations.reportLibrary ||

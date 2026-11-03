@@ -35,11 +35,7 @@ import {
 } from "@zerocraft/components/ui/popover";
 import { isAdminRouteActive } from "@/lib/admin-navigation";
 import { Button, buttonVariants } from "@zerocraft/components/ui/button";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@zerocraft/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@zerocraft/components/ui/avatar";
 import { IconDots } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { scopedPath, unscopedPath } from "@/lib/platform/scope";
@@ -68,9 +64,11 @@ export const SETTINGS_LINKS = [
 export function SettingsSidebar({
   pathname,
   user,
+  store,
 }: {
   pathname: string;
   user?: { name: string; email: string };
+  store?: { name: string; slug: string; status?: string } | null;
 }) {
   const routePath = unscopedPath(pathname);
   const [query, setQuery] = useState("");
@@ -135,24 +133,20 @@ export function SettingsSidebar({
           render={
             <button
               type="button"
-              aria-label="Open My Store actions"
+              aria-label={`Open ${store?.name || "store"} actions`}
               className="mb-2 flex h-11 w-full items-center gap-2 rounded-xl border border-transparent bg-[#303033] px-2 text-left text-[#f1f1f1] transition-colors hover:border-[#454548] hover:bg-[#38383b]"
             />
           }
         >
           <Avatar className="size-6 rounded-md">
-            <AvatarImage
-              src="https://github.com/shadcn.png"
-              className="rounded-md"
-            />
-            <AvatarFallback>MS</AvatarFallback>
+            <AvatarFallback>{(store?.name || "Store").slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <span className="min-w-0 flex-1 leading-tight">
             <span className="block truncate text-[12px] font-semibold">
-              My Store
+              {store?.name || "Store"}
             </span>
             <span className="block truncate text-[10px] text-[#a7a7ac]">
-              zerocraft.studio
+              {store ? (store.status === "ready" ? "Connected" : store.status || "Pending setup") : "Checking connection"}
             </span>
           </span>
           <IconDots className="size-4 shrink-0 text-[#a7a7ac]" />

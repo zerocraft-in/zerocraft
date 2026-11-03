@@ -86,15 +86,15 @@ export function FilesMediaManager({ storeId }: { storeId?: string }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(mediaEndpoint, { cache: "no-store" });
+      const response = await fetch(mediaEndpoint, { cache: "no-store", signal: AbortSignal.timeout(20_000) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Media library could not be loaded.");
       setAssets(payload.assets || []);
       setProducts(payload.products || []);
-      const foldersResponse = await fetch(folderEndpoint, { cache: "no-store" });
+      const foldersResponse = await fetch(folderEndpoint, { cache: "no-store", signal: AbortSignal.timeout(20_000) });
       if (foldersResponse.ok) { const result = await foldersResponse.json(); setCustomFolders(storeId ? result.folders.map((item: { name: string }) => item.name) : result.records.map((item: { title: string }) => item.title)); }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Media library could not be loaded.");
+      setError(cause instanceof Error && cause.name === "TimeoutError" ? "The media library request timed out. Check the storage connection and retry." : cause instanceof Error ? cause.message : "Media library could not be loaded.");
     } finally { setLoading(false); }
   }, [folderEndpoint, mediaEndpoint, storeId]);
 

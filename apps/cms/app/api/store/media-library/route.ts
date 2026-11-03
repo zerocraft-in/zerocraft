@@ -88,7 +88,12 @@ export async function GET() {
     const [assets, products] = await Promise.all([getAssetReferences(access, rawAssets), access.supabase.from("products").select("id,title,slug,status").order("title")]);
     if (products.error) return errorResponse("Products could not be loaded for media references.", 503);
     return Response.json({ bucket: PRODUCT_MEDIA_BUCKET, provider: isR2Configured() ? "r2" : "supabase", assets, products: products.data || [] }, { headers: { "Cache-Control": "private, no-store" } });
-  } catch { return errorResponse("The media library could not be loaded. Check the storage metadata migration.", 503); }
+  } catch (error) {
+    if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
+      return errorResponse("The media storage provider did not respond in time. Check the R2 or Supabase Storage connection and retry.", 503);
+    }
+    return errorResponse("The media library could not be loaded. Check the storage metadata migration.", 503);
+  }
 }
 
 export async function POST(request: Request) {

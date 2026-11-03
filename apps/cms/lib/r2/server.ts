@@ -74,7 +74,7 @@ export async function listR2Objects(prefix = R2_MEDIA_PREFIX) {
       Prefix: prefix.replace(/^\/+|\/+$/g, "") + "/",
       MaxKeys: 1000,
       ContinuationToken: continuationToken,
-    }));
+    }), { abortSignal: AbortSignal.timeout(12_000) });
     for (const object of result.Contents || []) {
       if (object.Key && !object.Key.endsWith("/")) {
         objects.push({

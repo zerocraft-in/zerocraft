@@ -3,13 +3,14 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as sdkClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createCipheriv,createDecipheriv,randomBytes } from "node:crypto";
+import { PLATFORM_SESSION_COOKIE_OPTIONS } from "@/lib/platform/session-cookies";
 
 export const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export class PlatformError extends Error { constructor(message:string,readonly status=400){super(message);} }
 export async function platformClient(){
  const url=process.env.NEXT_PUBLIC_PLATFORM_SUPABASE_URL;const key=process.env.NEXT_PUBLIC_PLATFORM_SUPABASE_PUBLISHABLE_KEY;
  if(!url||!key)throw new PlatformError("Platform authentication is not configured.",503);
- const jar=await cookies();return createServerClient(url,key,{cookies:{getAll:()=>jar.getAll(),setAll(values){try{values.forEach(({name,value,options})=>jar.set(name,value,options));}catch{/* Server component refresh handled by proxy. */}}}});
+ const jar=await cookies();return createServerClient(url,key,{cookieOptions:PLATFORM_SESSION_COOKIE_OPTIONS,cookies:{getAll:()=>jar.getAll(),setAll(values){try{values.forEach(({name,value,options})=>jar.set(name,value,options));}catch{/* Server component refresh handled by proxy. */}}}});
 }
 export function platformService(){const url=process.env.NEXT_PUBLIC_PLATFORM_SUPABASE_URL;const key=process.env.PLATFORM_SUPABASE_SERVICE_ROLE_KEY;if(!url||!key)throw new PlatformError("Platform server credentials are not configured.",503);return sdkClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});}
 export async function platformUser(){const client=await platformClient();const {data:{user},error}=await client.auth.getUser();if(error||!user)throw new PlatformError("Sign in to ZeroCraft.",401);const {data:account,error:accountError}=await client.from("accounts").select("id,status").eq("id",user.id).single();if(accountError||account?.status!=="active")throw new PlatformError("This platform account is unavailable.",403);return {client,user};}

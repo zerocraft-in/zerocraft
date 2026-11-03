@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   IconHelpCircle,
-  IconPlus,
   IconSearch,
   IconSettings,
   IconShoppingBag,
@@ -13,7 +12,7 @@ import {
   IconFileText,
   IconChartBar,
   IconApps,
-  IconDeviceTablet,
+  IconBuildingStore,
 } from "@tabler/icons-react";
 import {
   Sidebar as SidebarPrimitive,
@@ -134,7 +133,25 @@ export function getSidebarPresentationNavigation(
     ADMIN_ROUTES.store.analytics,
     ADMIN_ROUTES.operations.liveView,
   ]);
-  return [home, store, contentWithChildren, insights].filter(Boolean) as SidebarPresentationGroup[];
+  const salesChannels = makeGroup("Sales channels", IconBuildingStore, [
+    ADMIN_ROUTES.store.onlineStore,
+    ADMIN_ROUTES.store.channels,
+  ]);
+  const salesChannelsWithChildren = salesChannels && {
+    ...salesChannels,
+    children: {
+      [ADMIN_ROUTES.store.onlineStore]: children(
+        ADMIN_ROUTES.store.onlineStorePages,
+        ADMIN_ROUTES.store.onlineStorePreferences,
+      ),
+      [ADMIN_ROUTES.store.channels]: children(
+        ADMIN_ROUTES.store.pointOfSaleDevices,
+        ADMIN_ROUTES.store.pointOfSaleRegisterSessions,
+        ADMIN_ROUTES.store.pointOfSaleSettings,
+      ),
+    },
+  };
+  return [home, store, contentWithChildren, insights, salesChannelsWithChildren].filter(Boolean) as SidebarPresentationGroup[];
 }
 
 export function CommerceSidebar({
@@ -163,11 +180,17 @@ export function CommerceSidebar({
     () => new Map(navigation.flatMap((group) => group.links).map((link) => [link.href, link])),
     [navigation],
   );
-  const presentationNavigation = useMemo(() => getSidebarPresentationNavigation(navigation), [navigation]);
+  const allPresentationNavigation = useMemo(() => getSidebarPresentationNavigation(navigation), [navigation]);
+  const presentationNavigation = allPresentationNavigation.filter(
+    (group) => group.label !== "Sales channels",
+  );
 
   const itemClass = (active: boolean, child = false) =>
     `flex h-8 min-h-8 items-center rounded-lg p-2 text-[13px] transition-colors duration-150 ${child ? "grid grid-cols-[16px_minmax(0,1fr)] gap-2 px-2.5" : ""} ${active ? "!bg-sidebar-accent font-semibold !text-sidebar-accent-foreground" : "!text-sidebar-foreground/70 hover:!bg-sidebar-accent/70 hover:!text-sidebar-accent-foreground"}`;
   const activeFor = (href: string) => isAdminRouteActive(unscopedPath(pathname), href);
+  const salesChannelsNavigation = allPresentationNavigation.find(
+    (group) => group.label === "Sales channels",
+  );
 
   return (
     <SidebarPrimitive
@@ -434,11 +457,88 @@ export function CommerceSidebar({
               {channelsOpen ? "Collapse" : "Expand"} Sales channels
             </span>
           </button>
-          {channelsOpen && !collapsed && (
-            <div className="overflow-hidden space-y-0.5">
-              <Link href={scopedPath(ADMIN_ROUTES.store.overview, pathname)} className={`${itemClass(activeFor(ADMIN_ROUTES.store.overview), true)} whitespace-nowrap`}><IconShoppingBag className="size-4 shrink-0 opacity-80" stroke={1.7} /><span>Online Store</span></Link>
-              <Link href={scopedPath(ADMIN_ROUTES.store.channels, pathname)} className={`${itemClass(activeFor(ADMIN_ROUTES.store.channels), true)} whitespace-nowrap`}><IconDeviceTablet className="size-4 shrink-0 opacity-80" stroke={1.7} /><span>Point of Sale</span></Link>
-            </div>
+          {channelsOpen && salesChannelsNavigation && (
+            <SidebarMenu aria-label="Sales channels" className="gap-0.5">
+              {salesChannelsNavigation.links.map((link) => {
+                const children = salesChannelsNavigation.children?.[link.href] ?? [];
+                const parentActive = unscopedPath(pathname) === link.href;
+                const childActive = children.some((child) => activeFor(child.href));
+                const expanded = parentActive || childActive;
+                const ChannelIcon = link.icon;
+
+                return (
+                  <SidebarMenuItem key={link.href}>
+                    {collapsed && children.length > 0 ? (
+                      <HoverCard>
+                        <HoverCardTrigger render={<div className="flex justify-center" />}>
+                          <SidebarMenuButton
+                            render={<Link href={scopedPath(link.href, pathname)} />}
+                            isActive={parentActive}
+                            aria-current={parentActive ? "page" : undefined}
+                            aria-label={link.label}
+                            className={`${itemClass(parentActive, true)} !mx-0 !size-8 !flex-none !grid-cols-1 !justify-center !gap-0 !p-0`}
+                          >
+                            <ChannelIcon className="size-4 shrink-0 opacity-80" stroke={1.7} />
+                          </SidebarMenuButton>
+                        </HoverCardTrigger>
+                        <HoverCardContent side="right" align="start" sideOffset={10} className="w-max space-y-1 border-none! p-1">
+                          <div className="flex h-6 items-center rounded-md bg-sidebar-accent px-2 text-[13px] font-semibold text-sidebar-accent-foreground">{link.label}</div>
+                          {children.map((child) => (
+                            <Link
+                              key={child.href}
+                              href={scopedPath(child.href, pathname)}
+                              aria-current={unscopedPath(pathname) === child.href ? "page" : undefined}
+                              className={cn(
+                                "flex h-7 items-center rounded-lg px-2 text-[13px] transition-colors",
+                                unscopedPath(pathname) === child.href
+                                  ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
+                                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                              )}
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </HoverCardContent>
+                      </HoverCard>
+                    ) : (
+                      <>
+                        <SidebarMenuButton
+                          render={<Link href={scopedPath(link.href, pathname)} />}
+                          isActive={parentActive}
+                          aria-current={parentActive ? "page" : undefined}
+                          className={`${itemClass(parentActive, true)} ${childActive ? "!font-semibold !text-sidebar-accent-foreground" : ""} ${collapsed ? "!mx-0 !size-8 !flex-none !grid-cols-1 !justify-center !gap-0 !p-0" : "w-full"}`}
+                        >
+                          <ChannelIcon className="size-4 shrink-0 opacity-80" stroke={1.7} />
+                          {!collapsed && <span className="truncate">{link.label}</span>}
+                        </SidebarMenuButton>
+                        {!collapsed && expanded && children.length > 0 && (
+                          <div className="ml-7 space-y-0.5 py-0.5">
+                            {children.map((child) => {
+                              const active = unscopedPath(pathname) === child.href;
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={scopedPath(child.href, pathname)}
+                                  aria-current={active ? "page" : undefined}
+                                  className={cn(
+                                    "-ml-7 flex h-8 w-[calc(100%+1.75rem)] items-center rounded-lg pl-8 pr-2.5 text-[13px] transition-colors duration-150",
+                                    active
+                                      ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
+                                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                  )}
+                                >
+                                  {child.label}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
           )}
           <Link
             href={scopedPath(ADMIN_ROUTES.system.integrations, pathname)}

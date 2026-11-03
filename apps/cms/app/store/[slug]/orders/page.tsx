@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IconRefresh, IconShoppingBag, IconClock, IconTruckDelivery, IconCircleCheck } from "@tabler/icons-react";
-import { supabase } from "@/lib/supabase-client";
 import { OrdersDataTable, type OrderStatus, type StoreOrder } from "@/components/commerce/orders-data-table";
 import { Alert, AlertDescription, AlertTitle } from "@zerocraft/components/ui/alert";
 import { Badge } from "@zerocraft/components/ui/badge";
@@ -20,23 +19,43 @@ export default function OrdersPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error: readError } = await supabase.from("orders").select("id,order_number,customer_name,customer_email,customer_phone,items,status,payment_status,payment_method,total,currency,created_at").order("created_at", { ascending: false });
-    setError(readError ? "Orders could not be loaded. Check the Supabase connection and apply the admin MVP migration." : null);
-    setOrders((data || []) as StoreOrder[]);
-    setLoading(false);
+    try {
+      const response = await fetch("/api/store/orders", { cache: "no-store" });
+      const payload = await response.json().catch(() => ({})) as { orders?: StoreOrder[]; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Orders could not be loaded.");
+      setOrders(Array.isArray(payload.orders) ? payload.orders : []);
+      setError(null);
+    } catch (cause) {
+      setOrders([]);
+      setError(cause instanceof Error ? cause.message : "Orders could not be loaded.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
   useEffect(() => { let active = true; void Promise.resolve().then(() => { if (active) void load(); }); return () => { active = false; }; }, [load]);
 
   async function updateOrders(ids: string[], values: Partial<Pick<StoreOrder, "status" | "payment_status">>) {
     if (!ids.length) return;
     setBusy(true);
-    const { error: updateError } = await supabase.from("orders").update(values).in("id", ids);
-    if (updateError) setError("The selected orders could not be updated. Please try again.");
-    else {
+    try {
+      const response = await fetch("/api/store/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, values }),
+      });
+      const payload = await response.json().catch(() => ({})) as { orders?: StoreOrder[]; error?: string };
+      if (!response.ok) throw new Error(payload.error || "The selected orders could not be updated.");
+      const updated = Array.isArray(payload.orders) ? payload.orders : [];
       setError(null);
-      setOrders((current) => current.map((order) => ids.includes(order.id) ? { ...order, ...values } : order));
+      setOrders((current) => current.map((order) => {
+        const saved = updated.find((item) => item.id === order.id);
+        return saved ? { ...order, ...saved } : order;
+      }));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "The selected orders could not be updated.");
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
   }
 
   const filtered = useMemo(() => orders.filter((order) => {

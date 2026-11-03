@@ -11,5 +11,13 @@ export default defineConfig([
       "react-hooks/purity": "off",
     },
   },
-  globalIgnores([".next/**", "**/.next-local/**", "**/.next-release/**", "out/**", "build/**", "next-env.d.ts"]),
+  globalIgnores([
+    ".next/**",
+    "**/.next-local/**",
+    "**/.next-currency-local/**",
+    "**/.next-release/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
 ]);

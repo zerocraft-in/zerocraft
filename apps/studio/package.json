@@ -1,0 +1,23 @@
+{
+  "name": "@zerocraft/studio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3003",
+    "build": "node ../../scripts/next-windows-build.cjs build --webpack",
+    "start": "next start --port 3003",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@zerocraft/supabase": "0.1.0",
+    "@zerocraft/tailwind-config": "0.1.0",
+    "@zerocraft/ui": "0.1.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.30.0",
+    "next": "^16.1.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tailwind-merge": "^3.7.0"
+  }
+}
+

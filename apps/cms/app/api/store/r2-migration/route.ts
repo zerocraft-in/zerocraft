@@ -2,7 +2,8 @@ import { getRequestStoreConfig } from "@zerocraft/supabase/store-server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { isSameOrigin } from "@/lib/request-origin";
 import { isR2Configured, putR2Object, verifyR2Connection } from "@/lib/r2/server";
-import { PRODUCT_MEDIA_BUCKET, requireCommerceStorageClient } from "@/lib/storage/server";
+import { PRODUCT_MEDIA_BUCKET } from "@/lib/storage/server";
+import { requireCommercePermission } from "@/lib/commerce-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,7 +27,8 @@ async function listObjects(storage: any, prefix = ""): Promise<Array<{ path: str
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return response({ error: "Invalid request origin." }, 403);
   try {
-    await requireCommerceStorageClient();
+    const access = await requireCommercePermission("catalog.manage");
+    if (!access.ok) return response({ error: "Catalog management access is required." }, access.response.status);
   } catch (error) {
     return response({ error: error instanceof Error ? error.message : "Commerce access required." }, 403);
   }

@@ -1,99 +1,126 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   IconBuildingStore,
-  IconCheck,
   IconInfoCircle,
   IconPlus,
   IconSearch,
-  IconUsers,
 } from "@tabler/icons-react";
-import { Button, Checkbox, Input } from "@zerocraft/components/ui/studio-controls";
+import { Button, Input } from "@zerocraft/components/ui/studio-controls";
 
-const segments = [
-  { name: "Customers who have purchased at least once", activity: "Created at 5:52 am" },
-  { name: "Email subscribers", activity: "Created at 5:52 am" },
-  { name: "Abandoned checkouts in the last 30 days", activity: "Created at 5:52 am" },
-  { name: "Customers who have purchased more than once", activity: "Created at 5:52 am" },
-  { name: "Customers who haven't purchased", activity: "Created at 5:52 am" },
-];
+type StoreCustomer = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  orderCount: number;
+  paidByCurrency: Record<string, number>;
+  lastOrderAt: string;
+};
 
-export function CustomerSegmentsPage() {
+function formatCustomerTotal(values: Record<string, number>) {
+  const entries = Object.entries(values);
+  if (!entries.length) return "—";
+  return entries
+    .map(([currency, total]) => {
+      try {
+        return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 2 }).format(total);
+      } catch {
+        return `${currency} ${total.toFixed(2)}`;
+      }
+    })
+    .join(" · ");
+}
+
+export function CustomerDirectoryPage() {
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
-  const filtered = useMemo(
-    () => segments.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())),
-    [query],
-  );
-  const allSelected = filtered.length > 0 && filtered.every((item) => selected.includes(item.name));
+  const [customers, setCustomers] = useState<StoreCustomer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleAll = (checked: boolean) => {
-    setSelected(checked ? filtered.map((item) => item.name) : []);
-  };
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/store/customers", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({})) as { customers?: StoreCustomer[]; error?: string };
+        if (!response.ok) throw new Error(payload.error || "Customers could not be loaded.");
+        if (active) {
+          setCustomers(Array.isArray(payload.customers) ? payload.customers : []);
+          setError(null);
+        }
+      })
+      .catch((cause: unknown) => {
+        if (!active) return;
+        setError(cause instanceof Error ? cause.message : "Customers could not be loaded.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
+
+  const filtered = useMemo(
+    () => customers.filter((customer) =>
+      `${customer.name} ${customer.email} ${customer.phone}`.toLowerCase().includes(query.trim().toLowerCase()),
+    ),
+    [customers, query],
+  );
 
   return (
     <section className="space-y-5 text-sm">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-medium text-muted-foreground">Customers</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">Segments</h1>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">Customer directory</h1>
         </div>
-        <Button className="h-9 rounded-lg px-4" onClick={() => undefined}>
-          <IconPlus className="size-4" /> Create segment
-        </Button>
+        <p className="text-xs text-muted-foreground">Customer records are grouped from store orders.</p>
       </header>
+
+      {error && <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}
 
       <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
         <div className="flex flex-col gap-3 border-b border-border p-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full max-w-sm">
             <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              aria-label="Search segments"
+              aria-label="Search customers"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search segments"
+              placeholder="Search customers by name, email, or phone"
               className="h-9 rounded-lg pl-9"
             />
           </div>
-          <span className="text-xs text-muted-foreground">{filtered.length} saved segments</span>
+          <span className="text-xs text-muted-foreground">{loading ? "Loading customers…" : `${filtered.length} customers`}</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left">
+          <table className="w-full min-w-[820px] text-left">
             <thead className="bg-muted/40 text-xs text-muted-foreground">
               <tr className="border-b border-border">
-                <th className="w-12 px-4 py-3">
-                  <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Select all segments" />
-                </th>
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="w-40 px-4 py-3 text-right font-medium">% of customers</th>
-                <th className="w-52 px-4 py-3 font-medium">Last activity</th>
-                <th className="w-40 px-4 py-3 font-medium">Created by</th>
-                <th className="w-12 px-4 py-3" />
+                <th className="px-4 py-3 font-medium">Customer</th>
+                <th className="px-4 py-3 font-medium">Phone</th>
+                <th className="w-28 px-4 py-3 text-right font-medium">Orders</th>
+                <th className="w-48 px-4 py-3 text-right font-medium">Paid total</th>
+                <th className="w-48 px-4 py-3 text-right font-medium">Last order</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.map((item) => {
-                const checked = selected.includes(item.name);
-                return (
-                  <tr key={item.name} className={`transition-colors hover:bg-muted/40 ${checked ? "bg-muted/50" : ""}`}>
-                    <td className="px-4 py-3">
-                      <Checkbox checked={checked} onCheckedChange={(value) => setSelected((current) => value ? [...current, item.name] : current.filter((name) => name !== item.name))} aria-label={`Select ${item.name}`} />
-                    </td>
-                    <td className="px-4 py-3 font-medium">{item.name}</td>
-                    <td className="px-4 py-3 text-right text-xs">0%</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{item.activity}</td>
-                    <td className="px-4 py-3 text-xs"><span className="inline-flex items-center gap-1.5"><IconCheck className="size-3.5 text-primary" /> Zerocraft</span></td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">•••</td>
+              {filtered.map((customer) => (
+                  <tr key={customer.id} className="transition-colors hover:bg-muted/40">
+                    <td className="px-4 py-3"><p className="font-medium">{customer.name}</p><p className="mt-0.5 text-xs text-muted-foreground">{customer.email || "No email on order"}</p></td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{customer.phone || "—"}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{customer.orderCount}</td>
+                    <td className="px-4 py-3 text-right text-xs tabular-nums">{formatCustomerTotal(customer.paidByCurrency)}</td>
+                    <td className="px-4 py-3 text-right text-xs text-muted-foreground">{customer.lastOrderAt ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(customer.lastOrderAt)) : "—"}</td>
                   </tr>
-                );
-              })}
-              {!filtered.length && <tr><td colSpan={6} className="px-4 py-14 text-center text-sm text-muted-foreground">No segments found.</td></tr>}
+              ))}
+              {!loading && !filtered.length && <tr><td colSpan={5} className="px-4 py-14 text-center text-sm text-muted-foreground">{query ? "No customers match this search." : "No customer orders are available yet."}</td></tr>}
+              {loading && <tr><td colSpan={5} className="px-4 py-14 text-center text-sm text-muted-foreground">Loading customer records…</td></tr>}
             </tbody>
           </table>
         </div>
       </div>
-      <p className="text-center text-xs text-muted-foreground">Learn more about segments</p>
+      <p className="text-center text-xs text-muted-foreground">Customer records reflect completed store orders and the contact details supplied at checkout.</p>
     </section>
   );
 }
