@@ -1,8 +1,7 @@
 import "server-only";
 
-import { createHmac } from "node:crypto";
 import type { NextRequest } from "next/server";
-import { platformService } from "@/lib/platform/server";
+import { createClient } from "@supabase/supabase-js";
 
 type SecurityEvent = {
   event: string;
@@ -13,20 +12,35 @@ type SecurityEvent = {
   metadata?: Record<string, unknown>;
 };
 
-function digest(value: string) {
-  const secret = process.env.PLATFORM_ENCRYPTION_KEY;
-  if (!secret) return null;
-  return createHmac("sha256", secret).update(value).digest("hex");
+function securityEventClient() {
+  const url = process.env.NEXT_PUBLIC_PLATFORM_SUPABASE_URL;
+  const key = process.env.PLATFORM_SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Platform server credentials are not configured.");
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-function requestContext(request?: Request | NextRequest) {
+async function digest(value: string) {
+  const secret = process.env.PLATFORM_ENCRYPTION_KEY;
+  if (!secret) return null;
+  const key = await globalThis.crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await globalThis.crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function requestContext(request?: Request | NextRequest) {
   if (!request) return { route: undefined, ipHash: null, userAgent: null };
   const headers = request.headers;
   const forwarded = headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   const ip = forwarded || headers.get("x-real-ip") || "unknown";
   return {
     route: new URL(request.url).pathname.slice(0, 500),
-    ipHash: digest(ip),
+    ipHash: await digest(ip),
     userAgent: (headers.get("user-agent") || "unknown").slice(0, 512),
   };
 }
@@ -34,8 +48,8 @@ function requestContext(request?: Request | NextRequest) {
 /** Best-effort, redacted security telemetry. Logging must never break a request. */
 export async function logSecurityEvent(event: SecurityEvent) {
   try {
-    const context = requestContext(event.request);
-    const result = await platformService().from("security_events").insert({
+    const context = await requestContext(event.request);
+    const result = await securityEventClient().from("security_events").insert({
       event_type: event.event.slice(0, 100),
       route: event.route || context.route || null,
       method: event.request?.method || null,
