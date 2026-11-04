@@ -3,7 +3,7 @@
 ## Before release
 
 - Confirm the working tree is reviewed and unrelated changes are excluded.
-- Confirm the release version and changelog entry match the release commit.
+- Confirm the release version and commit message identify the release.
 - Run `npm run verify:release`.
 - Run `npm run build:cms` in a clean environment.
 - Apply Supabase migrations with `npx supabase db push --workdir packages/supabase`.
@@ -27,7 +27,7 @@
 - Record commit SHA, tag, Vercel deployment URL, migration status, and test output.
 - Keep the previous production tag available for rollback.
 - Monitor Vercel logs, Supabase errors, worker runs, SMTP delivery, and low-stock alerts for 30 minutes.
-- Follow `docs/cms/POST_RELEASE_MONITORING.md` for the first 24 hours.
+- Review security event telemetry and deployment logs after release.
 
 ## Rollback
 

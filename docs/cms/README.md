@@ -1,26 +1,18 @@
-# CMS audit and delivery reports
+# CMS documentation
 
-Audit date: 2026-10-20
-Scope: `apps/cms`, CMS-facing Supabase migrations, and the current working tree.
+This folder contains current operating and architecture documentation for the ZeroCraft CMS. Historical audit and planning snapshots are excluded from the active documentation set.
 
-This folder is the reporting record for the ZeroCraft CMS implementation. The reports describe the repository as observed on the audit date; they do not replace database migrations, deployment runbooks, or release notes.
+## Active references
 
-## Reports
+- [Architecture](./ARCHITECTURE.md)
+- [Multi-store setup](./MULTI_STORE_SETUP.md)
+- [Operations runbook](./OPERATIONS_RUNBOOK.md)
+- [Release checklist](./RELEASE_CHECKLIST.md)
+- [Security deployment](../../SECURITY_DEPLOYMENT.md)
 
-- [Structure report](./STRUCTURE_REPORT.md) — application layout, routes, services, and data boundaries.
-- [Implementation report](./IMPLEMENTATION_REPORT.md) — implemented CMS capabilities and delivery status.
-- [Current modifications report](./CURRENT_MODIFICATIONS.md) — all uncommitted CMS changes and their impact.
-- [Changelog](./CHANGELOG.md) — chronological repository and working-tree change summary.
-- [Audit report](./AUDIT_REPORT.md) — security, correctness, reliability, quality, and release-readiness findings.
+## Evidence and validation
 
-## Evidence used
-
-- Git history through commit `96cae70` (`v.0.0.20`).
-- Current `git status`, `git diff --name-status`, and changed-file line counts.
-- CMS route and API source under `apps/cms/app`.
-- CMS navigation and studio components under `apps/cms/lib` and `apps/cms/components`.
-- Supabase commerce migrations under `packages/supabase/supabase/migrations`.
-- Validation attempts recorded in the audit report.
+The active references describe the current source tree, Supabase migrations, deployment configuration, and release/security verification scripts.
 
 ## Status vocabulary
 

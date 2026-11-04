@@ -42,8 +42,7 @@
     "seed:commerce": "node scripts/seed-commerce.mjs",
     "seed:tamil-posters": "node --env-file=.env.local scripts/seed-tamil-poster-products.mjs",
     "seed:apparel": "node --env-file=.env.local scripts/replace-demo-with-apparel.mjs",
-    "seed:storefront-bundles": "node --env-file=.env.local scripts/seed-storefront-bundles.mjs",
-    "test:store:responsive": "playwright test tests/store-responsive.spec.ts"
+    "seed:storefront-bundles": "node --env-file=.env.local scripts/seed-storefront-bundles.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -82,7 +81,6 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
