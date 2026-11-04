@@ -1,126 +1,25 @@
 import Link from "next/link";
-import { FolderKanban, Plus, ExternalLink, Sparkles, Filter } from "lucide-react";
-import { Button } from "@zerocraft/ui/components/button";
+import { ExternalLink, Filter, Plus } from "lucide-react";
 import { Badge } from "@zerocraft/ui/components/badge";
+import { Button } from "@zerocraft/ui/components/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@zerocraft/ui/components/card";
+
+const projects = [
+  ["Cinema Streetwear Atelier", "Creative E-Commerce", "ZeroCraft Internal", "2026", "Published", "14.2k", "from-amber-300 to-orange-400"],
+  ["ZeroCraft Unified CMS", "Platform Architecture", "Enterprise Suite", "2026", "Published", "6.8k", "from-sky-300 to-blue-500"],
+  ["HyperScale Spatial Showroom", "Creative Engineering", "Voxel Dynamics", "2025", "Published", "3.5k", "from-violet-300 to-fuchsia-500"],
+  ["Sovereign Auth & Payments Engine", "Fintech Infrastructure", "Finova Network", "2026", "Draft", "—", "from-emerald-300 to-teal-500"],
+] as const;
+
+const glass = "border-white/10 bg-white/[.055] shadow-[0_18px_55px_rgba(0,0,0,.2)] backdrop-blur-2xl";
 
 export default function ProjectsDashboard() {
-  const projects = [
-    {
-      id: "proj_1",
-      title: "Cinema Streetwear Atelier",
-      category: "Creative E-Commerce",
-      client: "ZeroCraft Internal",
-      year: "2026",
-      status: "Published",
-      featured: true,
-      views: "14.2k",
-    },
-    {
-      id: "proj_2",
-      title: "ZeroCraft Unified CMS",
-      category: "Platform Architecture",
-      client: "Enterprise Suite",
-      year: "2026",
-      status: "Published",
-      featured: true,
-      views: "6.8k",
-    },
-    {
-      id: "proj_3",
-      title: "HyperScale Spatial Showroom",
-      category: "Creative Engineering",
-      client: "Voxel Dynamics",
-      year: "2025",
-      status: "Published",
-      featured: false,
-      views: "3.5k",
-    },
-    {
-      id: "proj_4",
-      title: "Sovereign Auth & Payments Engine",
-      category: "Fintech Infrastructure",
-      client: "Finova Network",
-      year: "2026",
-      status: "Draft",
-      featured: false,
-      views: "-",
-    },
-  ];
-
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Showcase Projects</h1>
-          <p className="text-zinc-400 text-sm mt-1">
-            Curate and manage client case studies displayed on the public portfolio.
-          </p>
-        </div>
-
-        <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5">
-          <Plus className="w-3.5 h-3.5" />
-          <span>New Project</span>
-        </Button>
-      </div>
-
-      {/* Projects Table */}
-      <div className="glass-panel rounded-xl overflow-hidden border border-zinc-800">
-        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-zinc-400">Total: {projects.length} entries</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="p-2 h-8 border-zinc-800 text-zinc-400 hover:text-white">
-              <Filter className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="divide-y divide-zinc-800/60">
-          {projects.map((p) => (
-            <div key={p.id} className="p-4 flex items-center justify-between hover:bg-zinc-800/20 transition-colors">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-white text-sm">{p.title}</h3>
-                  {p.featured && (
-                    <Badge variant="outline" className="text-[10px] font-mono border-indigo-500/30 text-indigo-400 bg-indigo-500/10">
-                      Featured
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 text-xs text-zinc-500 font-mono">
-                  <span>{p.category}</span>
-                  <span>•</span>
-                  <span>Client: {p.client}</span>
-                  <span>•</span>
-                  <span>Year: {p.year}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6">
-                <div className="text-right font-mono text-xs text-zinc-400">
-                  <span className="text-zinc-500">Impressions: </span>{p.views}
-                </div>
-
-                <Badge 
-                  variant="outline"
-                  className={`text-[11px] font-mono ${
-                    p.status === "Published" 
-                      ? "border-emerald-400/30 text-emerald-300 bg-emerald-400/10" 
-                      : "border-zinc-800 text-zinc-400"
-                  }`}
-                >
-                  {p.status}
-                </Badge>
-
-                <Button variant="ghost" size="sm" className="text-xs text-zinc-400 hover:text-indigo-400 transition-colors h-7 px-2">
-                  Edit
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+    <div className="relative isolate space-y-6 overflow-hidden rounded-[28px] p-1">
+      <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-20 -z-10 size-72 rounded-full bg-sky-300/25 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-0 left-1/3 -z-10 size-64 rounded-full bg-amber-300/20 blur-3xl" />
+      <section className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><p className="font-mono text-[10px] uppercase tracking-[.16em] text-muted-foreground">Portfolio operations</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">Showcase projects</h1><p className="mt-2 max-w-xl text-sm text-muted-foreground">Curate case studies and manage the work that represents ZeroCraft in public.</p></div><Button render={<Link href="/studio/projects/new" />}><Plus /> New project</Button></section>
+      <Card className={`${glass} overflow-hidden`}><CardHeader className="border-b border-border/70"><div><CardTitle>Project library</CardTitle><CardDescription>{projects.length} active entries · synced with the public portfolio</CardDescription></div><Button variant="outline" size="sm"><Filter /> Filter</Button></CardHeader><CardContent className="p-0"><div className="divide-y divide-border/70">{projects.map(([title, category, client, year, status, views, color]) => <div key={title} className="flex flex-col gap-4 p-5 transition-colors hover:bg-white/45 md:flex-row md:items-center md:justify-between"><div className="flex items-center gap-3"><span className={`flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${color} text-sm font-bold text-white shadow-sm`}>{title.slice(0, 1)}</span><div><div className="flex flex-wrap items-center gap-2"><h3 className="text-sm font-semibold">{title}</h3>{status === "Published" ? <Badge variant="secondary">Published</Badge> : <Badge variant="outline">Draft</Badge>}</div><p className="mt-1 text-xs text-muted-foreground">{category} · {client} · {year}</p></div></div><div className="flex items-center gap-5 pl-14 md:pl-0"><span className="font-mono text-xs text-muted-foreground">{views} views</span><Button variant="ghost" size="sm">Edit</Button><Button variant="ghost" size="icon-xs" aria-label={`Open ${title}`}><ExternalLink /></Button></div></div>)}</div></CardContent></Card>
     </div>
   );
 }

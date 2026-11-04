@@ -1,136 +1,356 @@
 import Link from "next/link";
-import { FolderKanban, Inbox, Eye, ArrowUpRight, CheckCircle2, Clock, Activity, Zap } from "lucide-react";
-import { getStudioSupabaseConfig } from "@/lib/supabase";
+import {
+  ArrowUpRight,
+  BriefcaseBusiness,
+  Check,
+  CircleDollarSign,
+  CircleGauge,
+  Clock3,
+  FileImage,
+  FolderKanban,
+  Image,
+  MoreHorizontal,
+  Network,
+  Plus,
+  Radio,
+  Sparkles,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import { Button } from "@zerocraft/ui/components/button";
-import { Badge } from "@zerocraft/ui/components/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@zerocraft/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@zerocraft/ui/components/card";
+import { getStudioDashboardData } from "@/lib/studio-dashboard";
+import { StudioHeader } from "./studio-header";
 
-export default function StudioDashboard() {
-  const supabaseConfig = getStudioSupabaseConfig();
+const baseCard =
+  "rounded-[32px] border-white/[.1] bg-white/[.06] p-6 text-foreground shadow-none backdrop-blur-[28px]";
+const lightCard = `${baseCard} bg-white text-[#0a0a0b]`;
+const openButton =
+  "grid size-11 place-items-center rounded-full bg-white text-[#0a0a0b] transition-transform hover:scale-105";
 
-  const stats = [
-    { label: "Active Showcases", value: "3", change: "+1 this month", icon: FolderKanban, color: "text-indigo-400" },
-    { label: "Client Inquiries", value: "8", change: "2 pending review", icon: Inbox, color: "text-amber-400" },
-    { label: "Portfolio Visits", value: "24.5k", change: "+18.2% vs last mo", icon: Eye, color: "text-emerald-400" },
-    { label: "Avg Response Time", value: "< 4h", change: "Enterprise SLA", icon: Zap, color: "text-purple-400" },
-  ];
-
-  const recentInquiries = [
-    { client: "Aesthetic Labs", email: "alex@aestheticlabs.io", type: "Full E-Commerce Architecture", budget: "$15k - $25k", date: "2 hours ago", status: "New" },
-    { client: "Kinetix Studio", email: "marcus@kinetix.design", type: "WebGL Spatial Showroom", budget: "$10k - $15k", date: "Yesterday", status: "In Review" },
-    { client: "Founders Guild", email: "team@foundersguild.co", type: "Design System & Frontend", budget: "$5k - $10k", date: "3 days ago", status: "Contacted" },
-  ];
-
+function MetricIcon({ children }: { children: React.ReactNode }) {
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Studio Overview</h1>
-          <p className="text-zinc-400 text-sm mt-1">
-            Manage showcase deliverables, client inquiries, and live Supabase synchronization.
-          </p>
-        </div>
+    <span className="grid size-10 place-items-center rounded-full border border-current/60 opacity-80">
+      {children}
+    </span>
+  );
+}
+function MiniBars() {
+  return (
+    <span className="flex h-8 items-end gap-1" aria-hidden="true">
+      {[6, 10, 15, 9, 20, 13, 25].map((height, index) => (
+        <i
+          key={index}
+          className="w-1.5 rounded-t bg-current"
+          style={{ height }}
+        />
+      ))}
+    </span>
+  );
+}
+function MiniDots() {
+  return (
+    <span className="grid w-20 grid-cols-5 gap-2" aria-hidden="true">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <i
+          key={index}
+          className={
+            index < 4
+              ? "size-1.5 rounded-full bg-current"
+              : "size-1.5 rounded-full bg-black/15"
+          }
+        />
+      ))}
+    </span>
+  );
+}
+function MiniWave() {
+  return (
+    <span className="flex items-end gap-1" aria-hidden="true">
+      {[10, 18, 7, 23, 14, 28].map((height, index) => (
+        <i
+          key={index}
+          className="w-1.5 rounded-full bg-current"
+          style={{ height }}
+        />
+      ))}
+    </span>
+  );
+}
 
-        <div className="flex items-center gap-3">
-          <Link href="/studio/projects">
-            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs">
-              + Add Showcase
-            </Button>
-          </Link>
-          <Link href="/" target="_blank">
-            <Button variant="outline" size="sm" className="text-xs border-zinc-700 hover:bg-zinc-800 text-zinc-300">
-              <span>Live Portfolio</span>
-              <ArrowUpRight className="w-3.5 h-3.5 ml-1 text-zinc-500" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Metrics Row using @zerocraft/ui Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s, idx) => (
-          <Card key={idx} className="bg-[#12141c]/80 border-zinc-800/80 backdrop-blur-md">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">{s.label}</span>
-              <s.icon className={`w-4 h-4 ${s.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white tracking-tight">{s.value}</div>
-              <p className="text-[11px] text-zinc-500 mt-1 font-mono">{s.change}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Supabase Connection Status Banner */}
-      <div className="p-5 rounded-xl bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-zinc-900 border border-indigo-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start md:items-center gap-3.5">
-          <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-            <Activity className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">Supabase Multi-Tenant Engine Connected</h3>
-            <p className="text-xs text-zinc-400 font-mono mt-0.5">
-              Host: <span className="text-indigo-300">{supabaseConfig.url}</span> • Store ID: <span className="text-indigo-300">{supabaseConfig.storeId}</span>
-            </p>
-          </div>
-        </div>
-        <Link
-          href="/studio/settings"
-          className="text-xs font-mono text-indigo-400 hover:text-indigo-300 flex items-center gap-1 shrink-0"
+export default async function StudioDashboard() {
+  const { projects } = await getStudioDashboardData();
+  const visibleProjects = projects.slice(0, 3);
+  return (
+    <div className="ml-18">
+      <StudioHeader />
+      <section>
+        <h1 className="text-[clamp(44px,5vw,72px)] font-extralight leading-none tracking-[-.045em]">
+          Good morning.
+        </h1>
+        <p className="mt-3 text-[17px] text-zinc-400">
+          Three things need your attention today.
+        </p>
+      </section>
+      <div className="mt-7 grid grid-cols-4 gap-3 max-[1000px]:grid-cols-2 max-[640px]:grid-cols-1">
+        <Card
+          className={`${baseCard} col-span-2 row-span-2 min-h-[410px] border-white/20 bg-[linear-gradient(150deg,rgba(255,106,43,.92),rgba(130,32,22,.9)_68%,rgba(24,12,12,.95))] p-7 max-[640px]:col-span-1 max-[640px]:row-span-1`}
         >
-          View Config & Diagnostics →
-        </Link>
-      </div>
-
-      {/* Recent Inquiries Section */}
-      <div className="glass-panel rounded-xl overflow-hidden border border-zinc-800">
-        <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold text-white">Recent Project Inquiries</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">Prospective commissions from portfolio submission form</p>
-          </div>
-          <Link href="/studio/inquiries" className="text-xs font-medium text-indigo-400 hover:underline">
-            View All
-          </Link>
-        </div>
-
-        <div className="divide-y divide-zinc-800/60 overflow-x-auto">
-          {recentInquiries.map((inq, idx) => (
-            <div key={idx} className="p-4 flex items-center justify-between text-xs hover:bg-zinc-800/20 transition-colors">
-              <div className="min-w-[180px]">
-                <p className="font-semibold text-zinc-200">{inq.client}</p>
-                <p className="text-[11px] font-mono text-zinc-500">{inq.email}</p>
+          <CardContent className="flex h-full flex-col justify-between p-0">
+            <div className="flex items-center justify-between">
+              <MetricIcon>
+                <Network size={18} />
+              </MetricIcon>
+              <Button
+                className={openButton}
+                variant="ghost"
+                size="icon-lg"
+                render={<Link href="/studio/inquiries" />}
+                aria-label="Open pipeline"
+              >
+                <ArrowUpRight />
+              </Button>
+            </div>
+            <div>
+              <CardTitle className="text-xl font-medium text-white">
+                Pipeline value
+              </CardTitle>
+              <div className="mt-4 flex items-end justify-between gap-3">
+                <strong className="text-[clamp(68px,8vw,112px)] font-light leading-none tracking-[-.04em] text-white">
+                  $482
+                  <small className="ml-1 text-xl tracking-normal text-white/70">
+                    K
+                  </small>
+                </strong>
+                <span className="rounded-full border border-white/40 px-3 py-1.5 text-xs text-white">
+                  +14% this month
+                </span>
               </div>
-
-              <div className="min-w-[180px]">
-                <span className="text-zinc-300">{inq.type}</span>
+              <div className="mt-7 flex items-center gap-0 text-white">
+                <i className="size-2.5 rounded-full bg-white" />
+                <b className="h-px flex-1 bg-white/55" />
+                <i className="size-4 rounded-full bg-violet-200" />
+                <b className="h-px flex-1 bg-white/55" />
+                <i className="size-2.5 rounded-full bg-white" />
+                <b className="h-px flex-1 bg-white/55" />
+                <i className="size-2.5 rounded-full bg-white" />
+                <b className="h-px flex-1 bg-white/55" />
+                <i className="size-7 rounded-full bg-white" />
               </div>
-
-              <div className="min-w-[100px] font-mono text-zinc-400">
-                {inq.budget}
-              </div>
-
-              <div className="min-w-[80px] font-mono text-zinc-500">
-                {inq.date}
-              </div>
-
-              <div>
-                <Badge 
-                  variant="outline" 
-                  className={`text-[10px] font-mono ${
-                    inq.status === 'New' ? 'border-amber-400/30 text-amber-300 bg-amber-400/10' :
-                    inq.status === 'In Review' ? 'border-indigo-400/30 text-indigo-300 bg-indigo-400/10' :
-                    'border-zinc-700 text-zinc-400'
-                  }`}
-                >
-                  {inq.status}
-                </Badge>
+              <div className="mt-2 flex justify-between text-xs text-white/60">
+                <span>New</span>
+                <span>Qualified</span>
+                <span>Proposal</span>
+                <span>Negotiation</span>
+                <span>Won</span>
               </div>
             </div>
-          ))}
-        </div>
+          </CardContent>
+        </Card>
+        <Card className={lightCard}>
+          <CardContent className="flex h-full min-h-[196px] flex-col justify-between p-0">
+            <div className="flex items-center justify-between">
+              <MetricIcon>
+                <FolderKanban size={18} />
+              </MetricIcon>
+              <Button
+                className={openButton}
+                variant="ghost"
+                size="icon-lg"
+                render={<Link href="/studio/projects" />}
+                aria-label="Open projects"
+              >
+                <ArrowUpRight />
+              </Button>
+            </div>
+            <div>
+              <CardTitle className="text-base font-medium">
+                Active projects
+              </CardTitle>
+              <div className="mt-3 flex items-end justify-between">
+                <strong className="text-6xl font-light leading-none tracking-[-.04em]">
+                  {String(Math.max(visibleProjects.length, 12))}
+                </strong>
+                <MiniBars />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={lightCard}>
+          <CardContent className="flex h-full min-h-[196px] flex-col justify-between p-0">
+            <div className="flex items-center justify-between">
+              <MetricIcon>
+                <Target size={18} />
+              </MetricIcon>
+              <Button
+                className={openButton}
+                variant="ghost"
+                size="icon-lg"
+                render={<Link href="/studio/inquiries" />}
+                aria-label="Open opportunities"
+              >
+                <ArrowUpRight />
+              </Button>
+            </div>
+            <div>
+              <CardTitle className="text-base font-medium">
+                Open opportunities
+              </CardTitle>
+              <div className="mt-3 flex items-end justify-between">
+                <strong className="text-6xl font-light leading-none tracking-[-.04em]">
+                  27
+                </strong>
+                <MiniDots />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={lightCard}>
+          <CardContent className="flex h-full min-h-[196px] flex-col justify-between p-0">
+            <div className="flex items-center justify-between">
+              <MetricIcon>
+                <FileImage size={18} />
+              </MetricIcon>
+              <Button
+                className={openButton}
+                variant="ghost"
+                size="icon-lg"
+                render={<Link href="/studio/media" />}
+                aria-label="Open media library"
+              >
+                <ArrowUpRight />
+              </Button>
+            </div>
+            <div>
+              <CardTitle className="text-base font-medium">
+                Media published
+              </CardTitle>
+              <div className="mt-3 flex items-end justify-between">
+                <strong className="text-6xl font-light leading-none tracking-[-.04em]">
+                  138
+                </strong>
+                <MiniWave />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={lightCard}>
+          <CardContent className="flex h-full min-h-[196px] flex-col justify-between p-0">
+            <div className="flex items-center justify-between">
+              <MetricIcon>
+                <Clock3 size={18} />
+              </MetricIcon>
+              <Button
+                className={openButton}
+                variant="ghost"
+                size="icon-lg"
+                render={<Link href="/studio/analytics" />}
+                aria-label="Open analytics"
+              >
+                <ArrowUpRight />
+              </Button>
+            </div>
+            <div>
+              <CardTitle className="text-base font-medium">
+                Avg. response time
+              </CardTitle>
+              <div className="mt-3 flex items-end justify-between">
+                <strong className="text-5xl font-light leading-none tracking-[-.04em]">
+                  3.2<small className="ml-1 text-lg tracking-normal">hrs</small>
+                </strong>
+                <CircleGauge size={72} strokeWidth={1} className="-rotate-12" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card
+          className={`${baseCard} col-span-2 min-h-[230px] max-[640px]:col-span-1`}
+        >
+          <CardContent className="p-0">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-medium">
+                Project delivery
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-white/15 bg-white/[.06]"
+                render={<Link href="/studio/projects" />}
+              >
+                All projects
+              </Button>
+            </div>
+            <div className="mt-4 space-y-0">
+              {[
+                "Northwind rebrand",
+                "Atlas product site",
+                "Lumen launch film",
+              ].map((name, index) => (
+                <div
+                  key={name}
+                  className="grid grid-cols-[1.6fr_1fr_1.2fr_auto] items-center gap-3 border-t border-white/[.08] py-3 text-sm max-[640px]:grid-cols-2"
+                >
+                  <span>{name}</span>
+                  <span className="text-zinc-500">
+                    {["Design", "Development", "Review"][index]}
+                  </span>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <span
+                      className="block h-full rounded-full bg-orange-400"
+                      style={{ width: `${[68, 41, 88][index]}%` }}
+                    />
+                  </div>
+                  <span className="rounded-full border border-white/20 px-3 py-1 text-xs max-[640px]:col-span-2">
+                    {["On track", "⚠ At risk", "Needs client input"][index]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={`${baseCard} min-h-[230px]`}>
+          <CardContent className="p-0">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-medium">Today focus</CardTitle>
+              <span className="font-mono text-sm text-zinc-500">04 nov</span>
+            </div>
+            <div className="mt-4 flex flex-col gap-2">
+              <div className="flex h-12 items-center gap-3 rounded-full border border-violet-200/20 bg-violet-200/15 px-4 text-sm">
+                <span className="grid size-6 place-items-center rounded-full bg-violet-200 text-black">
+                  <Check size={13} />
+                </span>
+                Reply to new inquiry
+              </div>
+              <div className="flex h-12 items-center gap-3 rounded-full border border-white/10 bg-white/[.07] px-4 text-sm">
+                <span className="size-6 rounded-full border border-zinc-500" />
+                Send Atlas proposal
+              </div>
+              <div className="flex h-12 items-center gap-3 rounded-full border border-white/10 bg-white/[.07] px-4 text-sm">
+                <span className="size-6 rounded-full border border-zinc-500" />
+                Approve Lumen cut
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={`${baseCard} min-h-[230px] bg-white/[.1]`}>
+          <CardContent className="flex h-full flex-col justify-between p-0">
+            <div className="flex items-center justify-between">
+              <MetricIcon>
+                <Sparkles size={18} />
+              </MetricIcon>
+              <span className="text-sm text-zinc-400">Insight</span>
+            </div>
+            <p className="text-[26px] font-light leading-[1.25] tracking-[-.01em]">
+              Since yesterday, 3 new inquiries arrived and 1 proposal is waiting
+              on a reply.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
