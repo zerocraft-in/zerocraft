@@ -1,22 +1,23 @@
-# CMS documentation
+# Zerocraft CMS documentation
 
-This folder contains current operating and architecture documentation for the ZeroCraft CMS. Historical audit and planning snapshots are excluded from the active documentation set.
+The CMS is the authenticated administration surface for products, orders, inventory, customers, content, sales channels, settings and operational health.
 
-## Active references
+## Guides
 
-- [Architecture](./ARCHITECTURE.md)
-- [Multi-store setup](./MULTI_STORE_SETUP.md)
-- [Operations runbook](./OPERATIONS_RUNBOOK.md)
-- [Release checklist](./RELEASE_CHECKLIST.md)
-- [Security deployment](../../SECURITY_DEPLOYMENT.md)
-
-## Evidence and validation
-
-The active references describe the current source tree, Supabase migrations, deployment configuration, and release/security verification scripts.
+| Guide | Scope |
+| --- | --- |
+| [Architecture](./architecture.md) | App Router shell, settings routes and route boundaries |
+| [Product scope](./product-scope.md) | Implemented CMS surfaces and explicit future work |
+| [Content workspaces](./content-workspaces.md) | Metaobjects, files, menus and articles |
+| [Multi-store setup](./multi-store-setup.md) | Host resolution, isolated Supabase projects and onboarding |
+| [Database schema](./database-schema.md) | Schema source of truth and safe inspection workflow |
+| [Cloudflare R2](./cloudflare-r2-setup.md) | Public media migration and protected file boundaries |
+| [Operations runbook](./operations-runbook.md) | Backups, monitoring and incident response |
+| [Release checklist](./release-checklist.md) | Quality gate and production smoke checks |
 
 ## Status vocabulary
 
-- **Implemented**: present in source and wired to a route or component.
-- **Partial**: some source support exists, but a dependency, migration, or workflow is incomplete.
-- **Blocked**: validation or operation cannot complete with the current repository state.
-- **Risk**: behavior that requires follow-up before treating the capability as production-ready.
+- **Implemented** — present in source, routed and covered by the relevant checks.
+- **Partial** — code exists but an integration, migration or workflow is incomplete.
+- **Planned** — documented future work with no claim of current availability.
+- **Risk** — requires explicit review before production use.

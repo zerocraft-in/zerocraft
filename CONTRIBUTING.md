@@ -10,7 +10,7 @@ Read the [README](./README.md), the nearest `AGENTS.md`, and any operational gui
 
 - Work on a branch with a descriptive name, such as `docs/brand-refresh` or `fix/store-cart`.
 - Follow the surrounding application patterns and reuse existing components.
-- Use **Zerocraft Studio**, **Zerocraft Store** and **Zerocraft CMS** consistently in new prose. See the [brand guide](./docs/BRAND.md).
+- Use **Zerocraft Studio**, **Zerocraft Store** and **Zerocraft CMS** consistently in new prose. See the [brand kit](./brand-kit/README.md).
 - Use the original brand assets. Preserve third-party and client ownership.
 - Keep credentials, customer data and production exports out of commits, issues and screenshots.
 - Review database migrations separately. Do not run seed, reset or migration commands against production as part of ordinary setup.
