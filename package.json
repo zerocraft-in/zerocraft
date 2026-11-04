@@ -39,10 +39,7 @@
     "smoke:public": "node scripts/release/smoke-public.mjs",
     "verify:seed": "node scripts/verify-seed-commerce.mjs",
     "seed": "npm run seed:commerce",
-    "seed:commerce": "node scripts/seed-commerce.mjs",
-    "seed:tamil-posters": "node --env-file=.env.local scripts/seed-tamil-poster-products.mjs",
-    "seed:apparel": "node --env-file=.env.local scripts/replace-demo-with-apparel.mjs",
-    "seed:storefront-bundles": "node --env-file=.env.local scripts/seed-storefront-bundles.mjs"
+    "seed:commerce": "node scripts/seed-commerce.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

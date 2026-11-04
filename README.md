@@ -4,10 +4,9 @@ A shared ecommerce storefront and store-admin application, with an isolated Supa
 
 - `apps/store`: catalog, cart, customer accounts and checkout (port 3001).
 - `apps/cms`: products, orders, inventory, customers, content and store administration (port 3002).
+- `apps/studio`: internal portfolio and CRM workspace (port 3003).
 - `packages/ui`: shared ZeroCraft UI components.
 - `packages/supabase`: host-based project selection, auth clients, schema and migrations.
-
-The creative Studio application and CRM/portfolio features have been removed.
 
 ## Development
 

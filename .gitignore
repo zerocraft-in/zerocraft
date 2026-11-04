@@ -13,7 +13,6 @@
 # testing
 /coverage
 /test-results/
-/.playwright-browsers/
 
 # next.js
 **/.next/
