@@ -57,7 +57,6 @@ function Bars() {
 export default function StudioAnalyticsPage() {
   return (
     <div className="relative -mx-8 -mb-10 min-h-[calc(100vh-93px)] overflow-hidden px-8 pb-10 pt-5 max-md:-mx-4 max-md:px-4">
-   
       <div className="relative z-10 flex flex-wrap items-center gap-2">
         <Link
           href="/studio"

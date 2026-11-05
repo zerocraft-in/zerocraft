@@ -42,10 +42,7 @@ const glass =
 export default function StudioContentPage() {
   return (
     <div className="relative -mx-8 -mb-10 flex min-h-[calc(100vh-32px)] flex-wrap gap-0 overflow-hidden p-4 max-md:-mx-4 max-md:p-3">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-[24%] top-[-180px] size-[620px] rounded-full bg-[radial-gradient(circle_at_50%_50%,#ff6a2b,#b3261e_55%,transparent_72%)] opacity-30 blur-[100px]"
-      />
+
       <Card
         className={`${glass} relative z-10 flex min-h-[calc(100vh-32px)] w-[300px] shrink-0 flex-col gap-4 rounded-[36px] p-5 max-[1180px]:min-h-0 max-[1180px]:w-full max-[1180px]:flex-row max-[760px]:flex-col`}
       >

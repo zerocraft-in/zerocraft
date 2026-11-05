@@ -176,15 +176,8 @@ export default function InquiriesDashboard() {
   const [view, setView] = useState<PipelineView>("canvas");
 
   return (
-    <div className="relative -mx-8 -mb-10 min-h-[calc(100vh-32px)] overflow-hidden bg-[radial-gradient(rgba(255,255,255,.12)_1px,transparent_1px)] bg-[size:24px_24px] px-7 pb-6 pt-5 max-md:-mx-4 max-md:px-4">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-[38%] top-[120px] size-[620px] rounded-full bg-[radial-gradient(circle_at_50%_50%,#ff6a2b,#b3261e_55%,transparent_72%)] opacity-25 blur-[100px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,transparent_25%,rgba(5,5,6,.72)_100%)]"
-      />
+    <div className="relative -mx-8 -mb-10 min-h-[calc(100vh-32px)] overflow-hidden px-7 pb-6 pt-5 max-md:-mx-4 max-md:px-4">
+
       <div className="relative z-10 flex flex-wrap items-center gap-2">
         <Link
           href="/studio"
@@ -383,7 +376,12 @@ export default function InquiriesDashboard() {
               <CardContent className="p-0">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-medium">Atlas product site</h2>
+                    <Link
+                      href="/studio/inquiries/atlas-product-site"
+                      className="text-xl font-medium hover:text-orange-300"
+                    >
+                      Atlas product site
+                    </Link>
                     <p className="mt-1 text-sm text-zinc-400">
                       Atlas Labs · via website form
                     </p>

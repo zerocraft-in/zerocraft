@@ -88,6 +88,7 @@ export default async function StudioDashboard() {
   const visibleProjects = projects.slice(0, 3);
   return (
     <div className="ml-18">
+
       <StudioHeader />
       <section>
         <h1 className="text-[clamp(44px,5vw,72px)] font-extralight leading-none tracking-[-.045em]">

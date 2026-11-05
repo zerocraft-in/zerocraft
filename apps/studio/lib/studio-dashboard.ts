@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase";
+import { createStudioSupabaseServerClient } from "@/lib/studio-supabase-server";
 
 export type LeadStage = "new" | "contacted" | "qualified" | "proposal" | "won" | "lost";
 export type ProjectStatus = "planning" | "active" | "review" | "completed" | "on_hold" | "cancelled";
@@ -55,7 +55,7 @@ function money(value: number | null | undefined) {
 
 export async function getStudioDashboardData(): Promise<StudioDashboardData> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = await createStudioSupabaseServerClient();
     // The store-only transition renamed the original studio tables to commerce_*.
     // Read the current studio names first, then remain compatible with that deployed schema.
     const readWithCompatibility = async (studioTable: string, commerceTable: string, columns: string, limit: number) => {

@@ -1,11 +1,14 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { StudioRail } from "./studio-rail";
 import "./tailwind.css";
+import { DashboardLayout } from "./studio-layout";
+import { createStudioSupabaseServerClient } from "@/lib/studio-supabase-server";
 
 export const metadata: Metadata = {
-  title: "ZeroCraft Studio — Overview",
-  description: "ZeroCraft agency operations workspace.",
+  title: "Zerocraft Studio — Overview",
+  description: "Zerocraft agency operations workspace.",
 };
 const themeStyle = {
   "--background": "#0a0a0b",
@@ -32,26 +35,29 @@ export default function StudioRootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  return <StudioAuthGate>{children}</StudioAuthGate>;
+}
+
+async function StudioAuthGate({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = await createStudioSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/sign-in?next=/studio");
+  const { data: isMember, error: membershipError } = await supabase.rpc("is_member");
+  if (membershipError || isMember !== true) {
+    redirect("/sign-in?error=Studio%20access%20requires%20an%20active%20workspace%20membership.");
+  }
+
   return (
     <html lang="en" className="dark">
       <body
         style={themeStyle}
         className="min-h-screen bg-transparent text-foreground antialiased selection:bg-orange-300 selection:text-black"
       >
-        <div className="relative flex min-h-screen overflow-hidden bg-[#080809]">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-32 -top-40 size-[680px] rounded-full bg-[radial-gradient(circle_at_40%_40%,#ff6a2b,#b3261e_55%,transparent_72%)] opacity-40 blur-[80px]"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none fixed inset-0 z-20 bg-[url('/noise.svg')] opacity-[.035] mix-blend-screen"
-          />
-          <StudioRail />
-          <main className="relative z-10  min-h-screen min-w-0 flex-1 px-8 max-md:px-4">
-            {children}
-          </main>
-        </div>
+        <DashboardLayout>{children}</DashboardLayout>
       </body>
     </html>
   );
