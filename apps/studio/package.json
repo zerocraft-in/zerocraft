@@ -2,6 +2,7 @@
   "name": "@zerocraft/studio",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --port 3003",
     "build": "node ../../scripts/next-windows-build.cjs build --webpack",
@@ -18,7 +19,7 @@
     "next": "^16.1.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-dropzone": "^20.2.0",
     "tailwind-merge": "^3.7.0"
   }
 }
-

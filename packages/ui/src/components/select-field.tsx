@@ -15,6 +15,7 @@ export type SelectFieldOption = {
 };
 
 type SelectFieldProps = {
+  id?: string;
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
@@ -26,6 +27,7 @@ type SelectFieldProps = {
 };
 
 export function SelectField({
+  id,
   value,
     onValueChange,
     defaultValue,
@@ -38,11 +40,17 @@ export function SelectField({
   return (
     <Select value={value ?? defaultValue} onValueChange={(next) => onValueChange?.(next ?? "")}>
       <SelectTrigger
+        id={id}
         className={cn("w-full", className)}
         disabled={disabled}
         aria-label={ariaLabel}
       >
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder}>
+          {(value: string | null) => {
+            const selected = options.find((option) => option.value === value);
+            return selected?.label ?? (value ? String(value) : placeholder);
+          }}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (

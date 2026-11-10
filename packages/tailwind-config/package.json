@@ -2,6 +2,7 @@
   "name": "@zerocraft/tailwind-config",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "exports": {
     ".": "./tailwind.config.ts",
     "./tailwind.config": "./tailwind.config.ts"

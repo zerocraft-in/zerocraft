@@ -1,196 +1,36 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  CalendarDays,
-  Check,
-  CircleDot,
-  Mail,
-} from "lucide-react";
-import { Badge } from "@zerocraft/ui/components/badge";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Check, Pencil, Save, Send, Trash2, X } from "lucide-react";
 import { Button } from "@zerocraft/ui/components/button";
-import { Card, CardContent } from "@zerocraft/ui/components/card";
+import { StudioLoading } from "@/components/studio-loading";
+import { studioToast } from "@/lib/studio-toast";
 
-const glass =
-  "border-white/[.1] bg-[rgba(28,28,32,.82)] shadow-none backdrop-blur-2xl";
+type Lead = { id: string; name: string; email: string; phone: string; company: string; stage: string; source: string; service_interest: string; next_action: string; next_action_at: string | null; notes: string; updated_at: string };
+type Activity = { id: string; activity_type: string; detail: string; created_at: string };
+const stages = ["new", "contacted", "qualified", "proposal", "won", "lost"] as const;
+const labels: Record<string, string> = { new: "New", contacted: "Contacted", qualified: "Qualified", proposal: "Proposal", won: "Won", lost: "Lost" };
+const activityTypes = ["note", "call", "email", "whatsapp", "appointment"] as const;
 
-const stages = ["New", "Contacted", "Qualified", "Proposal", "Negotiation", "Won"];
+function LeadForm({ lead, onSaved, onCancel }: { lead: Lead; onSaved: (lead: Lead) => void; onCancel: () => void }) {
+  const [values, setValues] = useState({ name: lead.name, email: lead.email, company: lead.company, phone: lead.phone, service_interest: lead.service_interest, source: lead.source, next_action: lead.next_action, next_action_at: lead.next_action_at?.slice(0, 10) ?? "", notes: lead.notes });
+  const [saving, setSaving] = useState(false); const [error, setError] = useState("");
+  function update(key: keyof typeof values, value: string) { setValues((current) => ({ ...current, [key]: value })); }
+  async function save(event: React.FormEvent) { event.preventDefault(); setSaving(true); setError(""); try { const response = await fetch(`/api/studio/leads/${lead.id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(values) }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error ?? "Could not save lead."); onSaved(payload.lead); studioToast.success("Lead updated", payload.lead.name); } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not save lead."); } finally { setSaving(false); } }
+  return <form onSubmit={save} className="mt-5 rounded-[28px] border border-orange-300/30 bg-orange-300/[.06] p-5"><div className="grid gap-4 md:grid-cols-2">{(["name", "email", "company", "phone", "service_interest", "source", "next_action", "next_action_at"] as const).map((key) => <label key={key} className="text-sm text-zinc-400">{key === "next_action_at" ? "Follow-up date" : key.replaceAll("_", " ")}<input required={key === "name" || key === "email"} type={key === "email" ? "email" : key === "next_action_at" ? "date" : "text"} value={values[key]} onChange={(event) => update(key, event.target.value)} className="mt-1.5 h-10 w-full rounded-xl border border-white/[.14] bg-white/[.06] px-3 text-white outline-none focus:border-orange-400" /></label>)}</div><label className="mt-4 block text-sm text-zinc-400">Notes<textarea value={values.notes} onChange={(event) => update("notes", event.target.value)} className="mt-1.5 min-h-24 w-full rounded-xl border border-white/[.14] bg-white/[.06] p-3 text-white outline-none focus:border-orange-400" /></label>{error && <p role="alert" className="mt-4 rounded-xl bg-red-300/10 p-3 text-sm text-red-100">{error}</p>}<div className="mt-4 flex justify-end gap-2"><Button type="button" variant="outline" className="rounded-full" onClick={onCancel}><X />Cancel</Button><Button disabled={saving} type="submit" className="rounded-full"><Save />{saving ? "Saving…" : "Save changes"}</Button></div></form>;
+}
 
-const activity = [
-  ["Proposal drafted", "Nov 3, waiting on review", true],
-  ["Discovery call booked", "Oct 30, Anna K.", false],
-  ["Qualified after budget check", "Oct 29, Anna K.", false],
-  ["Inquiry received", "Oct 28, website form", false],
-] as const;
-
-export default function LeadDetailPage() {
-  const [owner, setOwner] = useState("Anna K.");
-  const [followUp, setFollowUp] = useState("2026-11-06");
-  const [note, setNote] = useState("");
-  const [notice, setNotice] = useState("");
-
-  function showNotice(message: string) {
-    setNotice(message);
-    window.setTimeout(() => setNotice(""), 2600);
-  }
-
-  return (
-    <div className="relative -mx-8 -mb-10 min-h-[calc(100vh-32px)] overflow-visible px-7 pb-8 pt-5 max-md:-mx-4 max-md:px-4">
-      <div className="relative z-10 mb-5 flex items-center gap-2 text-[15px] text-zinc-400">
-        <Link href="/studio/inquiries" className="inline-flex items-center gap-1.5 hover:text-white">
-          <ArrowLeft className="size-4" />
-          Pipeline
-        </Link>
-        <span className="text-zinc-700">/</span>
-        <span className="text-white">Atlas product site</span>
-      </div>
-
-      <div className="relative z-10 grid min-w-0 grid-cols-[minmax(0,1fr)_330px] gap-5 max-[1180px]:grid-cols-1">
-        <main className="min-w-0">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="text-[clamp(40px,5vw,62px)] font-extralight leading-none tracking-[-.045em]">
-                Atlas product site
-              </h1>
-              <p className="mt-3 text-base text-zinc-400">
-                Atlas Labs <span className="text-zinc-600">·</span> via website form <span className="text-zinc-600">·</span> received Oct 28
-              </p>
-            </div>
-            <Badge variant="outline" className="h-7 rounded-full border-orange-500 px-3 text-orange-300">
-              Proposal
-            </Badge>
-          </div>
-
-          <Card className={`${glass} mt-7 rounded-[32px] p-5`}>
-            <CardContent className="p-0">
-              <div className="flex items-center" aria-label="Lead stage" role="list">
-                {stages.map((stage, index) => (
-                  <div key={stage} className="flex flex-1 items-center last:flex-none" role="listitem">
-                    <span className={`grid size-3 shrink-0 place-items-center rounded-full ${stage === "Proposal" ? "size-5 bg-orange-500 shadow-[0_0_0_4px_rgba(255,106,43,.22)]" : "bg-white"}`}>
-                      {stage === "Proposal" && <span className="size-1.5 rounded-full bg-white" />}
-                    </span>
-                    {index < stages.length - 1 && <span className={`h-px flex-1 ${index < 3 ? "bg-white/45" : "bg-white/20"}`} />}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3 flex justify-between gap-2 text-xs text-zinc-500 max-[620px]:text-[10px]">
-                {stages.map((stage) => <span key={stage} className={stage === "Proposal" ? "text-orange-300" : ""}>{stage}</span>)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="mt-4 grid grid-cols-2 gap-4 max-[760px]:grid-cols-1">
-            <Card className={`${glass} rounded-[32px] p-5`}>
-              <CardContent className="p-0">
-                <h2 className="text-lg font-medium">Details</h2>
-                <div className="mt-3">
-                  {[
-                    ["Contact", "Maya R."],
-                    ["Company", "Atlas Labs"],
-                    ["Service", "Website design and build"],
-                    ["Budget", "$48K"],
-                    ["Timeline", "8 weeks"],
-                    ["Source", "Website form"],
-                  ].map(([label, value]) => (
-                    <div key={label} className="flex justify-between gap-3 border-t border-white/[.08] py-2.5 text-sm">
-                      <span className="text-zinc-500">{label}</span>
-                      <strong className="text-right font-medium">{value}</strong>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className={`${glass} rounded-[32px] p-5`}>
-              <CardContent className="p-0">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-medium">Activity</h2>
-                  <span className="font-mono text-sm text-zinc-500">04 nov</span>
-                </div>
-                <div className="mt-3">
-                  {activity.map(([title, detail, current]) => (
-                    <div key={title} className="flex gap-3 py-2 text-sm">
-                      <span className={`mt-1.5 size-2.5 shrink-0 rounded-full ${current ? "bg-orange-500" : "bg-white"}`} />
-                      <span>{title}<small className="mt-1 block text-xs text-zinc-500">{detail}</small></span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className={`${glass} mt-4 rounded-[32px] p-5`}>
-            <CardContent className="p-0">
-              <h2 className="text-lg font-medium">Notes</h2>
-              <label htmlFor="lead-note" className="sr-only">Add a note</label>
-              <textarea
-                id="lead-note"
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                placeholder="Add a note. Use @ to mention a teammate."
-                className="mt-3 min-h-[110px] w-full resize-none rounded-[20px] border border-white/[.14] bg-white/[.05] px-4 py-3 text-sm outline-none placeholder:text-zinc-500 focus-visible:ring-2 focus-visible:ring-orange-300/50"
-              />
-              <div className="mt-3 flex justify-end">
-                <Button className="rounded-full" onClick={() => { setNote(""); showNotice("Note added"); }} disabled={!note.trim()}>
-                  Add note
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-
-        <aside className={`${glass} sticky top-4 self-start flex max-h-[calc(100vh-32px)] w-full flex-col gap-5 overflow-y-auto rounded-[40px] p-6 max-[1180px]:static max-[1180px]:max-h-none`} aria-label="Lead actions">
-          <div>
-            <div className="text-sm text-zinc-400">Lead actions</div>
-            <h2 className="mt-1 text-[28px] font-light leading-tight">Proposal review</h2>
-          </div>
-
-          <div>
-            <label htmlFor="lead-owner" className="mb-1.5 block text-[13px] text-zinc-400">Owner</label>
-            <div className="flex items-center gap-2">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full border border-white/20 bg-[#3a3a40] text-xs font-semibold">AK</span>
-              <select id="lead-owner" value={owner} onChange={(event) => setOwner(event.target.value)} className="h-11 w-full rounded-[18px] border border-white/[.14] bg-white/[.05] px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-orange-300/50">
-                <option>Anna K.</option><option>Raj M.</option><option>Sara L.</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="follow-up" className="mb-1.5 block text-[13px] text-zinc-400">Follow-up reminder</label>
-            <div className="relative">
-              <CalendarDays className="pointer-events-none absolute left-3 top-3 size-4 text-zinc-500" />
-              <input id="follow-up" type="date" value={followUp} onChange={(event) => setFollowUp(event.target.value)} className="h-11 w-full rounded-[18px] border border-white/[.14] bg-white/[.05] px-3 pl-10 text-sm outline-none focus-visible:ring-2 focus-visible:ring-orange-300/50" />
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-2 text-[13px] text-zinc-400">Proposal status</div>
-            <Badge variant="outline" className="rounded-full border-violet-300 bg-violet-300/15 text-violet-100">Drafted, in review</Badge>
-          </div>
-
-          <div className="mt-auto space-y-2">
-            <Button className="w-full rounded-full" onClick={() => showNotice("Project conversion started")}>
-              <Check /> Convert to project <ArrowUpRight />
-            </Button>
-            <Button variant="outline" className="w-full rounded-full border-white/15" onClick={() => showNotice("Reply composer opened")}>
-              <Mail /> Send email reply
-            </Button>
-            <Button variant="outline" className="w-full rounded-full border-white/15 text-zinc-400" onClick={() => showNotice("Lead marked as lost")}>
-              Mark as lost
-            </Button>
-          </div>
-        </aside>
-      </div>
-
-      {notice && (
-        <div role="status" className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/15 bg-[#1e1412]/95 px-4 py-2.5 text-sm shadow-2xl backdrop-blur-xl">
-          <CircleDot className="size-4 text-orange-400" />
-          {notice}
-        </div>
-      )}
-    </div>
-  );
+export default function LeadDetailPage({ params }: { params: Promise<{ lead: string }> }) {
+  const [lead, setLead] = useState<Lead | null>(null); const [activities, setActivities] = useState<Activity[]>([]); const [note, setNote] = useState(""); const [activityType, setActivityType] = useState<(typeof activityTypes)[number]>("note"); const [error, setError] = useState(""); const [busy, setBusy] = useState(false); const [editing, setEditing] = useState(false); const [loading, setLoading] = useState(true);
+  async function load(id: string) { setLoading(true); setError(""); try { const response = await fetch(`/api/studio/leads/${id}`, { cache: "no-store" }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error); setLead(payload.lead); setActivities(payload.activities ?? []); } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not load lead."); } finally { setLoading(false); } }
+  useEffect(() => { void params.then(({ lead: id }) => load(id)); }, [params]);
+  async function changeStage(stage: string) { if (!lead || stage === lead.stage) return; setBusy(true); setError(""); try { const response = await fetch(`/api/studio/leads/${lead.id}/stage`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ stage }) }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error ?? "Could not update stage."); setLead(payload.lead); studioToast.success("Lead stage updated", labels[stage] ?? stage); await load(lead.id); } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not update stage."); } finally { setBusy(false); } }
+  async function addActivity() { if (!lead || !note.trim()) return; setBusy(true); setError(""); try { const response = await fetch(`/api/studio/leads/${lead.id}/activities`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ detail: note, activity_type: activityType }) }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error ?? "Could not add activity."); setActivities((current) => [payload.activity, ...current]); setNote(""); studioToast.success("Activity added", activityType); } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not add activity."); } finally { setBusy(false); } }
+  async function convert() { if (!lead || !window.confirm("Convert this lead into a project?")) return; setBusy(true); setError(""); try { const response = await fetch(`/api/studio/leads/${lead.id}/convert-to-project`, { method: "POST" }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error ?? "Could not convert lead."); window.location.href = `/studio/projects?project=${encodeURIComponent(payload.projectId)}`; } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not convert lead."); setBusy(false); } }
+  async function remove() { if (!lead || !window.confirm(`Delete ${lead.name}? This cannot be undone.`)) return; setBusy(true); try { const response = await fetch(`/api/studio/leads/${lead.id}`, { method: "DELETE" }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error ?? "Could not delete lead."); studioToast.success("Lead deleted", lead.name); window.location.href = "/studio/inquiries"; } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not delete lead."); setBusy(false); } }
+  if (loading) return <main className="mx-auto max-w-4xl px-6 py-10"><StudioLoading label="Loading lead…" className="min-h-32" /></main>;
+  if (error && !lead) return <main className="mx-auto max-w-4xl px-6 py-10"><p role="alert" className="rounded-2xl bg-red-300/10 p-4 text-red-100">{error}</p><Link href="/studio/inquiries" className="mt-4 inline-block text-sm text-zinc-400">Back to pipeline</Link></main>;
+  if (!lead) return null;
+  return <main className="mx-auto max-w-5xl px-6 py-8"><div className="flex items-center justify-between"><Link href="/studio/inquiries" className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="mr-1 inline size-4" />Pipeline</Link><Button variant="outline" size="sm" className="rounded-full border-red-300/30 text-red-200" disabled={busy} onClick={() => void remove()}><Trash2 />Delete</Button></div><div className="mt-8 flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm text-zinc-500">{lead.company || "Independent lead"} · {lead.source}</p><h1 className="mt-2 text-5xl font-extralight tracking-[-.04em]">{lead.name}</h1><p className="mt-2 text-zinc-400">{lead.email}{lead.phone && ` · ${lead.phone}`}</p></div><div className="flex flex-wrap gap-2">{stages.map((stage) => <Button key={stage} disabled={busy} variant={lead.stage === stage ? "default" : "outline"} size="sm" className="rounded-full border-white/15" onClick={() => void changeStage(stage)}>{lead.stage === stage && <Check />}{labels[stage]}</Button>)}</div></div>{error && <p role="alert" className="mt-5 rounded-xl bg-red-300/10 p-3 text-sm text-red-100">{error}</p>}{editing ? <LeadForm lead={lead} onSaved={(next) => { setLead(next); setEditing(false); }} onCancel={() => setEditing(false)} /> : <Button variant="outline" className="mt-5 rounded-full" onClick={() => setEditing(true)}><Pencil />Edit lead</Button>}<div className="mt-8 grid gap-5 lg:grid-cols-[1fr_320px]"><section className="rounded-[30px] border border-white/[.1] bg-white/[.04] p-5"><h2 className="text-xl font-light">Activity</h2><div className="mt-5 flex gap-2"><div className="flex min-w-0 flex-1 flex-col gap-2"><select value={activityType} onChange={(event) => setActivityType(event.target.value as (typeof activityTypes)[number])} className="h-9 w-fit rounded-xl border border-white/[.14] bg-[#252528] px-3 text-xs text-white"><option value="note">Internal note</option><option value="call">Call</option><option value="email">Email</option><option value="whatsapp">WhatsApp</option><option value="appointment">Appointment</option></select><textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Add activity detail…" className="min-h-20 w-full rounded-2xl border border-white/[.14] bg-white/[.06] p-3 text-sm text-white outline-none focus:border-orange-400" /></div><Button disabled={busy || !note.trim()} onClick={() => void addActivity()} aria-label="Add activity"><Send /></Button></div><div className="mt-6 space-y-4">{activities.length === 0 ? <p className="text-sm text-zinc-500">No activity yet.</p> : activities.map((activity) => <div key={activity.id} className="border-l border-orange-400/50 pl-4"><p className="text-sm text-zinc-300">{activity.detail}</p><p className="mt-1 text-xs text-zinc-600">{activity.activity_type} · {new Date(activity.created_at).toLocaleString()}</p></div>)}</div></section><aside className="rounded-[30px] border border-white/[.1] bg-white/[.04] p-5"><h2 className="text-xl font-light">Lead details</h2>{[["Service", lead.service_interest || "—"], ["Next action", lead.next_action || "—"], ["Follow-up", lead.next_action_at ? new Date(lead.next_action_at).toLocaleDateString() : "—"], ["Updated", new Date(lead.updated_at).toLocaleString()]].map(([label, value]) => <div key={label} className="border-b border-white/[.08] py-3 text-sm"><span className="block text-zinc-500">{label}</span><strong className="mt-1 block font-normal text-zinc-200">{value}</strong></div>)}<Button disabled={busy || lead.stage === "won"} className="mt-5 w-full rounded-full" onClick={() => void convert()}>{lead.stage === "won" ? "Converted" : "Convert to project"}</Button></aside></div></main>;
 }

@@ -1,7 +1,7 @@
 -- Studio OS lead pipeline and project delivery foundation.
 create table if not exists public.studio_leads (
   id uuid primary key default gen_random_uuid(),
-  client_id uuid references public.clients(id) on delete set null,
+  client_id uuid,
   name text not null check (length(trim(name)) between 1 and 160),
   email text not null,
   phone text not null default '',
@@ -36,8 +36,8 @@ create index if not exists studio_lead_activities_lead_idx on public.studio_lead
 
 create table if not exists public.studio_projects (
   id uuid primary key default gen_random_uuid(),
-  client_id uuid references public.clients(id) on delete set null,
-  work_id uuid references public.works(id) on delete set null,
+  client_id uuid,
+  work_id uuid,
   name text not null check (length(trim(name)) between 1 and 180),
   status text not null default 'planning' check (status in ('planning','active','review','completed','on_hold','cancelled')),
   description text not null default '',
@@ -62,6 +62,25 @@ create table if not exists public.studio_project_milestones (
 );
 
 create index if not exists studio_project_milestones_project_idx on public.studio_project_milestones(project_id, position);
+
+do $$
+begin
+  if to_regclass('public.clients') is not null then
+    if not exists (select 1 from pg_constraint where conname = 'studio_leads_client_id_fkey') then
+      alter table public.studio_leads add constraint studio_leads_client_id_fkey
+        foreign key (client_id) references public.clients(id) on delete set null;
+    end if;
+    if not exists (select 1 from pg_constraint where conname = 'studio_projects_client_id_fkey') then
+      alter table public.studio_projects add constraint studio_projects_client_id_fkey
+        foreign key (client_id) references public.clients(id) on delete set null;
+    end if;
+  end if;
+  if to_regclass('public.works') is not null
+     and not exists (select 1 from pg_constraint where conname = 'studio_projects_work_id_fkey') then
+    alter table public.studio_projects add constraint studio_projects_work_id_fkey
+      foreign key (work_id) references public.works(id) on delete set null;
+  end if;
+end $$;
 
 alter table public.studio_leads enable row level security;
 alter table public.studio_lead_activities enable row level security;

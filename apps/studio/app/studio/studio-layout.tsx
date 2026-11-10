@@ -3,22 +3,17 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { StudioRail } from "./studio-rail";
+import { useStudioAppearance } from "@/components/providers/studio-appearance-provider";
+import { Toaster } from "@zerocraft/ui/components/toast";
 
 const pageGradients = {
-  overview:
-    "bg-[radial-gradient(circle_at_75%_0%,rgba(255,106,43,.36),transparent_38%),radial-gradient(circle_at_20%_100%,rgba(120,35,25,.18),transparent_42%)]",
-  projects:
-    "bg-[radial-gradient(circle_at_82%_4%,rgba(255,106,43,.38),transparent_38%),radial-gradient(circle_at_30%_100%,rgba(120,35,25,.16),transparent_45%)]",
-  inquiries:
-    "bg-[radial-gradient(circle_at_48%_32%,rgba(255,106,43,.34),transparent_36%),radial-gradient(circle_at_90%_100%,rgba(120,35,25,.16),transparent_45%)]",
-  media:
-    "bg-[radial-gradient(circle_at_88%_84%,rgba(255,106,43,.36),transparent_38%),radial-gradient(circle_at_26%_0%,rgba(120,35,25,.18),transparent_42%)]",
-  content:
-    "bg-[radial-gradient(circle_at_34%_0%,rgba(255,106,43,.34),transparent_38%),radial-gradient(circle_at_92%_72%,rgba(120,35,25,.18),transparent_44%)]",
-  analytics:
-    "bg-[radial-gradient(circle_at_28%_0%,rgba(255,106,43,.38),transparent_38%),radial-gradient(circle_at_88%_100%,rgba(120,35,25,.18),transparent_46%)]",
-  settings:
-    "bg-[radial-gradient(circle_at_20%_96%,rgba(255,106,43,.3),transparent_40%),radial-gradient(circle_at_82%_0%,rgba(120,35,25,.18),transparent_44%)]",
+  overview: [[75, 0, 36], [20, 100, 18]],
+  projects: [[82, 4, 38], [30, 100, 16]],
+  inquiries: [[48, 32, 34], [90, 100, 16]],
+  media: [[88, 84, 36], [26, 0, 18]],
+  content: [[34, 0, 34], [92, 72, 18]],
+  analytics: [[28, 0, 38], [88, 100, 18]],
+  settings: [[20, 96, 30], [82, 0, 18]],
 } as const;
 
 const pageTitles = {
@@ -37,6 +32,8 @@ export function DashboardLayout({
   children: React.ReactNode;
 }): React.JSX.Element {
   const pathname = usePathname();
+  const { appearance } = useStudioAppearance();
+
   const showDotPattern =
     pathname.startsWith("/studio/inquiries") ||
     pathname.startsWith("/studio/projects");
@@ -65,41 +62,59 @@ export function DashboardLayout({
             ? pageGradients.analytics
             : pathname.startsWith("/studio/settings")
               ? pageGradients.settings
-              : pageGradients.overview;
+      : pageGradients.overview;
+  const backgroundImage = `radial-gradient(circle at ${pageGradient[0][0]}% ${pageGradient[0][1]}%, color-mix(in srgb, var(--brand-accent) ${pageGradient[0][2]}%, transparent), transparent 40%), radial-gradient(circle at ${pageGradient[1][0]}% ${pageGradient[1][1]}%, color-mix(in srgb, var(--brand-accent) ${pageGradient[1][2]}%, transparent), transparent 46%)`;
 
   useEffect(() => {
-    document.title = `Zerocraft Studio — ${pageTitles[pageKey]}`;
-  }, [pageKey]);
+    const titlePrefix = appearance.name || "Zerocraft Studio";
+    document.title = `${titlePrefix} — ${pageTitles[pageKey]}`;
+  }, [pageKey, appearance.name]);
 
   return (
-    <div
-      className={`relative flex min-h-screen overflow-x-clip bg-[#080809] bg-cover bg-no-repeat ${pageGradient}`}
-    >
+    <Toaster >
+      <div className="relative flex min-h-screen overflow-x-clip bg-[var(--background)] text-foreground transition-colors duration-200">
+      {/* Viewport-fixed background gradient layer */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-no-repeat transition-all duration-300"
+        style={{ backgroundImage }}
+      />
       {showDotPattern && (
         <>
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(rgba(255,255,255,.2)_1px,transparent_1px)] bg-[size:24px_24px] opacity-70"
+            className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:24px_24px] opacity-70"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,transparent_28%,rgba(5,5,6,.78)_100%)]"
+            className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,transparent_28%,rgba(0,0,0,.45)_100%)] opacity-50 dark:opacity-80"
           />
         </>
       )}
-      {/* Background gradient */}
+      {/* Top-right ambient accent glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-32 -top-40 size-[680px] rounded-full bg-[radial-gradient(circle_at_40%_40%,#ff6a2b,#b3261e_55%,transparent_72%)] opacity-40 blur-[80px]"
+        className="pointer-events-none fixed -right-32 -top-40 size-[720px] rounded-full bg-[radial-gradient(circle_at_40%_40%,var(--brand-accent),transparent_72%)] opacity-25 blur-[100px] transition-all duration-300"
+      />
+      {/* Bottom ambient accent glow spanning the full width eliminating any bottom void */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-x-0 -bottom-24 h-[440px] bg-[radial-gradient(ellipse_100%_75%_at_50%_100%,color-mix(in_srgb,var(--brand-accent)_18%,transparent),transparent_75%)] opacity-70 blur-3xl transition-all duration-500"
+      />
+      {/* Bottom-left ambient accent glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed -left-32 -bottom-40 size-[620px] rounded-full bg-[radial-gradient(circle_at_50%_50%,var(--brand-accent),transparent_72%)] opacity-20 blur-[100px] transition-all duration-300"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-20 bg-[url('/noise.svg')] opacity-20 mix-blend-screen"
+        className="pointer-events-none fixed inset-0 z-20 bg-[url('/noise.svg')] opacity-15 mix-blend-overlay"
       />
       <StudioRail />
-      <main className="relative z-10  min-h-screen min-w-0 flex-1 px-8 max-md:px-4">
+      <main className="relative z-10 min-h-screen min-w-0 flex-1 px-8 pb-16 max-md:px-4 max-md:pb-12">
         {children}
       </main>
-    </div>
+      </div>
+    </Toaster>
   );
 }

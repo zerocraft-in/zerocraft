@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, CalendarDays, FileText, FolderKanban, LayoutDashboard, SearchIcon, Settings2, Users } from "lucide-react";
+import { Bell, CalendarDays, FileText, FolderKanban, LayoutDashboard, Plus, SearchIcon, Settings2, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@zerocraft/ui/components/button";
@@ -10,7 +10,9 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@zerocraft/ui/comp
 import { Kbd } from "@zerocraft/ui/components/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@zerocraft/ui/components/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList, CommandShortcut } from "@zerocraft/ui/components/command";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@zerocraft/ui/components/dropdown-menu";
 import { AccountMenu } from "./account-menu";
+import { useStudioAppearance } from "@/components/providers/studio-appearance-provider";
 
 const searchItems = [
   { title: "Overview", description: "Workspace dashboard", href: "/studio", icon: LayoutDashboard },
@@ -24,6 +26,7 @@ const searchItems = [
 export function StudioHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const { appearance } = useStudioAppearance();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const searchRef = React.useRef<HTMLInputElement>(null);
@@ -62,7 +65,9 @@ export function StudioHeader() {
 
   return (
     <header className="flex flex-wrap items-center gap-3 pt-5">
-      <Link href="/studio" className="text-[15px] text-zinc-400 hover:text-white">ZeroCraft Studio <span className="text-zinc-700">/</span> <span className="text-white">{currentPage}</span></Link>
+      <Link href="/studio" className="text-[15px] text-zinc-400 hover:text-white transition-colors">
+        {appearance.name || "Zerocraft Studio"} <span className="text-zinc-600 dark:text-zinc-700">/</span> <span className="text-foreground font-medium">{currentPage}</span>
+      </Link>
       <div className="flex-1" />
       <Popover modal={false} open={open} onOpenChange={(nextOpen) => { setOpen(nextOpen); if (!nextOpen) setQuery(""); }} onOpenChangeComplete={(nextOpen) => { if (nextOpen) searchRef.current?.focus(); }}>
         <PopoverTrigger nativeButton={false} render={<div aria-label="Search workspace" className="w-full max-w-[260px]" />}>
@@ -84,7 +89,16 @@ export function StudioHeader() {
           </Command>
         </PopoverContent>
       </Popover>
-      <Button className="h-11 rounded-full px-5"><span className="text-lg leading-none">+</span> New</Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button className="h-11 rounded-full px-5"><Plus size={16} />New</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={8} className="w-48 rounded-2xl border border-white/[.12] bg-[#202024]/95 p-1.5 text-zinc-100 backdrop-blur-2xl">
+          <DropdownMenuItem className="rounded-xl px-3 py-2.5" onClick={() => router.push("/studio/content?new=page")}>New content</DropdownMenuItem>
+          <DropdownMenuItem className="rounded-xl px-3 py-2.5" onClick={() => router.push("/studio/inquiries/new")}>New lead</DropdownMenuItem>
+          <DropdownMenuItem className="rounded-xl px-3 py-2.5" onClick={() => router.push("/studio/projects/new")}>New project</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <AccountMenu />
       <Button variant="ghost" size="icon-sm" className="text-zinc-500 sm:hidden" aria-label="Open calendar"><CalendarDays /></Button>
       <Button variant="ghost" size="icon-sm" className="text-zinc-500 sm:hidden" aria-label="Notifications"><Bell /></Button>

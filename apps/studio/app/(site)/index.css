@@ -408,6 +408,13 @@
     filter 0.3s ease;
 }
 
+.navbar__logo-image {
+  width: 2.125rem;
+  height: 2.125rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .navbar__logo:hover .navbar__logo-icon {
   transform: rotate(-6deg) scale(1.08);
   filter: drop-shadow(0 0 12px var(--zc-accent));
