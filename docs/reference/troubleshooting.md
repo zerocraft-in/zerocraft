@@ -16,9 +16,10 @@
 
 | Symptom | Cause / fix |
 | --- | --- |
-| `supabase start` cannot run | Docker Desktop not installed. Install Docker Desktop (WSL 2 backend) before Phase 2. |
-| Migration fails | Never hand-craft timestamps or edit already-applied migrations. Use `supabase migration new <name>`. |
-| RLS not verified | No authenticated test database available. RLS design exists in `docs/security/rls-policies.md` but is unproven until tests run against a real database. |
+| Hosted Supabase connection errors | Verify `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `DATABASE_URL` are set to your hosted Supabase project values. Check that `SUPABASE_SECRET_KEY` is the service role key (server-only). |
+| Migration fails against hosted project | Never hand-craft timestamps or edit already-applied migrations. Use the Supabase dashboard SQL Editor or `supabase db push` to manage migrations on the hosted project. |
+| RLS not verified | RLS policies are designed in `docs/security/` but operate against the hosted Supabase project. Test via the dashboard or `supabase auth` APIs. |
+| Auth flow not working against hosted project | Ensure redirect URIs in the Supabase project settings match your deployment URLs (e.g., `https://YOUR_SITE_URL.vercel.app/auth/callback`). |
 
 ## Build issues
 

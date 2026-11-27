@@ -16,7 +16,7 @@ Configure Production and Preview variables separately in Vercel. Public registry
 
 1. Review the commit and confirm no local environment files or exports are staged.
 2. Run `npm run verify:release`.
-3. Apply pending Supabase migrations with `npx supabase db push --workdir packages/supabase`.
+3. Verify Supabase migration state against the hosted project (dashboard SQL Editor or `supabase db push`).
 4. Build the affected app with the matching `build:*` command.
 5. Deploy to Preview and run the smoke checks.
 6. Promote only after authentication, store isolation, API ownership checks and critical commerce flows pass.
@@ -25,7 +25,8 @@ Configure Production and Preview variables separately in Vercel. Public registry
 ## Production requirements
 
 - HTTPS is enforced at the hosting layer; localhost is the only permitted HTTP exception.
-- Supabase database access is restricted through project network controls where supported.
+- Supabase database access is restricted through hosted project network controls.
 - Authentication logs, API errors and unusual traffic are retained in the configured observability system.
 - Backups and point-in-time recovery are enabled before high-risk migrations.
 - See [the security deployment guide](../SECURITY_DEPLOYMENT.md) and [the CMS release checklist](./cms/release-checklist.md).
+- No local Supabase stack is required; all operations target hosted projects.

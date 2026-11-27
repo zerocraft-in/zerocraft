@@ -13,12 +13,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@base-ui/react": "^1.9.0",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.119.0",
     "@zerocraft/auth-core": "workspace:*",
     "@zerocraft/ui": "workspace:*",
-    "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "framer-motion": "^14.14.0",
     "gsap": "^3.15.1",

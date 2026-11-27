@@ -18,7 +18,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./src/*"],
       "@zerocraft/supabase/*": ["../../packages/supabase/src/*"],
       "@zerocraft/tailwind-config": ["../../packages/tailwind-config/tailwind.config.ts"],
       "@zerocraft/ui/*": ["../../packages/ui/src/*"],

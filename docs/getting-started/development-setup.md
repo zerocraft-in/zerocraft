@@ -60,57 +60,46 @@ pnpm test:e2e       # Playwright (requires browsers + running app)
 
 All root scripts filter to `@zerocraft/admin`, so they can be run from the root.
 
-## Supabase local stack
+## Supabase hosted project setup
+
+All Supabase resources (Postgres, Auth, Storage, RLS) are hosted projects only.
+No local Docker stack is required or available in this environment.
 
 ```powershell
-pnpm exec supabase start
+# Ensure environment variables are set
+# See .env.example and infrastructure/supabase/env.local.md for required vars
+
+# Verify connection to hosted Supabase
 pnpm exec supabase status
 ```
 
-`supabase/config.toml` is checked in. Local ports:
+Environment variables required (from `.env.example` and `infrastructure/supabase/env.local.md`):
 
-| Service | Port |
+| Variable | Description |
 | --- | --- |
-| API | 54321 |
-| Database | 54322 |
-| Studio | 54323 |
-| Mailpit (email testing) | 54324 |
+| `NEXT_PUBLIC_SUPABASE_URL` | Hosted Supabase project URL (e.g., https://xyz.supabase.co) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Hosted Supabase publishable key |
+| `SUPABASE_SECRET_KEY` | Hosted Supabase service role key (server-only) |
+| `DATABASE_URL` | PostgreSQL connection string to hosted Supabase |
 
-Useful commands:
-
-```powershell
-pnpm db:reset       # drop, migrate, seed
-pnpm db:diff <name> # generate a migration from schema changes
-pnpm db:push        # push migrations — NEVER to production without approval
-```
-
-### Current blocker
-
-Docker Desktop is not installed, so `supabase start` cannot run. This means:
-
-- No migration has been executed.
-- No RLS policy has been tested.
-- No pgTAP test has run.
-- No Auth flow has been exercised against a real backend.
-
-Install Docker Desktop (WSL 2 backend) and start it before Phase 2. Until then,
-database work can be written and reviewed but not verified.
-
-### Migrations
-
-1. Create migrations with the CLI so timestamps are real:
-   `pnpm exec supabase migration new <name>`.
-2. Write SQL in the generated file.
-3. `pnpm db:reset` must pass from an empty database.
-4. Run the RLS/pgTAP suite.
-5. Review `supabase db diff` before pushing.
-
-Never hand-craft a timestamp or edit an already-applied migration.
+No local ports are used. All RLS policies, migrations, and auth flows operate
+against the hosted Supabase project.
 
 ### Email testing
 
-Auth emails (invitations, password reset) are captured by Mailpit at
-`http://127.0.0.1:54324`. No real email is sent locally.
+Auth emails (invitations, password reset) are sent to the SMTP service configured
+in the hosted Supabase project. No local Mailpit is used.
+
+### Migrations
+
+Migration execution is handled via the Supabase CLI or direct SQL against the
+hosted project. Since Docker is unavailable:
+
+1. Migrations are defined in `infrastructure/supabase/migrations/`.
+2. Apply migrations via the Supabase dashboard SQL Editor or `supabase db push`.
+3. Never run `pnpm db:reset` against a local stack — use hosted project tools instead.
+
+Never hand-craft a timestamp or edit an already-applied migration.
 
 ## Tests
 

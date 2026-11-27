@@ -22,9 +22,7 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ],
+      "@/*": ["./src/*"],
       "@zerocraft/supabase/*": [
         "../../packages/supabase/src/*"
       ],
