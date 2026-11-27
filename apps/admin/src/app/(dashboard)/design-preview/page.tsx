@@ -3,14 +3,14 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@zerocraft/ui/card";
 import { Tag, Package, AlertCircle } from "lucide-react";
 
 type StockItem = {

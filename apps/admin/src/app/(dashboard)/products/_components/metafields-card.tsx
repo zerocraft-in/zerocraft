@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@zerocraft/ui/card";
+import { Button } from "@zerocraft/ui/button";
 import { Plus } from "lucide-react";
 
 export function MetafieldsCard() {

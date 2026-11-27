@@ -3,11 +3,11 @@
 import * as React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { slugify } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Card, CardContent, CardHeader, CardTitle } from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
+import { Textarea } from "@zerocraft/ui/textarea";
+import { Label } from "@zerocraft/ui/label";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@zerocraft/ui/collapsible";
 import { Edit } from "lucide-react";
 import type { ProductFormValues } from "@/app/(dashboard)/products/lib/product-schema";
 
@@ -141,7 +141,7 @@ export function SeoSection({ form, seoOpen, setSeoOpen }: SeoSectionProps) {
               <div className="space-y-1">
                 <p className="text-[14px] font-normal leading-5 text-[#202223]">maraapparels</p>
                 <p className="truncate text-[12px] leading-4 text-[#5f6368]">
-                  https://maraapparels.myshopify.com › products › {listingHandle}
+                  https://maraapparels.maara.co.in › products › {listingHandle}
                 </p>
                 <p className="text-[22px] font-normal leading-7 text-[#005bd3]">{listingTitle}</p>
                 {listingDescription && (
@@ -214,7 +214,7 @@ export function SeoSection({ form, seoOpen, setSeoOpen }: SeoSectionProps) {
                   />
                 </div>
                 <p className="break-all text-[12px] leading-4 text-[#5f6368]">
-                  https://maraapparels.myshopify.com/products/{watchHandle || slugify(watchName) || ""}
+                  https://maraapparels.maara.co.in/products/{watchHandle || slugify(watchName) || ""}
                 </p>
               </div>
             </CardContent>

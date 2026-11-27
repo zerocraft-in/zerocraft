@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { updateMyProfileName } from "./profile-actions";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 
 const MAX_PROFILE_NAME_LENGTH = 100;
 

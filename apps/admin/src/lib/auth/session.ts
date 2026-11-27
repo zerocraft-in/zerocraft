@@ -84,7 +84,7 @@ export async function requireOrganization(): Promise<SessionContext> {
       status,
       role_id,
       organizations ( id, name, slug ),
-      roles ( key )
+      organization_roles ( key )
     `
     )
     .eq("user_id", user.id)
@@ -129,7 +129,7 @@ export async function requireOrganization(): Promise<SessionContext> {
     name: string;
     slug: string;
   } | null;
-  const role = activeMembership.roles as unknown as { key: string } | null;
+  const role = activeMembership.organization_roles as unknown as { key: string } | null;
 
   if (!org || !role) {
     throw new Error("Unable to resolve organization membership");
@@ -143,7 +143,7 @@ export async function requireOrganization(): Promise<SessionContext> {
       organizationId: m.organization_id,
       organizationName:
         (m.organizations as unknown as { name: string } | null)?.name || "",
-      roleKey: (m.roles as unknown as { key: string } | null)?.key || "",
+      roleKey: (m.organization_roles as unknown as { key: string } | null)?.key || "",
       status: m.status,
     })),
     activeOrganization: {
@@ -211,14 +211,14 @@ async function resolvePermissions(roleKey: PermissionKey): Promise<Set<Permissio
   const supabase = await createServerSupabaseClient();
 
   const { data: rolePerms, error } = await supabase
-    .from("role_permissions")
+    .from("organization_role_permissions")
     .select(
       `
       permission_key,
-      roles!inner ( key )
+      organization_roles!inner ( key )
     `,
     )
-    .eq("roles.key", roleKey);
+    .eq("organization_roles.key", roleKey);
 
   if (error) {
     // Log the database failure so it is diagnosable. Only the error code and

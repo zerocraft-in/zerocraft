@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { buttonVariants } from "@/components/ui/button";
-import { CardFooter } from "@/components/ui/card";
+import { buttonVariants } from "@zerocraft/ui/button";
+import { CardFooter } from "@zerocraft/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -11,7 +11,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@zerocraft/ui/pagination";
 import { cn } from "@/lib/utils";
 
 import {

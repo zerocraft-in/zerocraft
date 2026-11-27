@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import type { Resolver, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@zerocraft/ui/toast";
 
 import { z } from "zod";
 
@@ -16,9 +16,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "@zerocraft/ui/card";
+import { Badge } from "@zerocraft/ui/badge";
+import { Button } from "@zerocraft/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -26,22 +26,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/dialog";
+import { Input } from "@zerocraft/ui/input";
+import { Textarea } from "@zerocraft/ui/textarea";
+import { Separator } from "@zerocraft/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@zerocraft/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Label } from "@/components/ui/label";
+} from "@zerocraft/ui/tooltip";
+import { Label } from "@zerocraft/ui/label";
 import {
   MoreHorizontal,
   Mail,
@@ -254,7 +254,6 @@ export function CustomerDetail({
           {/* Edit form (inline) */}
           {editing && (
             <EditCustomerForm
-              customer={customer}
               form={form}
               onSave={onSave}
               onClose={() => setEditing(false)}
@@ -509,12 +508,10 @@ export function CustomerDetail({
 // ============================================================================
 
 function EditCustomerForm({
-  customer,
   form,
   onSave,
   onClose,
 }: {
-  customer: CustomerRow;
   form: UseFormReturn<z.infer<typeof editCustomerSchema>>;
   onSave: (values: z.infer<typeof editCustomerSchema>) => void;
   onClose: () => void;

@@ -2,17 +2,16 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useFormState, Controller } from "react-hook-form";
+import { useForm, useFormState, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@zerocraft/ui/toast";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@zerocraft/ui/input";
+import { Switch } from "@zerocraft/ui/switch";
+import { Badge } from "@zerocraft/ui/badge";
 import { updateBusinessDetails } from "@/app/(dashboard)/settings/actions";
 import { Building2, Search, X, Plus, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -119,7 +118,13 @@ const schema = z.object({
   dobDay: z.string().min(1, "Day is required"),
   dobYear: z.string().min(1, "Year is required"),
   nationality: z.string().min(1, "Select a nationality"),
-  email: z.string().trim().email("Enter a valid email").max(254).optional().or(z.literal("")),
+  email: z
+    .string()
+    .trim()
+    .email("Enter a valid email")
+    .max(254)
+    .optional()
+    .or(z.literal("")),
   residentialAddress: z.string().trim().min(1, "Address is required"),
   apartment: z.string().trim().optional().or(z.literal("")),
   city: z.string().trim().min(1, "City is required"),
@@ -175,7 +180,7 @@ export type AboutYourBusinessDrawerProps = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Atomic sub-components (Shopify Polaris style — semantic Tailwind / shadcn tokens)
+// Atomic sub-components (semantic Tailwind / shadcn tokens)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function FieldLabel({
@@ -227,7 +232,7 @@ function SectionCard({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Reusable input class helper — Shopify Polaris style
+// Reusable input class helper
 function inputCls(hasError?: boolean) {
   return cn(
     "h-9 px-3 text-sm border-input rounded-lg bg-background",
@@ -277,7 +282,7 @@ function NativeSelect({
   );
 }
 
-// Shopify-style button variants (used inline where shadcn Button isn't enough)
+// button variants (used inline where shadcn Button isn't enough)
 // ─────────────────────────────────────────────────────────────────────────────
 // Main component
 // ─────────────────────────────────────────────────────────────────────────────
@@ -293,13 +298,14 @@ export function AboutYourBusinessDrawer({
   const defaultFirst = nameParts[0] ?? "";
   const defaultLast = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
   const storedDob = address.dateOfBirth ? new Date(address.dateOfBirth) : null;
-  const defaultDob = storedDob && !Number.isNaN(storedDob.getTime())
-    ? {
-        month: String(storedDob.getMonth() + 1).padStart(2, "0"),
-        day: String(storedDob.getDate()).padStart(2, "0"),
-        year: String(storedDob.getFullYear()),
-      }
-    : { month: "", day: "", year: "" };
+  const defaultDob =
+    storedDob && !Number.isNaN(storedDob.getTime())
+      ? {
+          month: String(storedDob.getMonth() + 1).padStart(2, "0"),
+          day: String(storedDob.getDate()).padStart(2, "0"),
+          year: String(storedDob.getFullYear()),
+        }
+      : { month: "", day: "", year: "" };
 
   // ── Form ─────────────────────────────────────────────────────────────────
 
@@ -342,7 +348,9 @@ export function AboutYourBusinessDrawer({
 
   const [saving, setSaving] = React.useState(false);
   const [submitAttempted, setSubmitAttempted] = React.useState(false);
-  const [selectedDocuments, setSelectedDocuments] = React.useState<string[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = React.useState<string[]>(
+    [],
+  );
   const documentInputRef = React.useRef<HTMLInputElement>(null);
 
   // Snapshot of the values the form was last reset to, so "discard" always
@@ -351,11 +359,10 @@ export function AboutYourBusinessDrawer({
 
   const hasErrors = Object.keys(errors).length > 0;
   const isBusy = saving || isSubmitting;
-  const canSave = isDirty && !hasErrors && !isBusy;
 
   // watched values needed for rendering
-  const showOptional = form.watch("showOptional") ?? false;
-  const businessType = form.watch("businessType");
+  const showOptional = useWatch({ control: form.control, name: "showOptional", defaultValue: false }) ?? false;
+  const businessType = useWatch({ control: form.control, name: "businessType" });
   const isIndividual = businessType === "individual";
 
   function handleDocumentSelected(event: React.ChangeEvent<HTMLInputElement>) {
@@ -421,8 +428,11 @@ export function AboutYourBusinessDrawer({
     if (open) {
       form.reset(defaultFormValues);
       initialValuesRef.current = defaultFormValues;
-      setSelectedDocuments([]);
-      setSubmitAttempted(false);
+      // Defer transient state resets to avoid cascading renders within the effect
+      queueMicrotask(() => {
+        setSelectedDocuments([]);
+        setSubmitAttempted(false);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -445,7 +455,7 @@ export function AboutYourBusinessDrawer({
     setSubmitAttempted(false);
   }
 
-  function handleEscapeKeyDown(e: KeyboardEvent) {
+  function handleEscapeKeyDown() {
     requestClose();
   }
 
@@ -898,30 +908,48 @@ export function AboutYourBusinessDrawer({
 
                           {!isIndividual && (
                             <section className="space-y-3">
-                              <SectionTitle>Business verification details</SectionTitle>
+                              <SectionTitle>
+                                Business verification details
+                              </SectionTitle>
                               <SectionCard>
                                 <div>
-                                  <FieldLabel>Registered legal business name</FieldLabel>
-                                  <Input {...form.register("legalBusinessName")} className={inputCls()} />
+                                  <FieldLabel>
+                                    Registered legal business name
+                                  </FieldLabel>
+                                  <Input
+                                    {...form.register("legalBusinessName")}
+                                    className={inputCls()}
+                                  />
                                   <p className="mt-1 text-xs text-muted-foreground">
-                                    The official registered name of your business.
+                                    The official registered name of your
+                                    business.
                                   </p>
                                 </div>
                                 <div>
                                   <FieldLabel>Business address</FieldLabel>
                                   <div className="relative">
                                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                                    <Input {...form.register("businessAddress")} className={cn(inputCls(), "pl-8")} />
+                                    <Input
+                                      {...form.register("businessAddress")}
+                                      className={cn(inputCls(), "pl-8")}
+                                    />
                                   </div>
                                 </div>
                                 <div>
                                   <FieldLabel>Apartment, suite, etc</FieldLabel>
-                                  <Input {...form.register("businessApartment")} className={inputCls()} />
+                                  <Input
+                                    {...form.register("businessApartment")}
+                                    className={inputCls()}
+                                  />
                                 </div>
                                 <div className="grid grid-cols-3 gap-3">
                                   <div>
                                     <FieldLabel>City</FieldLabel>
-                                    <Input {...form.register("businessCity")} placeholder="City" className={inputCls()} />
+                                    <Input
+                                      {...form.register("businessCity")}
+                                      placeholder="City"
+                                      className={inputCls()}
+                                    />
                                   </div>
                                   <div>
                                     <FieldLabel>State</FieldLabel>
@@ -933,14 +961,24 @@ export function AboutYourBusinessDrawer({
                                           value={field.value ?? ""}
                                           onChange={field.onChange}
                                           placeholder="Select a state"
-                                          options={INDIAN_STATES.map((state) => ({ value: state, label: state }))}
+                                          options={INDIAN_STATES.map(
+                                            (state) => ({
+                                              value: state,
+                                              label: state,
+                                            }),
+                                          )}
                                         />
                                       )}
                                     />
                                   </div>
                                   <div>
                                     <FieldLabel>PIN code</FieldLabel>
-                                    <Input {...form.register("businessPinCode")} maxLength={10} inputMode="numeric" className={inputCls()} />
+                                    <Input
+                                      {...form.register("businessPinCode")}
+                                      maxLength={10}
+                                      inputMode="numeric"
+                                      className={inputCls()}
+                                    />
                                   </div>
                                 </div>
                                 <div>
@@ -954,11 +992,20 @@ export function AboutYourBusinessDrawer({
                                           value={field.value ?? "IN"}
                                           onChange={field.onChange}
                                           className="w-[130px] shrink-0"
-                                          options={PHONE_COUNTRIES.map((country) => ({ value: country.value, label: `${country.flag} ${country.dial}` }))}
+                                          options={PHONE_COUNTRIES.map(
+                                            (country) => ({
+                                              value: country.value,
+                                              label: `${country.flag} ${country.dial}`,
+                                            }),
+                                          )}
                                         />
                                       )}
                                     />
-                                    <Input {...form.register("businessPhone")} inputMode="tel" className="flex-1" />
+                                    <Input
+                                      {...form.register("businessPhone")}
+                                      inputMode="tel"
+                                      className="flex-1"
+                                    />
                                   </div>
                                 </div>
                               </SectionCard>
@@ -969,7 +1016,8 @@ export function AboutYourBusinessDrawer({
                             <section className="space-y-3">
                               <SectionTitle>People</SectionTitle>
                               <p className="text-sm text-muted-foreground">
-                                Add account representatives, owners, executives, and directors.
+                                Add account representatives, owners, executives,
+                                and directors.
                               </p>
                               <SectionCard>
                                 <button
@@ -995,9 +1043,12 @@ export function AboutYourBusinessDrawer({
                           {showOptional && (
                             <section className="space-y-3">
                               <div>
-                                <SectionTitle>Business verification documents</SectionTitle>
+                                <SectionTitle>
+                                  Business verification documents
+                                </SectionTitle>
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                  Documents must be clear, complete, and uncropped.
+                                  Documents must be clear, complete, and
+                                  uncropped.
                                 </p>
                               </div>
                               <SectionCard>
@@ -1011,22 +1062,35 @@ export function AboutYourBusinessDrawer({
                                 />
                                 <button
                                   type="button"
-                                  onClick={() => documentInputRef.current?.click()}
+                                  onClick={() =>
+                                    documentInputRef.current?.click()
+                                  }
                                   className="w-[196px] overflow-hidden rounded-xl border border-border text-left transition-colors hover:border-foreground/30"
                                 >
                                   <span className="flex h-[112px] items-center justify-center bg-muted">
                                     <Plus className="size-5 text-muted-foreground" />
                                   </span>
                                   <span className="block border-t border-border bg-card px-3 py-2.5">
-                                    <span className="block text-sm font-medium leading-5">Add document</span>
-                                    <span className="block text-sm leading-5 text-primary">Select a file</span>
+                                    <span className="block text-sm font-medium leading-5">
+                                      Add document
+                                    </span>
+                                    <span className="block text-sm leading-5 text-primary">
+                                      Select a file
+                                    </span>
                                   </span>
                                 </button>
                                 {selectedDocuments.length > 0 && (
                                   <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-                                    {selectedDocuments.map((fileName, index) => (
-                                      <p key={`${fileName}-${index}`} className="truncate">{fileName}</p>
-                                    ))}
+                                    {selectedDocuments.map(
+                                      (fileName, index) => (
+                                        <p
+                                          key={`${fileName}-${index}`}
+                                          className="truncate"
+                                        >
+                                          {fileName}
+                                        </p>
+                                      ),
+                                    )}
                                   </div>
                                 )}
                               </SectionCard>
@@ -1037,9 +1101,16 @@ export function AboutYourBusinessDrawer({
                             <Switch
                               id="show-optional"
                               checked={showOptional}
-                              onCheckedChange={(checked) => form.setValue("showOptional", checked, { shouldDirty: false })}
+                              onCheckedChange={(checked) =>
+                                form.setValue("showOptional", checked, {
+                                  shouldDirty: false,
+                                })
+                              }
                             />
-                            <label htmlFor="show-optional" className="cursor-pointer select-none text-sm text-foreground">
+                            <label
+                              htmlFor="show-optional"
+                              className="cursor-pointer select-none text-sm text-foreground"
+                            >
                               Show optional fields
                             </label>
                           </div>

@@ -10,10 +10,10 @@ import {
 } from "@/lib/auth/session"
 import { inviteMember } from "./actions"
 import ProfileNameForm from "./profile-name-form"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@zerocraft/ui/card"
+import { Badge } from "@zerocraft/ui/badge"
+import { Button } from "@zerocraft/ui/button"
+import { Separator } from "@zerocraft/ui/separator"
 
 type MemberRow = {
   id: string
@@ -47,7 +47,7 @@ type OrgMemberRow = {
     id: string
     full_name: string | null
   } | null
-  roles: {
+  organization_roles: {
     id: string
     key: string
     name: string | null
@@ -60,7 +60,7 @@ type InvitationRowDb = {
   role_id: string
   expires_at: string | null
   created_at: string | null
-  roles: {
+  organization_roles: {
     id: string
     key: string
     name: string | null
@@ -138,7 +138,7 @@ async function getOrganizationMembers(
       status,
       joined_at,
       profiles!organization_members_user_id_fkey ( id, full_name ),
-      roles ( id, key, name )
+      organization_roles ( id, key, name )
     `
     )
     .eq("organization_id", organizationId)
@@ -163,8 +163,8 @@ async function getOrganizationMembers(
       user_id: row.user_id,
       email: emails.get(row.user_id) ?? null,
       full_name: row.profiles?.full_name ?? null,
-      role_key: row.roles?.key ?? null,
-      role_name: row.roles?.name ?? null,
+      role_key: row.organization_roles?.key ?? null,
+      role_name: row.organization_roles?.name ?? null,
       status: row.status,
       joined_at: row.joined_at,
     })) ?? []
@@ -218,7 +218,7 @@ async function getPendingInvitations(
       role_id,
       expires_at,
       created_at,
-      roles ( id, key, name )
+      organization_roles ( id, key, name )
     `)
     .eq("organization_id", organizationId)
     .is("accepted_at", null)
@@ -236,8 +236,8 @@ async function getPendingInvitations(
     rows.map((row) => ({
       id: row.id,
       email: row.email,
-      role_key: row.roles?.key ?? null,
-      role_name: row.roles?.name ?? null,
+      role_key: row.organization_roles?.key ?? null,
+      role_name: row.organization_roles?.name ?? null,
       expires_at: row.expires_at,
       created_at: row.created_at,
     })) ?? []

@@ -86,7 +86,7 @@ export type ProductBaseRow = {
 };
 
 export type ProductRow = ProductBaseRow & {
-  product_variants: VariantRow[];
+  variants: VariantRow[];
   product_options: ProductOption[];
   product_images: ProductImage[];
   collections: Collection[];

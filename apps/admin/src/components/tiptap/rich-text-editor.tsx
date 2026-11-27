@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@zerocraft/ui/textarea";
 import { cn } from "@/lib/utils";
 import { getExtensions } from "./extensions";
 import { EditorToolbar, type EditorDialog } from "./toolbar";

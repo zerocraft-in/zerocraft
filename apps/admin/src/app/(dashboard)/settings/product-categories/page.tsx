@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireOrganization, NO_ACTIVE_MEMBERSHIP_ERROR } from "@/lib/auth/session";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { fetchTaxonomyManifest } from "@/lib/shopify-taxonomy";
+import { fetchTaxonomyManifest } from "@/lib/taxonomy";
 import { ProductCategoryGroupsForm } from "./product-category-groups-form";
 
 
@@ -22,7 +22,7 @@ export default async function ProductCategorySettingsPage() {
 
   const [manifest, { data: enabled, error: enabledError }] = await Promise.all([
     fetchTaxonomyManifest(),
-    supabase.from("organization_shopify_taxonomy_roots")
+    supabase.from("taxonomy")
       .select("category_id")
       .eq("organization_id", organizationId)
       .eq("version", "2026-11")
@@ -48,7 +48,7 @@ export default async function ProductCategorySettingsPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Product categories</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage the Shopify taxonomy groups available to products in this organization.
+          Manage the Taxonomy groups available to products in this organization.
         </p>
       </div>
       <ProductCategoryGroupsForm

@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import { Monitor, Plus, Wifi, WifiOff } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/toast";
+import { Badge } from "@zerocraft/ui/badge";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
+import { toast } from "@zerocraft/ui/toast";
 import { registerPosDevice } from "./actions";
 
 type Device = { id: string; name: string; device_type: string; status: string; last_seen_at: string | null; registered_at: string; location_id: string | null };

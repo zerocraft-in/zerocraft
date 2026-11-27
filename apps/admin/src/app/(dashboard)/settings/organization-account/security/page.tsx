@@ -2,23 +2,17 @@
 
 import * as React from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/card";
+import { Badge } from "@zerocraft/ui/badge";
+import { Separator } from "@zerocraft/ui/separator";
 import { Search, Filter, ChevronUp } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export default function OrganizationAccountSecurityPage() {
   return (

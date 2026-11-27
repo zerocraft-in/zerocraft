@@ -11,15 +11,15 @@ import type {
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, HelpCircle, Check } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@zerocraft/ui/card";
+import { Checkbox } from "@zerocraft/ui/checkbox";
+import { Label } from "@zerocraft/ui/label";
+import { Button } from "@zerocraft/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@zerocraft/ui/popover";
 import { PriceInput } from "@/components/ui/price-input";
 
 // ─── Unit options ─────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ export function PricingSection<T extends PricingFields>({
   const profit = price - cost;
   const margin = price > 0 ? (profit / price) * 100 : 0;
 
-  // Bug fix: unit price label shows calculated price-per-unit (like Shopify)
+  // Bug fix: unit price label shows calculated price-per-unit
   // "₹X.XX / baseMeasure baseUnit"  — where X = price / (totalAmount in base units)
   const unitPriceLabel = React.useMemo(() => {
     if (!savedUnitPrice) return "--";

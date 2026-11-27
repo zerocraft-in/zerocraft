@@ -4,15 +4,15 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@zerocraft/ui/button";
+import { Input } from "@zerocraft/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@zerocraft/ui/select";
 
 import {
   AUDIT_LOG_ENTITY_OPTIONS,

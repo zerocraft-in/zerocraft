@@ -3,20 +3,19 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/card";
+import { Separator } from "@zerocraft/ui/separator";
 import {
   Search,
   Plus,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@zerocraft/ui/input";
 
 type RoleRow = {
   id: string;

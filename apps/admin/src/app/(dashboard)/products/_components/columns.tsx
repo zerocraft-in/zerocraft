@@ -1,15 +1,11 @@
 import { createColumnHelper } from "@tanstack/react-table";
 
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Archive, Edit, Eye } from "lucide-react";
+import { Badge } from "@zerocraft/ui/badge";
+import { Checkbox } from "@zerocraft/ui/checkbox";
 import Link from "next/link";
+import Image from "next/image";
 import type { ProductRow, VariantRow } from "../types";
-import {
-  formatMoney,
-  statusBadgeVariant,
-  getInventoryStatus as getSingleVariantInventoryStatus,
-} from "../types";
+import { statusBadgeVariant } from "../types";
 
 export type ProductColumnCtx = {
   canUpdate: boolean;
@@ -74,17 +70,10 @@ function formatDateTimeShort(value: string): string {
 
 export function buildColumns(ctx: ProductColumnCtx) {
   const {
-    canUpdate,
-    canArchive,
-    onView,
-    onEdit,
-    onStatusChange,
-    onArchive,
     onSelect,
     onSelectAll,
     isSelected,
     allSelected,
-    someSelected,
     indeterminate,
   } = ctx;
 
@@ -122,13 +111,13 @@ export function buildColumns(ctx: ProductColumnCtx) {
         const firstImage = row.original.product_images[0];
         return (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded bg-muted">
+            <div className="relative flex size-10 shrink-0 items-center justify-center rounded bg-muted">
               {firstImage ? (
-                <img
+                <Image
+                  fill
                   src={firstImage.src}
                   alt={firstImage.alt ?? product.name}
                   className="size-10 rounded object-cover"
-                  loading="lazy"
                 />
               ) : (
                 <span className="text-muted-foreground text-xs">—</span>
@@ -167,11 +156,11 @@ export function buildColumns(ctx: ProductColumnCtx) {
       minSize: 80,
       maxSize: 150,
     }),
-    columnHelper.accessor("product_variants", {
+    columnHelper.accessor("variants", {
       id: "inventory",
       header: "Inventory",
       cell: ({ row }) => {
-        const variants = row.original.product_variants;
+        const variants = row.original.variants;
         const status = getInventoryStatus(variants);
         const isDestructive = status.status === "out_of_stock";
         return (
@@ -192,7 +181,7 @@ export function buildColumns(ctx: ProductColumnCtx) {
       header: "Channels",
       cell: ({ row }) => (
         <span className="text-muted-foreground shrink-0 whitespace-nowrap">
-          {row.original.product_variants.length}
+          {row.original.variants.length}
         </span>
       ),
       enableSorting: false,
@@ -250,10 +239,3 @@ export function buildColumns(ctx: ProductColumnCtx) {
     }),
   ];
 }
-
-type BadgePropsVariant =
-  | "default"
-  | "success"
-  | "warning"
-  | "destructive"
-  | "outline";

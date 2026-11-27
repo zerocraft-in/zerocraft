@@ -1,6 +1,6 @@
 import { createColumnHelper } from "@tanstack/react-table";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@zerocraft/ui/badge";
 
 export type AuditLogRow = {
   id: string;

@@ -9,7 +9,7 @@ import * as z from "zod";
 
 import { acceptInvitation } from "./actions";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 
 const acceptInviteSchema = z.object({
   token: z.string().min(1, "Invitation token is required"),

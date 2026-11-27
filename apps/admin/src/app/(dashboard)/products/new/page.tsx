@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@zerocraft/ui/toast";
 import { slugify } from "@/lib/utils";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { createProduct, createVariant, createProductImage } from "../actions";

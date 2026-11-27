@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 
 export type DirtyBarProps = {
   dirty: boolean;

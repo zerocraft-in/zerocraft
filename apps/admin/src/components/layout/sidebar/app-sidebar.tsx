@@ -2,9 +2,20 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Bell, Settings, Tags } from "lucide-react";
+import { Bell, LogOut, Settings } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@zerocraft/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@zerocraft/ui/avatar";
 
 import { NavMain } from "./nav-main";
 import { NavProjects } from "./nav-projects";
@@ -16,7 +27,7 @@ import {
   SidebarHeader,
   SidebarTrigger,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@zerocraft/ui/sidebar";
 
 type Team = {
   id: string;
@@ -111,6 +122,19 @@ export function AppSidebar({
 
   const sidebarData = data ?? fallbackData;
 
+  const [logoutLoading, setLogoutLoading] = React.useState(false);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    if (logoutLoading) {
+      return;
+    }
+
+    // Central logout clears both the admin session and the accounts session.
+    setLogoutLoading(true);
+    router.push("/auth/logout");
+  };
+
   if (!sidebarData) {
     return null;
   }
@@ -148,7 +172,7 @@ export function AppSidebar({
         )}
       </SidebarContent>
       <SidebarFooter className="items-center gap-0 border-t border-transparent px-3 py-2 space-y-1">
-        <Link
+        {/* <Link
           href="/settings/product-categories"
           aria-current={pathname === "/settings/product-categories" ? "page" : undefined}
           className="flex !h-7 !w-full items-center gap-2 overflow-hidden rounded-lg !px-2 text-[13px] text-sidebar-foreground hover:bg-sidebar-hover data-[active=true]:bg-sidebar-accent group-data-[collapsible=icon]:!mx-auto group-data-[collapsible=icon]:!w-8 group-data-[collapsible=icon]:justify-center"
@@ -158,7 +182,7 @@ export function AppSidebar({
           <span className="min-w-0 truncate whitespace-nowrap transition-opacity duration-150 group-data-[collapsible=icon]:hidden">
             Product categories
           </span>
-        </Link>
+        </Link> */}
         <Link
           href="/settings"
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
@@ -185,14 +209,53 @@ export function AppSidebar({
           </select>
         )}
         <div className="mx-auto flex h-7 w-full items-center pl-1  justify-center gap-2 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:flex-col-reverse group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:gap-1 group-data-[collapsible=icon]:px-0">
-          <button className="flex items-center  py-1 pr-2 gap-2 hover:bg-primary-foreground/10 rounded-lg group-data-[collapsible=icon]:p-0">
-            <span className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-sidebar-avatar text-[7px] font-semibold leading-none tracking-tight text-black">
-              MAR
-            </span>
-            <span className="min-w-0 flex-1 truncate whitespace-nowrap text-[13px] font-semibold text-sidebar-foreground transition-opacity duration-150 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:hidden">
-              {sidebarData.user.name}
-            </span>
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="flex items-center  py-1 pr-2 gap-2 hover:bg-primary-foreground/10 rounded-lg group-data-[collapsible=icon]:p-0"
+            >
+              <span className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-sidebar-avatar text-[7px] font-semibold leading-none tracking-tight text-black">
+                MAR
+              </span>
+              <span className="min-w-0 flex-1 truncate whitespace-nowrap text-[13px] font-semibold text-sidebar-foreground transition-opacity duration-150 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:hidden">
+                {sidebarData.user.name}
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="min-w-56 rounded-lg"
+              align="end"
+              sideOffset={4}
+            >
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      {sidebarData.user.avatar ? (
+                        <AvatarImage src={sidebarData.user.avatar} alt={sidebarData.user.name} />
+                      ) : null}
+                      <AvatarFallback className="rounded-lg">
+                        {sidebarData.user.name.charAt(0).toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">
+                        {sidebarData.user.name}
+                      </span>
+                      <span className="truncate text-xs">{sidebarData.user.email}</span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                disabled={logoutLoading}
+                aria-busy={logoutLoading}
+              >
+                <LogOut className="mr-2 size-4" />
+                {logoutLoading ? "Signing out..." : "Sign out"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <button
             type="button"
             aria-label="Notifications"

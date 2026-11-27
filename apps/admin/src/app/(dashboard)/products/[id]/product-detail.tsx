@@ -3,10 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@zerocraft/ui/toast";
 import {
   Package,
-  Tag,
   DollarSign,
   Calendar,
   ChevronRight,
@@ -19,21 +18,21 @@ import {
 
 import { archiveProduct, setProductStatus } from "../actions";
 import { formatPaise, paise } from "@/lib/money";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/card";
+import { Badge } from "@zerocraft/ui/badge";
+import { Separator } from "@zerocraft/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@zerocraft/ui/dropdown-menu";
 
 type VariantRow = {
   id: string;
@@ -266,20 +265,7 @@ export default function ProductDetail({
             </CardContent>
           </Card>
 
-          {/* Shopify taxonomy category */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Tag className="size-5" />
-                Shopify category
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-body">
-                {product.category_id ?? "No Shopify category assigned"}
-              </p>
-            </CardContent>
-          </Card>
+        
 
           {/* Variants */}
           <Card>
@@ -439,7 +425,7 @@ export default function ProductDetail({
               {product.category_id && (
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Shopify category GID
+                    category GID
                   </p>
                   <p className="font-mono text-xs text-body break-all">
                     {product.category_id}

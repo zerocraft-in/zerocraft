@@ -1,8 +1,0 @@
-name = "maara-shopify-taxonomy"
-main = "src/index.ts"
-compatibility_date = "2026-11-24"
-workers_dev = true
-
-[[r2_buckets]]
-binding = "TAXONOMY"
-bucket_name = "maara"

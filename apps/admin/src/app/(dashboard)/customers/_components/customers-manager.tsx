@@ -3,12 +3,10 @@
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { toast } from "@/components/ui/toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@zerocraft/ui/button";
+import { Input } from "@zerocraft/ui/input";
 import { Search, Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@zerocraft/ui/checkbox";
 import {
   Empty,
   EmptyContent,
@@ -16,10 +14,10 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/empty";
+import { Card, CardContent, CardFooter } from "@zerocraft/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@zerocraft/ui/table";
+import { Separator } from "@zerocraft/ui/separator";
 import {
   CustomerRow,
   CustomerFilter,
@@ -28,10 +26,6 @@ import {
   initials,
   formatCurrency,
 } from "../types";
-import {
-  archiveCustomer,
-  enableCustomer,
-} from "../actions";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const DEFAULT_PAGE_SIZE = 25;
@@ -52,36 +46,32 @@ export default function CustomersManager({
   const searchParams = useSearchParams();
 
   const canCreate = permissions.has("customers.manage");
-  const canUpdate = permissions.has("customers.manage");
-  const canArchive = permissions.has("customers.manage");
 
   // ---- URL-synced filter state ----
   const [searchQuery, setSearchQuery] = React.useState(
     () => searchParams.get("q") ?? ""
   );
-  const [stateFilter, setStateFilter] = React.useState<CustomerFilter>(
+  const [stateFilter] = React.useState<CustomerFilter>(
     () => (searchParams.get("state") ?? "all") as CustomerFilter
   );
-  const [pageIndex, setPageIndex] = React.useState(() => {
+  const [pageIndex] = React.useState(() => {
     const page = Math.max(1, Number(searchParams.get("page")) || 1);
     return page - 1;
   });
-  const [pageSize, setPageSize] = React.useState(() => {
+  const [pageSize] = React.useState(() => {
     const size = Number(searchParams.get("page_size")) || DEFAULT_PAGE_SIZE;
     return PAGE_SIZE_OPTIONS.includes(size) ? size : DEFAULT_PAGE_SIZE;
   });
-  const [sortField, setSortField] = React.useState<CustomerSortField>(() => {
+  const [sortField] = React.useState<CustomerSortField>(() => {
     const valid: CustomerSortField[] = [
       "name", "email", "orders_count", "total_spent", "last_order_at", "created_at",
     ];
     const raw = (searchParams.get("sort") ?? "created_at") as CustomerSortField;
     return valid.includes(raw) ? raw : "created_at";
   });
-  const [sortDirection, setSortDirection] = React.useState<SortDirection>(() =>
+  const [sortDirection] = React.useState<SortDirection>(() =>
     searchParams.get("dir") === "asc" ? "asc" : "desc"
   );
-
-  const [hiddenColumnIds, setHiddenColumnIds] = React.useState<string[]>([]);
 
   // Push filter/sort/pagination state to the URL without scrolling.
   React.useEffect(() => {
@@ -155,39 +145,6 @@ export default function CustomersManager({
       setSelectedCustomerIds(new Set(customers.map((c) => c.id)));
     } else {
       setSelectedCustomerIds(new Set());
-    }
-  };
-
-  const handleClearSelection = () => setSelectedCustomerIds(new Set());
-
-  // ---- Actions ----
-  const handleArchive = async (customerId: string, customerName: string) => {
-    if (!window.confirm(`Disable customer "${customerName}"? Their order history and data will be preserved.`)) return;
-
-    try {
-      const result = await archiveCustomer({ id: customerId });
-      if (result.ok) {
-        toast.add({ title: "Customer disabled.", type: "success" });
-        router.refresh();
-      } else {
-        toast.add({ title: result.error, type: "error" });
-      }
-    } catch {
-      toast.add({ title: "Failed to disable customer.", type: "error" });
-    }
-  };
-
-  const handleEnable = async (customerId: string, customerName: string) => {
-    try {
-      const result = await enableCustomer({ id: customerId });
-      if (result.ok) {
-        toast.add({ title: "Customer enabled.", type: "success" });
-        router.refresh();
-      } else {
-        toast.add({ title: result.error, type: "error" });
-      }
-    } catch {
-      toast.add({ title: "Failed to enable customer.", type: "error" });
     }
   };
 

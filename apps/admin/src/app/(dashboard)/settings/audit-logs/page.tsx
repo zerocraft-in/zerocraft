@@ -12,8 +12,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/card";
 
 import { DataTable } from "./data-table";
 import { type AuditLogRow } from "./columns";

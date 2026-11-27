@@ -12,7 +12,7 @@ import {
   type CustomerFormValues,
 } from "@/app/(dashboard)/customers/lib/customer-schema";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -20,11 +20,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+} from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
+import { Checkbox } from "@zerocraft/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zerocraft/ui/select";
+import { Label } from "@zerocraft/ui/label";
 import { Plus, Tag, Edit, ArrowLeft, MoreHorizontal } from "lucide-react";
 
 function FieldError({ error }: { error: string | undefined }) {

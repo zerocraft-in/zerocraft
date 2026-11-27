@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+
 import { LogOut, User } from "lucide-react";
-import { toast } from "@/components/ui/toast";
 
 import {
   DropdownMenu,
@@ -13,11 +13,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+} from "@zerocraft/ui/dropdown-menu";
+import { Separator } from "@zerocraft/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@zerocraft/ui/avatar";
+import { SidebarTrigger } from "@zerocraft/ui/sidebar";
 
 export type HeaderProps = {
   readonly title: string;
@@ -29,36 +28,22 @@ export type HeaderProps = {
 };
 
 export function Header({ title, user }: HeaderProps) {
-  const router = useRouter();
   const [logoutLoading, setLogoutLoading] = React.useState(false);
+  const router = useRouter();
 
   const displayName = user?.name?.trim() || "User";
   const displayEmail = user?.email?.trim() || "";
   const avatarUrl = user?.avatar?.trim() || null;
   const initial = displayName.charAt(0).toUpperCase() || "U";
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (logoutLoading) {
       return;
     }
 
+    // Central logout clears both the admin session and the accounts session.
     setLogoutLoading(true);
-
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        toast.add({ title: "Unable to sign out. Please try again.", type: "error" });
-        return;
-      }
-
-      router.replace("/login");
-    } catch {
-      toast.add({ title: "Unable to sign out. Please try again.", type: "error" });
-    } finally {
-      setLogoutLoading(false);
-    }
+    router.push("/auth/logout");
   };
 
   return (

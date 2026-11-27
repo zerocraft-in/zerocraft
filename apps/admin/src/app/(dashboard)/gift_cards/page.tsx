@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -20,21 +20,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@zerocraft/ui/dialog";
+import { Input } from "@zerocraft/ui/input";
+import { Label } from "@zerocraft/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@zerocraft/ui/select";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/components/ui/input-group";
+} from "@zerocraft/ui/input-group";
 import {
   Table,
   TableBody,
@@ -42,10 +42,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/toast";
+} from "@zerocraft/ui/table";
+import { Checkbox } from "@zerocraft/ui/checkbox";
+import { Badge } from "@zerocraft/ui/badge";
+import { toast } from "@zerocraft/ui/toast";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */

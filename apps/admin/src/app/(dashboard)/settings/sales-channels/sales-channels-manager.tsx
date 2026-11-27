@@ -2,31 +2,60 @@
 
 import * as React from "react";
 import { Search, Store, Receipt, ShoppingBag, Code2, Sparkles } from "lucide-react";
-import { toast } from "@/components/ui/toast";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { setChannelInstallation } from "./actions";
+import { toast } from "@zerocraft/ui/toast";
+import { Badge } from "@zerocraft/ui/badge";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
 
 type Channel = {
   id: string;
   key: string;
   name: string;
   description: string | null;
-  channel_type: string;
-  provider: string;
+  category: string | null;
+  provider_key: string | null;
   icon: string | null;
+  capabilities: Record<string, unknown>;
+  configuration_schema: Record<string, unknown>;
+  status: string;
+  is_available: boolean;
 };
 
 type Installation = {
-  sales_channel_id: string;
+  id: string;
+  organization_id: string;
+  store_id: string;
+  channel_id: string;
   status: string;
-  billing_status: string;
-  billing_amount_minor: number;
-  billing_currency: string;
+  external_account_id: string | null;
+  external_account_name: string | null;
+  external_account_metadata: Record<string, unknown>;
+  installed_by: string;
   installed_at: string | null;
   connected_at: string | null;
+  disconnected_at: string | null;
+  last_synced_at: string | null;
+  last_error_code: string | null;
+  channels: {
+    id: string;
+    key: string;
+    name: string;
+    description: string | null;
+    category: string | null;
+    provider_key: string | null;
+    icon: string | null;
+    capabilities: Record<string, unknown>;
+    configuration_schema: Record<string, unknown>;
+    status: string;
+    is_available: boolean;
+  } | null;
+  stores: {
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+  } | null;
 };
 
 const icons = { store: Store, receipt: Receipt, "shopping-bag": ShoppingBag, code: Code2, sparkles: Sparkles };
@@ -43,7 +72,7 @@ export function SalesChannelsManager({
   const [tab, setTab] = React.useState<"all" | "installed" | "uninstalled">("all");
   const [query, setQuery] = React.useState("");
   const [busyKey, setBusyKey] = React.useState<string | null>(null);
-  const installationByChannel = new Map(installations.map((item) => [item.sales_channel_id, item]));
+  const installationByChannel = new Map(installations.map((item) => [item.channel_id, item]));
 
   const filtered = channels.filter((channel) => {
     const installation = installationByChannel.get(channel.id);
@@ -53,15 +82,27 @@ export function SalesChannelsManager({
     return matchesTab && matchesQuery;
   });
 
-  const updateStatus = async (channel: Channel, status: "active" | "uninstalled") => {
+  const updateStatus = async (channel: Channel, status: "active" | "paused" | "disconnected") => {
     setBusyKey(channel.key);
-    const result = await setChannelInstallation({ channelKey: channel.key, status });
-    setBusyKey(null);
-    if (!result.ok) {
-      toast.add({ title: result.error, type: "error" });
+    const installation = installationByChannel.get(channel.key);
+    const installationId = installation?.id;
+    if (!installationId) {
+      toast.add({ title: "Installation not found.", type: "error" });
+      setBusyKey(null);
       return;
     }
-    toast.add({ title: status === "active" ? `${channel.name} enabled.` : `${channel.name} disabled.`, type: "success" });
+    const result = await fetch(`/api/sales-channels/installations/${installationId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    setBusyKey(null);
+    if (!result.ok) {
+      const json = await result.json().catch(() => ({}));
+      toast.add({ title: json.error || `${channel.name} update failed.`, type: "error" });
+      return;
+    }
+    toast.add({ title: status === "active" ? `${channel.name} enabled.` : `${channel.name} ${status}.`, type: "success" });
     window.location.reload();
   };
 
@@ -93,7 +134,7 @@ export function SalesChannelsManager({
             {filtered.map((channel) => {
               const installation = installationByChannel.get(channel.id);
               const installed = installation?.status === "active" || installation?.status === "paused";
-              const Icon = icons[channel.icon as keyof typeof icons] ?? Store;
+              const Icon = icons[channel.provider_key as keyof typeof icons] ?? Store;
               return (
                 <div key={channel.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-start gap-3">
@@ -104,8 +145,8 @@ export function SalesChannelsManager({
                     </div>
                   </div>
                   {canManage && (
-                    <Button variant={installed ? "outline" : "default"} size="sm" disabled={busyKey === channel.key} onClick={() => void updateStatus(channel, installed ? "uninstalled" : "active")}>
-                      {busyKey === channel.key ? "Updating…" : installed ? "Disable" : "Enable"}
+                    <Button variant={installed ? "outline" : "default"} size="sm" disabled={busyKey === channel.key} onClick={() => void updateStatus(channel, installed ? "disconnected" : "active")}>
+                      {busyKey === channel.key ? "Updating…" : installed ? "Disconnect" : "Connect"}
                     </Button>
                   )}
                 </div>

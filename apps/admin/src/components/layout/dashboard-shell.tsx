@@ -5,8 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { type NavGroup, NAV_GROUPS } from "./sidebar/nav";
 import { AppSidebar, type AppSidebarData } from "@/components/layout/sidebar";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider, SidebarInset } from "@zerocraft/ui/sidebar";
+import { TooltipProvider } from "@zerocraft/ui/tooltip";
 import { GalleryVerticalEnd, Settings } from "lucide-react";
 import { SettingsSidebar } from "./sidebar/settings-sidebar";
 import {

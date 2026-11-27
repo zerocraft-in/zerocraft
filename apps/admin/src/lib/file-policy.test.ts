@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -8,12 +8,10 @@ import {
   sanitizeFilename,
   MAX_SIZE_BYTES,
   EXTENSIONS_BY_CATEGORY,
-  MIME_TYPES_BY_CATEGORY,
 } from "./file-policy";
 import {
   makeFileKey as r2MakeFileKey,
   makeAssetKey,
-  resetR2ConfigForTesting,
   sanitizeFilenameForKey,
 } from "./r2";
 

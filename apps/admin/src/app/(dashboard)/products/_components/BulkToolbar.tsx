@@ -1,36 +1,30 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@zerocraft/ui/toast";
 
 import {
-  archiveProduct,
-  setProductStatus,
   bulkArchiveProducts,
   bulkDeleteProducts,
   bulkSetProductStatus,
 } from "../actions";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@zerocraft/ui/button";
+import { Checkbox } from "@zerocraft/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
+} from "@zerocraft/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 
 interface BulkToolbarProps {
   selectedProducts: string[];
-  filteredProducts: { id: string }[];
   allSelected: boolean;
   someSelected: boolean;
   canUpdate: boolean;
   canArchive: boolean;
   onSelectAll: (checked: boolean) => void;
-  onSelectProduct: (id: string) => void;
-  isSelected: (id: string) => boolean;
   onClearSelection: () => void;
   onBulkEdit: () => void;
   onRefresh: () => void;
@@ -38,14 +32,11 @@ interface BulkToolbarProps {
 
 export function BulkToolbar({
   selectedProducts,
-  filteredProducts,
   allSelected,
   someSelected,
   canUpdate,
   canArchive,
   onSelectAll,
-  onSelectProduct,
-  isSelected,
   onClearSelection,
   onBulkEdit,
   onRefresh,

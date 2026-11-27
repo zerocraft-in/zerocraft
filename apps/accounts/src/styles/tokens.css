@@ -1,0 +1,76 @@
+/* Zerocraft design tokens. Framer-style dark UI.
+   Values come from your framer.com/login screenshots + the Zerocraft reference
+   (see implement.md > "What is and isn't verified"). Change tokens here only. */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --zc-bg: #111111;
+  --zc-surface: #1b1b1b;
+  --zc-surface-2: #242424;
+  --zc-surface-3: #2e2e2e;
+  --zc-line: #2a2a2a;
+  --zc-line-strong: #3a3a3a;
+
+  /* Text */
+  --zc-text: #ffffff;
+  --zc-text-muted: #8f8f8f;
+  --zc-text-subtle: #666666;
+
+  /* Brand + status (each has a soft 12% background and a readable text tone) */
+  --zc-brand: #10b981;
+  --zc-brand-ink: #071b14;
+  --zc-success: #4ade80;
+  --zc-warning: #f5b544;
+  --zc-danger: #ff6b5e;
+  --zc-info: #7aa7ff;
+  --zc-success-bg: rgba(74, 222, 128, 0.12);
+  --zc-warning-bg: rgba(245, 181, 68, 0.12);
+  --zc-danger-bg: rgba(255, 107, 94, 0.12);
+  --zc-info-bg: rgba(122, 167, 255, 0.12);
+
+  /* Typography (Google Fonts via next/font) */
+  --zc-font-sans:
+    var(--font-manrope), "Segoe UI", system-ui, -apple-system, sans-serif;
+  --zc-font-mono:
+    var(--font-jetbrains), ui-monospace, Menlo, Consolas, monospace;
+  --zc-text-xs: 12px;
+  --zc-text-sm: 13px;
+  --zc-text-base: 14px;
+  --zc-text-md: 16px;
+  --zc-text-lg: 20px;
+  --zc-text-xl: 24px;
+  --zc-text-2xl: 32px;
+  --zc-tracking-tight: -0.02em;
+  --zc-tracking-mono: 0.12em;
+
+  /* Radius */
+  --zc-radius-sm: 8px;
+  --zc-radius-md: 10px;
+  --zc-radius-lg: 14px;
+  --zc-radius-xl: 20px;
+  --zc-radius-pill: 999px;
+
+  /* Spacing, 4px base */
+  --zc-space-1: 4px;
+  --zc-space-2: 8px;
+  --zc-space-3: 12px;
+  --zc-space-4: 16px;
+  --zc-space-5: 20px;
+  --zc-space-6: 24px;
+  --zc-space-8: 32px;
+  --zc-space-12: 48px;
+
+  /* Control sizes */
+  --zc-control: 44px;
+  --zc-control-sm: 36px;
+
+  /* Motion */
+  --zc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --zc-fast: 120ms;
+  --zc-base: 200ms;
+  --zc-slow: 320ms;
+
+  /* Layers */
+  --zc-z-toast: 1000;
+}

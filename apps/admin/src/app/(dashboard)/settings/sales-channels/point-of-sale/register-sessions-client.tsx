@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import { CalendarDays, CircleDollarSign, Download, Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/toast";
+import { Badge } from "@zerocraft/ui/badge";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
+import { toast } from "@zerocraft/ui/toast";
 import { closePosRegisterSession, openPosRegisterSession } from "./actions";
 
 type Session = { id: string; status: string; opening_cash_minor: number; cash_activity_minor: number; closing_cash_minor: number | null; discrepancy_minor: number | null; opened_at: string; closed_at: string | null; location_id: string | null; notes: string | null };

@@ -2,10 +2,13 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { toast } from "@/components/ui/toast";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@zerocraft/ui/card";
+import { toast } from "@zerocraft/ui/toast";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { getSetupStatus } from "@/app/(auth)/onboarding/actions";
 
 type Kpi = {
   label: string;
@@ -143,6 +146,144 @@ function TaskRow({ task }: { task: Task }) {
   );
 }
 
+// Client-side cache for getSetupStatus to prevent redundant fetches during
+// React Strict Mode double-invocation or HMR remounts.
+const setupStatusClientCache = new Map<string, { data: any; timestamp: number }>();
+const CLIENT_CACHE_TTL_MS = 10_000;
+
+function SetupCard() {
+  const [status, setStatus] = React.useState<{
+    complete: boolean;
+    storeId: string | null;
+    jobId: string | null;
+    jobStatus: string | null;
+    jobProgress: number;
+    setupUrl: string;
+  } | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    // Check client cache first
+    const cacheKey = "setup-status";
+    const cached = setupStatusClientCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CLIENT_CACHE_TTL_MS) {
+      const result = cached.data;
+      if (!result.ok) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+      setStatus({
+        complete: result.complete,
+        storeId: result.storeId,
+        jobId: result.jobId,
+        jobStatus: result.jobStatus,
+        jobProgress: result.jobProgress,
+        setupUrl: result.setupUrl,
+      });
+      setLoading(false);
+      return;
+    }
+
+    getSetupStatus()
+      .then((result) => {
+        if (cancelled) return;
+        // Cache successful responses
+        if (result.ok) {
+          setupStatusClientCache.set(cacheKey, { data: result, timestamp: Date.now() });
+        }
+        if (!result.ok) {
+          setError(result.error);
+          setLoading(false);
+          return;
+        }
+        setStatus({
+          complete: result.complete,
+          storeId: result.storeId,
+          jobId: result.jobId,
+          jobStatus: result.jobStatus,
+          jobProgress: result.jobProgress,
+          setupUrl: result.setupUrl,
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError("Unable to load setup status.");
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <Card className="flex flex-col gap-3">
+        <CardHeader>
+          <CardTitle className="text-[13px] font-medium">Store setup</CardTitle>
+          <CardDescription className="text-[11px]">Completing your onboarding…</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center gap-2 pt-1">
+          <Loader2 className="size-4 animate-spin" />
+          <span className="text-[12px] text-muted-foreground">Checking setup status</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return null;
+  }
+
+  if (!status) return null;
+
+  // Setup complete — show a small success badge only.
+  if (status.complete) {
+    return (
+      <Card className="flex items-center gap-3 border-l-4 border-success px-3 py-2">
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-success/10 text-success-fg">
+          <CheckCircle2 size={16} strokeWidth={2} />
+        </div>
+        <div className="min-w-0 flex flex-col">
+          <span className="text-[12px] font-medium leading-snug" style={{ color: "var(--foreground)" }}>
+            Store setup complete
+          </span>
+          <span className="text-[11px] leading-tight" style={{ color: "var(--success)" }}>
+            Your commerce project is active.
+          </span>
+        </div>
+      </Card>
+    );
+  }
+
+  // Setup incomplete — show an action card.
+  return (
+    <Card className="flex items-center gap-3 border-l-4 border-accent px-3 py-2">
+      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent-foreground">
+        <AlertCircle size={16} strokeWidth={2} />
+      </div>
+      <div className="min-w-0 flex flex-col">
+        <span className="text-[12px] font-medium leading-snug" style={{ color: "var(--foreground)" }}>
+          Complete your store setup
+        </span>
+        <span className="text-[11px] leading-tight" style={{ color: "var(--muted-foreground)" }}>
+          {status.jobStatus ? `${status.jobStatus.charAt(0).toUpperCase() + status.jobStatus.slice(1)} (${status.jobProgress}%)` : "Your commerce project hasn't been provisioned yet."}
+        </span>
+      </div>
+      <Link href={status.setupUrl}>
+        <Button size="sm" className="text-[11px] px-2 py-1.5">
+          Finish setup
+        </Button>
+      </Link>
+    </Card>
+  );
+}
+
 export default function OverviewPage() {
   return (
     <main
@@ -178,6 +319,10 @@ export default function OverviewPage() {
           {kpis.map((kpi) => (
             <KpiCard key={kpi.label} kpi={kpi} />
           ))}
+        </section>
+
+        <section className="mt-8">
+          <SetupCard />
         </section>
 
         <section className="mt-8">

@@ -1,0 +1,49 @@
+
+{
+  "name": "@zerocraft/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared Zerocraft UI primitives used by Zerocraft applications.",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "types": "./src/components/ui/*.tsx",
+      "default": "./src/components/ui/*.tsx"
+    }
+  },
+  "types": "./src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@zerocraft/tailwind-config": "workspace:*",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "cn": "^0.5.2",
+    "framer-motion": "^14.14.0",
+    "lucide-react": "1.72.0",
+    "react-aria-components": "^1.22.1",
+    "tailwind-merge": "^3.7.0"
+  },
+  "peerDependencies": {
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@zerocraft/eslint-config": "workspace:*",
+    "eslint": "9.39.1",
+    "eslint-config-next": "16.4.6",
+    "shadcn": "^4.23.0",
+    "typescript": "5.9.3"
+  }
+}

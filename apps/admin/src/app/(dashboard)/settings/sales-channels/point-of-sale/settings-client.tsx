@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/toast";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@zerocraft/ui/card";
+import { toast } from "@zerocraft/ui/toast";
 import { updatePosSettings } from "./actions";
 
 type Settings = { language: string; recent_carts_retention_hours: number; return_policy_enabled: boolean; allow_store_credit: boolean; require_return_reasons: boolean };

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@zerocraft/ui/card";
 import { saveOrganizationTaxonomyRoots } from "../taxonomy-actions";
 
 type Root = { id: string; name: string; vertical_prefix: string };
@@ -30,7 +30,7 @@ export function ProductCategoryGroupsForm({ roots, enabledIds, canManage }: Prop
       <CardHeader>
         <CardTitle>Product category groups</CardTitle>
         <CardDescription>
-          Choose which Shopify taxonomy groups are available in this organization’s product category picker.
+          Choose which taxonomy groups are available in this organization’s product category picker.
           The taxonomy itself stays shared; only these enabled groups are organization-specific.
         </CardDescription>
       </CardHeader>
@@ -47,7 +47,7 @@ export function ProductCategoryGroupsForm({ roots, enabledIds, canManage }: Prop
               />
               <span className="min-w-0">
                 <span className="block text-sm font-medium">{root.name}</span>
-                <span className="block text-xs text-muted-foreground">Shopify taxonomy · {root.vertical_prefix}</span>
+                <span className="block text-xs text-muted-foreground">Taxonomy · {root.vertical_prefix}</span>
               </span>
             </label>
           ))}

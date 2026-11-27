@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "@/components/ui/toast";
-import { useForm } from "react-hook-form";
+import { toast } from "@zerocraft/ui/toast";
+import { useForm, useWatch } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { slugify } from "@/lib/utils";
@@ -225,8 +225,9 @@ export default function EditProductPage() {
     },
   });
 
-  const watchName = form.watch("name");
-  const watchHandle = form.watch("handle");
+  const watchName = useWatch({ control: form.control, name: "name" });
+  const watchHandle = useWatch({ control: form.control, name: "handle" });
+  const watchStatus = useWatch({ control: form.control, name: "status" });
   const handleInitialized = React.useRef(false);
 
   React.useEffect(() => {
@@ -319,9 +320,9 @@ export default function EditProductPage() {
             .eq("product_id", internalProductId)
             .order("position", { ascending: true }),
           supabase
-            .from("product_variants")
+            .from("variants")
             .select(
-              "id, public_id, sku, barcode, option1, option2, option3, cost_price_paise, selling_price_paise, compare_at_price_paise, cost_per_item_paise, track_quantity, quantity, continue_selling_when_out_of_stock, weight_grams, weight_unit, requires_shipping, is_active",
+              "id, public_id, sku, barcode, option1, option2, option3, cost_price_paise, selling_price_paise:price_paise, compare_at_price_paise, cost_per_item_paise, track_quantity, quantity, continue_selling_when_out_of_stock, weight_grams:grams, weight_unit, requires_shipping, is_active",
             )
             .eq("organization_id", orgId)
             .eq("product_id", internalProductId)
@@ -426,7 +427,7 @@ export default function EditProductPage() {
         })),
         isValid: true,
       });
-      // Shopify exposes the base variant's SKU/barcode controls directly for
+      // Exposes the base variant's SKU/barcode controls directly for
       // products without options; there is no variant matrix to expand.
       setInventoryOpen((optionsResult.data ?? []).length === 0);
       window.setTimeout(() => { variantHydrating.current = false; }, 0);
@@ -454,9 +455,9 @@ export default function EditProductPage() {
     return () => {
       cancelled = true;
     };
-  }, [routeKey, isUuidRoute, isPublicIdRoute, router, form, setSelectedMedia]);
+  }, [routeKey, isUuidRoute, isPublicIdRoute, router, form, setSelectedMedia, setInventoryOpen]);
 
-  const onSubmit = async (values: ProductFormValues) => {
+  const onSubmit = React.useCallback(async (values: ProductFormValues) => {
     if (!organizationId) return;
 
     form.clearErrors();
@@ -677,7 +678,14 @@ export default function EditProductPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [organizationId, variantValue, existingImages, form, loadedVariants, productId, publishingKeys, selectedMedia]);
+
+  const handleFormSubmit = React.useCallback(async (e?: React.FormEvent<HTMLFormElement>) => {
+    if (e) e.preventDefault();
+    const isValid = await form.trigger();
+    if (!isValid) return;
+    await onSubmit(form.getValues());
+  }, [onSubmit, form]);
 
   useDirtyForm({
     dirty: form.formState.isDirty || publishingDirty || variantDirty,
@@ -689,8 +697,7 @@ export default function EditProductPage() {
       router.push(`/products/${productId}`);
     },
     onSave: () => {
-      void form.handleSubmit(onSubmit, () => {
-      })();
+      void handleFormSubmit();
     },
   });
 
@@ -713,9 +720,9 @@ export default function EditProductPage() {
         <div className="mb-6 flex items-center gap-2">
           <h1 className="flex items-center gap-2 text-[22px] font-semibold leading-7 tracking-[-0.02em] text-[#202223]">
             {watchName || "Edit product"}
-            {form.watch("status") && (
-              <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${form.watch("status") === "active" ? "bg-[#d9f7c9] text-[#1f6b2c]" : form.watch("status") === "draft" ? "bg-[#dff3ff] text-[#155b7a]" : "bg-[#f1f1f1] text-[#5f6368]"}`}>
-                {form.watch("status") === "draft" ? "Draft" : form.watch("status") === "archived" ? "Unlisted" : "Active"}
+            {watchStatus && (
+              <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${watchStatus === "active" ? "bg-[#d9f7c9] text-[#1f6b2c]" : watchStatus === "draft" ? "bg-[#dff3ff] text-[#155b7a]" : "bg-[#f1f1f1] text-[#5f6368]"}`}>
+                {watchStatus === "draft" ? "Draft" : watchStatus === "archived" ? "Unlisted" : "Active"}
               </span>
             )}
           </h1>
@@ -723,8 +730,7 @@ export default function EditProductPage() {
         <FormErrorCard errors={form.formState.errors} />
         <form
           id="product-form"
-          onSubmit={form.handleSubmit(onSubmit, () => {
-          })}
+          onSubmit={handleFormSubmit}
           className="grid gap-8 xl:grid-cols-[minmax(0,760px)_280px] xl:gap-12"
         >
           {/* Left column - main form */}

@@ -2,15 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@zerocraft/ui/toast";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@zerocraft/ui/card";
 import { updateStoreContact } from "../actions";
 import { useSettingsDirtyForm } from "@/components/providers/dirty-provider";
 

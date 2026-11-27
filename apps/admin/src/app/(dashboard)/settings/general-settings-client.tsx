@@ -2,17 +2,17 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { toast } from "@/components/ui/toast";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { toast } from "@zerocraft/ui/toast";
+import { Badge } from "@zerocraft/ui/badge";
+import { Button } from "@zerocraft/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/card";
+import { Separator } from "@zerocraft/ui/separator";
 
 import { SettingsRow } from "./settings-row";
 import { BusinessDetailsRow } from "./business-details-row";
@@ -409,13 +409,13 @@ export function GeneralSettingsClient({
               />
               <SettingsRow
                 icon="Headphones"
-                label="Shopify Help Center"
-                href="https://help.shopify.com"
+                label="Help Center"
+                href="https://help.maara.co.in"
               />
               <SettingsRow
                 icon="Code"
-                label="Hire a Shopify Partner"
-                href="https://www.shopify.com/partners/directory"
+                label="Hire a Partner"
+                href="https://www.maara.co.in/partners/directory"
               />
               <Separator className="my-3" />
               <SettingsRow
@@ -448,7 +448,7 @@ export function GeneralSettingsClient({
               </p>
               <Link
                 className="text-sm text-primary underline underline-offset-2"
-                href="https://help.shopify.com/en/manual/organization-settings/create-an-organization"
+                href="https://help.maara.co.in/en/manual/organization-settings/create-an-organization"
               >
                 Learn more
               </Link>

@@ -129,19 +129,19 @@ jobs:
 
       - name: Validate migration naming
         run: |
-          node scripts/validate-migrations.js
+          node tooling/scripts/validate-migrations.js
 
       - name: Check for duplicate migration timestamps
         run: |
-          node scripts/check-duplicate-timestamps.js
+          node tooling/scripts/check-duplicate-timestamps.js
 
       - name: Check potentially destructive migrations
         run: |
-          node scripts/check-destructive-migrations.js
+          node tooling/scripts/check-destructive-migrations.js
 
       - name: Run static security audit
         run: |
-          node scripts/security-audit.js
+          node tooling/scripts/security-audit.js
 
   production-approval-gate:
     name: Production Migration Approval Gate
@@ -155,4 +155,4 @@ jobs:
           echo "WARNING: This PR contains database migrations."
           echo "Review all migration SQL files before merging."
           echo "No automatic destructive migration is run in CI."
-          node scripts/check-destructive-migrations.js
+          node tooling/scripts/check-destructive-migrations.js

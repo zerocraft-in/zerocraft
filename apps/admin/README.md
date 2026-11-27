@@ -1,4 +1,4 @@
-# @maara/admin
+# @zerocraft/admin
 
 Next.js 16 admin application for Maara Merch.
 

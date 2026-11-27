@@ -60,3 +60,6 @@ supabase/taxonomy/
 
 # Local Wrangler state
 .wrangler/
+
+# Local production backup artifacts; never commit row-level data
+artifacts/phase-b/

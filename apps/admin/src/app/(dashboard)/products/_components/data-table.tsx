@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@zerocraft/ui/table";
 
 import { ROW_MODELS } from "./data-table-features";
 
@@ -29,7 +29,6 @@ interface DataTableProps<TData> {
   onSortingChange: (sorting: SortingState) => void;
   pagination: PaginationState;
   onPaginationChange: (pagination: PaginationState) => void;
-  pageSizeOptions?: number[];
   enableSorting?: boolean;
   enablePagination?: boolean;
   className?: string;
@@ -47,7 +46,6 @@ export function DataTable<TData>({
   onSortingChange,
   pagination,
   onPaginationChange,
-  pageSizeOptions = [10, 25, 50, 100],
   enableSorting = true,
   enablePagination = true,
   selectedProducts = [],
@@ -91,7 +89,6 @@ export function DataTable<TData>({
     return <ChevronsUpDown className="h-3 w-3 opacity-50" />;
   };
 
-  const totalRows = data.length;
   const visibleLeafColumns = table.getVisibleLeafColumns();
 
   return (

@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, Download, MapPin, QrCode, Users } from "lucide-react";
+import { ArrowRight, BarChart3, MapPin, QrCode, Users } from "lucide-react";
 import { requirePermission } from "@/lib/auth/session";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@zerocraft/ui/card";
+import { Button } from "@zerocraft/ui/button";
 
 export default async function PointOfSalePage() {
   const context = await requirePermission("sales_channels.view");

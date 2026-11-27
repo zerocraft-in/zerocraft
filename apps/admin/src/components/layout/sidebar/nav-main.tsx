@@ -20,7 +20,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@zerocraft/ui/sidebar";
 
 type NavSubItem = { title: string; url: string };
 type NavItem = {

@@ -1,0 +1,28 @@
+{
+  "name": "@zerocraft/tenant-provisioner-local",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local tenant provisioning worker for Maara platform",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "test": "vitest run",
+    "rotate": "npx tsx src/secret-rotation-cli.ts rotate",
+    "verify": "npx tsx src/secret-rotation-cli.ts verify"
+  },
+  "dependencies": {
+    "pg": "^8.11.0",
+    "pg-cursor": "^2.10.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.0",
+    "@types/uuid": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.6",
+    "vitest": "^5.1.2"
+  }
+}

@@ -8,7 +8,7 @@ import {
 
 import ProductsManager from "./_components/products-manager";
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 
 async function requireOrganizationOrRedirect() {
   try {

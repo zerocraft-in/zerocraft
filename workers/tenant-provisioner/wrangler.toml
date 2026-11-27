@@ -1,0 +1,32 @@
+name = "maara-tenant-provisioner"
+main = "src/index.ts"
+compatibility_date = "2026-11-24"
+workers_dev = false
+
+# All secrets are Cloudflare secrets, never vars in this file:
+#   SUPABASE_OAUTH_CLIENT_ID
+#   SUPABASE_OAUTH_CLIENT_SECRET
+#   SUPABASE_OAUTH_REDIRECT_URI
+#   OAUTH_TOKEN_ENCRYPTION_KEY      (base64, 32 bytes)
+#   OAUTH_ENCRYPTION_KEY_ID
+#   SUPABASE_PLATFORM_URL
+#   SUPABASE_PLATFORM_ANON_KEY
+#   SUPABASE_PLATFORM_SERVICE_ROLE_KEY
+#   PLATFORM_PROJECT_REF
+#   TENANT_PROVISIONER_SHARED_SECRET
+#   ADMIN_APP_URL
+#   PROVISIONER_REDIRECT_ALLOWLIST (comma-separated extra origins)
+#   PROTECTED_PROJECT_REFS         (comma-separated; defaults include platform refs)
+#   ALLOWED_REGIONS                (comma-separated)
+
+[observability]
+enabled = true
+
+# Tenant database passwords are written here and referenced from the Platform DB.
+# Never put a database password in a var or in D1.
+[[kv_namespaces]]
+binding = "TENANT_SECRETS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[triggers]
+crons = ["*/5 * * * *"]

@@ -1,0 +1,11 @@
+{
+  "name": "@zerocraft/tsconfig",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared TypeScript presets used by Zerocraft packages and apps.",
+  "exports": {
+    ".": "./base.json",
+    "./base": "./base.json"
+  }
+}

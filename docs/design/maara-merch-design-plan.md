@@ -111,3 +111,46 @@ Same as pass 1 (no revisions needed). The single bold element is brand teal (`#0
 Apply this plan to the **overview page** (`apps/admin/src/app/(dashboard)/overview/page.tsx`) — the hero / first thing viewers see. Reshape it from generic Shopify Sidekick copy ("Learn the dropshipping basics", "maraapparels domain") into Maara-specific, clothing-retail content following the plan: stock-position hero, left-aligned short lines, Manrope type scale, teal as the single bold element, one motion moment, user-perspective writing.
 
 Reuse existing components/tokens (`Button`, `Card`, Tailwind oklch variables, Manrope font) per AGENTS.md; do not remove working functionality.
+
+---
+## Additional design reference (root DESIGN_PLAN.md)
+
+This section preserves the root-level frontend design plan for reference. It
+uses a different token naming scheme (`--ink`, `--paper`, `--cloth`, `--dye`,
+`--tag`, `--muted`) and a two-family typography (Manrope display, Inter body).
+Where this conflicts with the primary plan above, the primary plan takes
+precedence.
+
+### Color — core base palette
+
+| Token | Hex | Role |
+|-------|-----|------|
+| `--ink` | `#111012` | near-black fabric — body text, primary actions |
+| `--paper` | `#ffffff` | card / tag surface |
+| `--cloth` | `#f4f3f5` | warm-neutral page background |
+| `--dye` | `#0e7c7b` | distinctive brand accent (teal) — primary buttons, active states |
+| `--tag` | `#b45309` | amber clothing tag — stock / sale / low-stock markers only |
+| `--muted` | `#e7e5e4` | hairline borders, dividers, subtle structure |
+
+Already present in `globals.css`: `--primary` teal `oklch(0.48 0.13 165)` and
+`--tag` `#b45309`.
+
+### Type — two families
+
+- **Display / headlines**: Manrope (geometric sans). Used for page titles and
+  section heads.
+- **UI / body**: Inter (system fallback stack), used for data, labels, tables,
+  forms.
+
+Type scale: h1 28px, h2 15px, body 13px, caption 11–12px; intentional weights
+(extrabold display, medium labels, regular body). Line lengths < 80ch.
+
+### Principles
+
+1. Retail vernacular first: "shop floor," "receive stock," "tag garments."
+2. Restraint: spend boldness in ONE place (the tag amber accent).
+3. No generic defaults: no ALL-CAPS eyebrows, no middle dots, no `→` on
+   buttons, no identical rounded cards with the same soft shadow, no warm cream
+   background, no acid-green accent.
+4. Accessibility floor: responsive to mobile, visible keyboard focus,
+   prefers-reduced-motion respected, sufficient contrast.

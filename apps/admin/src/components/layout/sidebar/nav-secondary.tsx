@@ -12,7 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from "@zerocraft/ui/sidebar";
 
 type NavSecondaryItem = {
   title: string;

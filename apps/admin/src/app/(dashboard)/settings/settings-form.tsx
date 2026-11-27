@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { updateOrganization } from "./actions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@zerocraft/ui/card";
 import { useSettingsDirtyForm } from "@/components/providers/dirty-provider";
 
 // Mirrors the server-side checks in ./actions.ts.

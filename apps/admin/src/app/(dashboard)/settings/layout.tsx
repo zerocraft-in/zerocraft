@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/layout/page-header";
  * Settings page layout.
  *
  * The secondary settings navigation is rendered by the dashboard shell as a
- * fixed column (Shopify Admin model): the global sidebar auto-condenses on
+ * fixed column (Admin model): the global sidebar auto-condenses on
  * /settings routes, the settings nav stays anchored, and only the page
  * content scrolls inside `SidebarInset`.
  */

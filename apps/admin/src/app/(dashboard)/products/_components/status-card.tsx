@@ -1,14 +1,14 @@
 "use client";
 
 import { type UseFormReturn } from "react-hook-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@zerocraft/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@zerocraft/ui/select";
 import type { ProductFormValues } from "@/app/(dashboard)/products/lib/product-schema";
 
 type ProductForm = UseFormReturn<ProductFormValues>;

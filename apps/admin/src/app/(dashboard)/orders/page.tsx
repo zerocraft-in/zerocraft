@@ -1,28 +1,10 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
 
-import {
-  requireOrganization,
-  NO_ACTIVE_MEMBERSHIP_ERROR,
-} from "@/lib/auth/session";
+import Link from "next/link";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
+import { OrdersComingSoon } from "./_components/orders-coming-soon";
 
-async function requireOrganizationOrRedirect() {
-  try {
-    return await requireOrganization();
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === NO_ACTIVE_MEMBERSHIP_ERROR
-    ) {
-      redirect("/onboarding");
-    }
-
-    throw error;
-  }
-}
+import { Button } from "@zerocraft/ui/button";
 
 export default async function OrdersPage() {
   return (
@@ -39,7 +21,7 @@ export default async function OrdersPage() {
         </div>
       }
     >
-      coming soon
+      <OrdersComingSoon />
     </PageHeader>
   );
 }

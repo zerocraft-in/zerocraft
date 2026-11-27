@@ -1,0 +1,15 @@
+-- ============================================================================
+-- Zerocraft Platform — local seed
+-- ============================================================================
+-- Reserved for future platform reference data.
+--
+-- All platform roles, permissions, and role-permission mappings are already
+-- seeded idempotently in migration 002. This file is intentionally empty
+-- until additional seed data is needed.
+--
+-- No customer, organization, store, or demo data is created here.
+-- Mani's Platform Owner assignment is performed by the secure bootstrap
+-- mechanism (see docs/security.md), not by this seed file.
+--
+-- Production and shared environments must never be seeded from this file.
+-- ============================================================================

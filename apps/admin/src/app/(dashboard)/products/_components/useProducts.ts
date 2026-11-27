@@ -132,7 +132,7 @@ export function useProducts(organizationId: string) {
         (product.vendor ?? "").toLowerCase().includes(query) ||
         (product.product_type ?? "").toLowerCase().includes(query) ||
         product.tags.some((tag) => tag.toLowerCase().includes(query)) ||
-        product.product_variants.some(
+        product.variants.some(
           (variant) =>
             variant.sku.toLowerCase().includes(query) ||
             (variant.barcode ?? "").toLowerCase().includes(query),

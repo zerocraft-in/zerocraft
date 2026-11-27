@@ -58,8 +58,6 @@ async function requireOrganizationOrRedirect() {
 export default async function SettingsPage() {
   const context = await requireOrganizationOrRedirect();
 
-  const supabase: SupabaseClient = await createServerSupabaseClient();
-
   const organizationId = context.activeOrganization?.id;
   if (!organizationId) {
     redirect("/onboarding");

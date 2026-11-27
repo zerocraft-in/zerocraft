@@ -9,15 +9,15 @@ import {
   createLocation,
   updateLocation,
 } from "./actions";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/card";
+import { Separator } from "@zerocraft/ui/separator";
 
 const CODE_PATTERN = /^[A-Z0-9-]{3,20}$/;
 

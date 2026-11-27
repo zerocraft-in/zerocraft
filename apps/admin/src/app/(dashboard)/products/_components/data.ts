@@ -63,7 +63,7 @@ export async function fetchVariants(
   organizationId: string,
 ): Promise<VariantBaseRow[]> {
   const { data, error } = await supabase
-    .from("product_variants")
+    .from("variants")
     .select(
       `
       id,
@@ -75,14 +75,14 @@ export async function fetchVariants(
       option2,
       option3,
       cost_price_paise,
-      selling_price_paise,
+       selling_price_paise:price_paise,
       compare_at_price_paise,
       cost_per_item_paise,
       tax_rate_bps,
       track_quantity,
       quantity,
       continue_selling_when_out_of_stock,
-      weight_grams,
+       weight_grams:grams,
       weight_unit,
       requires_shipping,
       is_active,
@@ -240,7 +240,7 @@ export function assembleProducts(
 
   return productRows.map((row) => ({
     ...row,
-    product_variants: variantsByProduct.get(row.id) ?? [],
+    variants: variantsByProduct.get(row.id) ?? [],
     product_options: optionsByProduct.get(row.id) ?? [],
     product_images: imagesByProduct.get(row.id) ?? [],
     collections: collectionsByProduct.get(row.id) ?? [],
@@ -290,7 +290,7 @@ export async function fetchProductById(
 
   const [variants, options, images, collections] = await Promise.all([
     supabase
-      .from("product_variants")
+      .from("variants")
       .select(
         `
         id,
@@ -301,14 +301,14 @@ export async function fetchProductById(
         option2,
         option3,
         cost_price_paise,
-        selling_price_paise,
+         selling_price_paise:price_paise,
         compare_at_price_paise,
         cost_per_item_paise,
         tax_rate_bps,
         track_quantity,
         quantity,
         continue_selling_when_out_of_stock,
-        weight_grams,
+         weight_grams:grams,
         weight_unit,
         requires_shipping,
         is_active,
@@ -365,7 +365,7 @@ export async function fetchProductById(
 
   return {
     ...base,
-    product_variants: (variants.data ?? []) as unknown as VariantRow[],
+    variants: (variants.data ?? []) as unknown as VariantRow[],
     product_options: (options.data ?? []) as unknown as ProductOption[],
     product_images: (images.data ?? []) as unknown as ProductImage[],
     collections: collectionsData,
@@ -379,7 +379,7 @@ export async function fetchVariantById(
   variantId: string,
 ): Promise<VariantRow | null> {
   const { data, error } = await supabase
-    .from("product_variants")
+    .from("variants")
     .select(
       `
       id,
@@ -390,14 +390,14 @@ export async function fetchVariantById(
       option2,
       option3,
       cost_price_paise,
-      selling_price_paise,
+       selling_price_paise:price_paise,
       compare_at_price_paise,
       cost_per_item_paise,
       tax_rate_bps,
       track_quantity,
       quantity,
       continue_selling_when_out_of_stock,
-      weight_grams,
+       weight_grams:grams,
       weight_unit,
       requires_shipping,
       is_active,

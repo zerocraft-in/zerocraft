@@ -2,13 +2,13 @@
 
 import * as React from "react";
 import { type UseFormReturn } from "react-hook-form";
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardFooter } from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
+import { Label } from "@zerocraft/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zerocraft/ui/select";
+import { Switch } from "@zerocraft/ui/switch";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@zerocraft/ui/collapsible";
+import { Badge } from "@zerocraft/ui/badge";
 import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import type { ProductFormValues } from "@/app/(dashboard)/products/lib/product-schema";
 

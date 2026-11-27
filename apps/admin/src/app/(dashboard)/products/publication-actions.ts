@@ -18,47 +18,69 @@ export async function syncProductChannelPublications(input: unknown): Promise<Pu
   const parsed = publicationSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid publishing selection." };
 
-  const organizationId = context.activeOrganization!.id;
-  const supabase = await createServerSupabaseClient();
-  const [{ data: product }, { data: channels }, { data: existing }] = await Promise.all([
-    supabase.from("products").select("id").eq("id", parsed.data.productId).eq("organization_id", organizationId).maybeSingle(),
-    supabase.from("sales_channels").select("id,key").in("key", parsed.data.channelKeys),
-    supabase.from("product_publications").select("id,sales_channel_id,status").eq("product_id", parsed.data.productId).eq("organization_id", organizationId),
-  ]);
+  if (!context.activeOrganization) {
+    return { ok: false, error: "No active organization." };
+  }
 
-  if (!product) return { ok: false, error: "Product not found." };
-  if (!channels) return { ok: false, error: "Unable to load sales channels." };
+  const organizationId = context.activeOrganization.id;
+  const supabase = await createServerSupabaseClient();
+
+  // Load channels from the sales_channels registry.
+  const { data: channels, error: channelsError } = await supabase
+    .schema("sales_channels")
+    .from("channels")
+    .select("id, key")
+    .in("key", parsed.data.channelKeys);
+
+  if (channelsError || !channels) {
+    return { ok: false, error: "Unable to load sales channels." };
+  }
+
+  if (channels.length === 0) {
+    return { ok: false, error: "No valid channels found." };
+  }
 
   const channelIds = channels.map((channel) => channel.id);
+
+  // Validate installed channels for this organization.
   const { data: installations, error: installationError } = await supabase
+    .schema("sales_channels")
     .from("channel_installations")
-    .select("sales_channel_id,status")
+    .select("channel_id, status")
     .eq("organization_id", organizationId)
-    .in("sales_channel_id", channelIds)
+    .in("channel_id", channelIds)
     .in("status", ["active", "paused"]);
   if (installationError) return { ok: false, error: "Unable to validate installed channels." };
 
-  const installedIds = new Set((installations ?? []).map((installation) => installation.sales_channel_id));
+  const installedIds = new Set((installations ?? []).map((installation) => installation.channel_id));
   const requestedIds = new Set(channels.filter((channel) => installedIds.has(channel.id)).map((channel) => channel.id));
-  const now = new Date().toISOString();
 
-  const rows = Array.from(requestedIds).map((salesChannelId) => ({
-    organization_id: organizationId,
-    product_id: parsed.data.productId,
-    sales_channel_id: salesChannelId,
-    status: "published" as const,
-    published_at: now,
-    unpublished_at: null,
-  }));
-  if (rows.length > 0) {
-    const { error } = await supabase.from("product_publications").upsert(rows, { onConflict: "organization_id,product_id,sales_channel_id" });
-    if (error) return { ok: false, error: "Unable to publish the product to the selected channels." };
+  if (requestedIds.size === 0) {
+    return { ok: false, error: "No installed channels selected for publishing." };
   }
 
-  const existingRows = (existing ?? []).filter((row) => !requestedIds.has(row.sales_channel_id));
-  for (const row of existingRows) {
-    const { error } = await supabase.from("product_publications").update({ status: "unpublished", unpublished_at: now }).eq("id", row.id).eq("organization_id", organizationId);
-    if (error) return { ok: false, error: "Unable to unpublish the product from a channel." };
+  const now = new Date().toISOString();
+
+  const rows = Array.from(requestedIds).map((channelId) => ({
+    organization_id: organizationId,
+    store_id: null,
+    installation_id: null,
+    product_id: parsed.data.productId,
+    external_product_id: null,
+    external_product_url: null,
+    publication_status: "published",
+    channel_specific_data: {},
+    channel_id: channelId,
+    last_published_at: now,
+    last_synced_at: null,
+    last_error_code: null,
+  }));
+  if (rows.length > 0) {
+    const { error } = await supabase
+      .schema("sales_channels")
+      .from("product_listings")
+      .upsert(rows, { onConflict: "installation_id,external_product_id" });
+    if (error) return { ok: false, error: "Unable to publish the product to the selected channels." };
   }
 
   revalidatePath(`/products/${parsed.data.productId}`);

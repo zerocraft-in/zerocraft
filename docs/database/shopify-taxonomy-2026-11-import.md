@@ -24,7 +24,7 @@ Do not put the service-role key in source control or a browser environment varia
 From the repository root:
 
 ```bash
-bash scripts/download-and-import-shopify-taxonomy-2026-11.sh
+bash tooling/scripts/download-and-import-shopify-taxonomy-2026-11.sh
 ```
 
 The script downloads the official `v2026-11` category, attribute, and return-reason release

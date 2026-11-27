@@ -3,12 +3,17 @@
 Multi-tenant retail management SaaS for clothing businesses — products, stock,
 purchasing, sales, expenses and finance in one admin application.
 
-**Current status: active implementation.** The repository contains a buildable
-Next.js 16 admin application with the dashboard shell, authentication flows,
-settings, products, media, locations, users and audit-log surfaces in active
-development. Database/RLS verification and production hardening remain
-incomplete. See `docs/project-audit-and-implementation-plan.md` for the current
-audit, risks and delivery plan.
+**Current status: Phase 1 foundation — active implementation.** The repository
+contains a buildable Next.js 16 admin application with the dashboard shell,
+authentication flows, settings, products, media, locations, users and audit-log
+surfaces in active development. Database/RLS verification and production
+hardening remain incomplete. See `docs/development/implementation-plan.md` for
+the current audit, risks and delivery plan.
+
+**Not production-ready.** No authentication or RLS implementation exists yet.
+No migration has been applied or tested (Docker is unavailable on the current
+development machine, so the local Supabase stack cannot start). Nothing in this
+repository should be treated as production-ready until Phase 7 is complete.
 
 ---
 
@@ -16,48 +21,81 @@ audit, risks and delivery plan.
 
 ```text
 maara-merch/
-├── apps/
-│   └── admin/                 Next.js 16 admin application
-│       ├── src/app/           App Router (one page in Phase 1)
-│       ├── src/components/    ui, layout, providers
-│       ├── src/lib/           money, utils, future supabase/auth/permissions
-│       ├── src/lib/money.test.ts
-│       ├── e2e/               Playwright tests (browsers not installed yet)
-│       └── public/
-├── packages/                  reserved for contracts and shared types (empty)
-├── supabase/
-│   ├── config.toml            local stack configuration
-│   └── seed.sql               intentionally empty
-├── docs/
-│   ├── architecture/          prototype inspection, mapping, system design
-│   ├── database/              schema and relationships
-│   ├── security/              RLS and authentication plans
-│   ├── business-rules/        inventory, purchases, sales, finance
-│   ├── api/                   API contracts (planned)
-│   ├── development/           local setup and phased plan
-│   └── deployment/            Vercel + Supabase runbook (not executed)
-├── .env.example
-├── package.json               workspace scripts
-├── pnpm-workspace.yaml
-└── SECURITY.md
+├── README.md               # This file
+├── CONTRIBUTING.md         # Contribution guidelines
+├── CHANGELOG.md            # Release history
+├── SECURITY.md             # Security policy and vulnerability reporting
+├── package.json            # Workspace root scripts and dependencies
+├── pnpm-workspace.yaml     # pnpm workspace globs
+├── pnpm-lock.yaml          # Locked dependency tree
+├── .env.example            # Environment variable names (no secrets)
+├── .gitignore
+├── skills-lock.json        # Installed agent skill versions
+│
+├── apps/                   # Applications
+│   ├── admin/              # @zerocraft/admin — Commerce administration (Next.js 16)
+│   └── accounts/           # @zerocraft/accounts — Central authentication (Next.js)
+│
+├── packages/               # Shared libraries and configs
+│   ├── ui/                 # @zerocraft/ui — Shared shadcn/ui components
+│   ├── auth-core/          # @zerocraft/auth-core — Auth, session, RBAC primitives
+│   ├── utils/              # @zerocraft/utils — INR formatting, SKU helpers
+│   ├── validators/         # @zerocraft/validators — Shared Zod schemas
+│   ├── eslint-config/      # @zerocraft/eslint-config — Shared ESLint flat config
+│   ├── tsconfig/           # @zerocraft/tsconfig — Shared TypeScript presets
+│   └── mcp/                # @zerocraft/mcp — MCP server for Maara tools
+│
+├── workers/                # Independently deployable Cloudflare Workers
+│   ├── tenant-provisioner/ # @zerocraft/tenant-provisioner — Tenant provisioning
+│   ├── public-cdn/         # @zerocraft/public-cdn — Public CDN edge gateway
+│   └── taxonomy/           # @zerocraft/taxonomy — Taxonomy import Worker
+│
+├── templates/              # Customer-owned schema templates
+│   └── commerce/           # @zerocraft/commerce-template — Tenant commerce schema
+│
+├── infrastructure/         # Infrastructure configuration
+│   └── supabase/           # Local Supabase project (config, migrations, tests)
+│
+├── tooling/                # Repository scripts and validation
+│   └── scripts/
+│
+└── docs/                   # Technical documentation
+    ├── getting-started/
+    ├── architecture/
+    ├── engineering/
+    ├── infrastructure/
+    ├── security/
+    ├── business-rules/
+    ├── reference/
+    ├── runbooks/
+    ├── staging-security-readiness.md
+    └── ...
 ```
 
-The reference HTML/CSS prototype lives at `D:\projects\maara` and is **read-only**.
-It is the visual source of truth and was not modified.
+## Technology stack
 
-## Stack
+- **Framework:** Next.js 16 App Router, React 19, TypeScript strict
+- **Styling:** Tailwind CSS 4, shadcn/ui (owned primitives), Lucide icons
+- **Typography:** Manrope (display), Inter/system-ui (body)
+- **Forms:** React Hook Form, Zod validation
+- **Tables:** TanStack Table v8
+- **Charts:** Recharts v2
+- **Dates:** date-fns
+- **Notifications:** Sonner
+- **Animations:** Framer Motion
+- **Backend:** Supabase (Postgres, Auth, Storage, RLS), `@supabase/ssr`
+- **Testing:** Vitest (unit), Playwright (E2E)
+- **Package manager:** pnpm 10.18.3
+- **Runtime:** Node.js ≥ 22
 
-Next.js 16 App Router · React 19 · TypeScript strict · Tailwind CSS 4 ·
-shadcn/ui (owned components) · Lucide · Manrope · React Hook Form · Zod ·
-TanStack Table v8 · Recharts v2 · date-fns · Sonner · Supabase (Postgres, Auth,
-Storage) · `@supabase/ssr` · pnpm 10 · Vitest · Playwright.
-
-Exact versions are pinned in `apps/admin/package.json` and the lockfile.
+Exact versions are pinned in `apps/admin/package.json`, `package.json`, and the
+lockfile.
 
 ## Quick start
 
 ```powershell
-$env:PATH = "$env:APPDATA\npm;" + $env:PATH   # Windows: pnpm is installed via npm
+# Windows: pnpm is installed via npm; add to PATH for the session
+$env:PATH = "$env:APPDATA\npm;" + $env:PATH
 pnpm install
 pnpm dev                                     # http://localhost:3000
 ```
@@ -78,25 +116,25 @@ pnpm exec supabase start
 pnpm db:reset
 ```
 
-See `docs/development/local-setup.md` for environment variables, ports and the
-Windows pnpm caveat.
+See `docs/getting-started/development-setup.md` for environment variables, ports
+and the Windows pnpm caveat.
 
 ## What is implemented
 
 | Area | State |
 | --- | --- |
-| Monorepo + pinned dependencies | done |
+| pnpm monorepo + pinned dependencies | done |
 | TypeScript strict, ESLint, production build | done |
 | Maara light/dark tokens, Manrope, theme provider | done |
 | Base UI primitives (button, card, badge, separator, skeleton, sonner) | done |
-| Integer-paise money module + 19 unit tests | done |
+| Integer-paise money module + unit tests | done |
 | Foundation status page, responsive and themed | done |
 | Auth, tenancy, RLS, migrations | designed, not implemented |
-| Dashboard shell and 16 modules | documented, not implemented |
+| Dashboard shell and core modules | documented, not implemented |
 | Supabase local stack | blocked (Docker unavailable) |
 
-Every "not implemented" item is labelled as such in the UI and docs. No button
-pretends to save data, and there is no hardcoded demo dataset outside seed files.
+Every "not implemented" item is labelled as such. No button pretends to save
+data, and there is no hardcoded demo dataset outside seed files.
 
 ## Product scope
 
@@ -115,34 +153,35 @@ Key rules that will not be relaxed:
 - No production secrets in the repository, no production database change without
   approval.
 
-## Documentation
+## Documentation navigation
 
-| Document | Purpose |
-| --- | --- |
-| `docs/architecture/prototype-inspection.md` | what the reference prototype contains |
-| `docs/architecture/prototype-mapping.md` | prototype → route/component mapping |
-| `docs/architecture/system-architecture.md` | layering, tenancy, decisions |
-| `docs/database/schema.md` | normalized schema contract |
-| `docs/database/relationships.md` | ER diagrams |
-| `docs/security/rls-policies.md` | policy matrix, helper functions, tests |
-| `docs/security/authentication.md` | auth, sessions, invitations |
-| `docs/business-rules/*.md` | inventory, purchases, sales, finance |
-| `docs/api/api-reference.md` | current (empty) and planned API |
-| `docs/development/implementation-plan.md` | phases, status, risks |
-| `docs/project-audit-and-implementation-plan.md` | current audit, security findings, cleanup and implementation plan |
-| `docs/deployment/vercel-supabase.md` | deployment runbook (not executed) |
+| Section | Location | Purpose |
+| --- | --- | --- |
+| Getting started | `docs/getting-started/` | Setup, environment variables, common commands |
+| Architecture | `docs/architecture/` | Monorepo structure, package boundaries, system flows |
+| Engineering | `docs/engineering/` | Coding standards, shared UI, styling, testing |
+| Infrastructure | `docs/infrastructure/` | Database architecture, Supabase, Cloudflare Workers, deployment |
+| Security | `docs/security/` | Authentication, authorization, tenant isolation, secrets |
+| Business rules | `docs/business-rules/` | Sales, purchases, inventory, finance |
+| Reference | `docs/reference/` | API reference, workspace commands, troubleshooting |
+| Runbooks | `docs/runbooks/` | Provisioning and recovery procedures |
+| Staging security | `docs/staging-security-readiness.md` | Staging security procedure |
+
+See also:
+
+- `SECURITY.md` — Security policy and vulnerability reporting
+- `CHANGELOG.md` — Release history
+- `docs/design/maara-merch-design-plan.md` — Frontend design plan
+- `docs/staging-security-readiness.md` — Staging security procedure
 
 ## Known blockers
 
-1. **Docker Desktop is not installed.** The local Supabase stack cannot start, so
-   no migration, RLS policy or auth flow has been executed or tested.
+1. **Docker Desktop is not installed.** The local Supabase stack cannot start,
+   so no migration, RLS policy or auth flow has been executed or tested.
 2. **Windows Application Control blocks native pnpm.** Use the npm-installed
-   pnpm 10 through `%APPDATA%\npm` (see local setup).
+   pnpm 10 through `%APPDATA%\npm` (see `docs/getting-started/development-setup.md`).
 3. **Hosted environments do not exist.** No Vercel project, Supabase hosted
    project, domain or CI pipeline has been created.
-
-Nothing in this repository should be treated as production-ready until Phase 7
-is complete and the security suite has run against a real database.
 
 ## Licence
 

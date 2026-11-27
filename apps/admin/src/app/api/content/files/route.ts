@@ -399,7 +399,7 @@ export async function DELETE(request: Request) {
     if (file.key) {
       try {
         await deleteFile({ key: file.key });
-      } catch (r2Error) {
+      } catch {
         console.error("R2 delete failed, aborting DB delete:", {
           mediaId,
           key: file.key,
@@ -496,7 +496,7 @@ export async function PATCH(request: Request) {
     // 1. Copy original object to destination.
     try {
       await renameFile({ sourceKey, destKey });
-    } catch (r2Error) {
+    } catch {
       console.error("R2 copy failed:", { mediaId, sourceKey, destKey });
       return NextResponse.json(
         { error: "Failed to rename file in storage" },
@@ -551,7 +551,7 @@ export async function PATCH(request: Request) {
     // be reaped by retry/cleanup.
     try {
       await deleteFile({ key: sourceKey });
-    } catch (r2Error) {
+    } catch {
       console.error("Original object deletion failed after rename (orphan):", {
         mediaId,
         sourceKey,

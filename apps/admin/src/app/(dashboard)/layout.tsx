@@ -20,15 +20,16 @@ export default async function DashboardLayout({
       redirect("/onboarding");
     }
     if (message === ORGANIZATION_SELECTION_REQUIRED_ERROR) {
-      redirect("/select-organization");
+      redirect("/organizations");
     }
     redirect("/login");
   }
 
   const supabase = await createServerSupabaseClient();
   const { data: installedChannels, error: installedChannelsError } = await supabase
+    .schema("sales_channels")
     .from("channel_installations")
-    .select("status, sales_channel_id")
+    .select("status, channel_id")
     .eq("organization_id", context.activeOrganization!.id)
     .in("status", ["active", "paused"]);
 
@@ -39,12 +40,13 @@ export default async function DashboardLayout({
   }
 
   const installedChannelIds = (installedChannels ?? []).map(
-    (installation) => installation.sales_channel_id,
+    (installation) => installation.channel_id,
   );
   const { data: installedCatalogChannels, error: installedCatalogError } =
     installedChannelIds.length > 0
       ? await supabase
-          .from("sales_channels")
+          .schema("sales_channels")
+          .from("channels")
           .select("id, key")
           .in("id", installedChannelIds)
       : { data: [], error: null };

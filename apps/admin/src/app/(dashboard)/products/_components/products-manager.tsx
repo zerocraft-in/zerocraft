@@ -1,20 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   archiveProduct,
   setProductStatus,
 } from "../actions";
-import { toast } from "@/components/ui/toast";
-import { Button } from "@/components/ui/button";
+import { toast } from "@zerocraft/ui/toast";
+import { Button } from "@zerocraft/ui/button";
 
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from "@/components/ui/card";
+} from "@zerocraft/ui/card";
 import {
   Empty,
   EmptyContent,
@@ -22,7 +22,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "@zerocraft/ui/empty";
 import { Search, Filter, Plus, MoreHorizontal } from "lucide-react";
 
 import {
@@ -31,16 +31,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+} from "@zerocraft/ui/select";
+import { Input } from "@zerocraft/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
+} from "@zerocraft/ui/dropdown-menu";
 
 import { DataTable } from "./data-table";
 import { buildColumns, type ProductColumnCtx } from "./columns";
@@ -50,7 +48,6 @@ import type { ProductRow, StatusFilter } from "../types";
 import { useProducts } from "./useProducts";
 import { useProductSelection } from "./useProductSelection";
 import { BulkToolbar } from "./BulkToolbar";
-import { PageHeader } from "@/components/layout/page-header";
 
 type ProductTableColumns = ColumnDef<ProductRow, unknown>[];
 
@@ -66,14 +63,12 @@ type SortField =
   | "status"
   | "vendor"
   | "product_type";
-type SortDirection = "asc" | "desc";
 
 export default function ProductsManager({
   organizationId,
   permissions,
 }: ProductsManagerProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const canCreate = permissions.has("products.create");
   const canUpdate = permissions.has("products.update");
   const canArchive = permissions.has("products.archive");
@@ -160,7 +155,7 @@ export default function ProductsManager({
     }
   };
 
-  const [showAllSelected, setShowAllSelected] = React.useState(false);
+  const [showAllSelected] = React.useState(false);
 
   const displayProducts = showAllSelected
     ? products.filter((p) => selectedProducts.includes(p.id))
@@ -236,14 +231,11 @@ export default function ProductsManager({
   const bulkToolbar = (
     <BulkToolbar
       selectedProducts={selectedProducts}
-      filteredProducts={filteredProducts}
       allSelected={allSelected}
       someSelected={someSelected}
       canUpdate={canUpdate}
       canArchive={canArchive}
       onSelectAll={handleSelectAll}
-      onSelectProduct={handleSelectProduct}
-      isSelected={isSelected}
       onClearSelection={handleClearSelection}
       onBulkEdit={handleBulkEdit}
       onRefresh={() => router.refresh()}

@@ -1,0 +1,14 @@
+name = "maara-taxonomy"
+main = "src/index.ts"
+compatibility_date = "2026-11-24"
+workers_dev = true
+
+[observability]
+enabled = true
+
+[observability.traces]
+enabled = true
+
+[[r2_buckets]]
+binding = "TAXONOMY"
+bucket_name = "maara"

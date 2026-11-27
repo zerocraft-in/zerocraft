@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "@/components/ui/toast";
+import Image from "next/image";
+import { toast } from "@zerocraft/ui/toast";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import {
   Card,
   CardContent,
@@ -11,9 +12,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
+import { Label } from "@zerocraft/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -22,18 +23,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@zerocraft/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@zerocraft/ui/dropdown-menu";
+import { Separator } from "@zerocraft/ui/separator";
+import { Badge } from "@zerocraft/ui/badge";
+import { Progress } from "@zerocraft/ui/progress";
+import { Checkbox } from "@zerocraft/ui/checkbox";
+import { Skeleton } from "@zerocraft/ui/skeleton";
 import {
   Empty,
   EmptyContent,
@@ -41,8 +42,8 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+} from "@zerocraft/ui/empty";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zerocraft/ui/select";
 import {
   deleteMediaFile,
   registerMediaFile,
@@ -51,7 +52,7 @@ import {
 import {
   Folder,
   Upload,
-  Image,
+  Image as ImageIcon,
   Trash2,
   Edit,
   Copy,
@@ -138,7 +139,7 @@ function formatDate(iso: string | null): string {
 
 function fileIcon(contentType: string | null, name: string) {
   const type = (contentType ?? "").toLowerCase();
-  if (type.startsWith("image/")) return <Image className="size-5" />;
+  if (type.startsWith("image/")) return <ImageIcon className="size-5" />;
   if (type.startsWith("video/")) return <Video className="size-5" />;
   if (type.startsWith("audio/")) return <Music className="size-5" />;
   if (type.includes("pdf")) return <FileText className="size-5" />;
@@ -164,7 +165,7 @@ export default function FilesManager({
   const [loading, setLoading] = React.useState(true);
   const [nextCursor, setNextCursor] = React.useState<string | null>(null);
   const [hasMore, setHasMore] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [, setError] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState("");
   const [typeFilter, setTypeFilter] = React.useState("all");
   const [sort, setSort] = React.useState("newest");
@@ -190,7 +191,7 @@ export default function FilesManager({
     return params;
   };
 
-  const loadFiles = async (resetCursor = true) => {
+  const loadFiles = React.useCallback(async (resetCursor = true) => {
     if (resetCursor) {
       setNextCursor(null);
       setHasMore(false);
@@ -198,7 +199,11 @@ export default function FilesManager({
     setLoading(true);
     setError(null);
     try {
-      const params = buildParams();
+      const params = new URLSearchParams();
+      params.set("limit", String(PAGE_SIZE));
+      if (search) params.set("search", search);
+      if (typeFilter !== "all") params.set("type", typeFilter);
+      params.set("sort", sort);
       const res = await fetch(`${API_BASE}?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load files");
       const data = await res.json();
@@ -216,7 +221,7 @@ export default function FilesManager({
       setIsRefreshing(false);
       setIsNextLoading(false);
     }
-  };
+  }, [search, typeFilter, sort]);
 
   const loadMore = async () => {
     if (!nextCursor || isNextLoading || !hasMore) return;
@@ -229,7 +234,7 @@ export default function FilesManager({
       setFiles((prev) => [...prev, ...(data.files ?? [])]);
       setNextCursor(data.nextCursor ?? null);
       setHasMore(Boolean(data.hasMore));
-    } catch (err) {
+    } catch {
       toast.add({ title: "Failed to load more files.", type: "error" });
     } finally {
       setIsNextLoading(false);
@@ -238,7 +243,7 @@ export default function FilesManager({
 
   React.useEffect(() => {
     loadFiles(true);
-  }, [organizationId, search, typeFilter, sort]);
+  }, [organizationId, search, typeFilter, sort, loadFiles]);
 
   const allVisibleSelected =
     files.length > 0 && files.every((f) => selectedIds.has(f.id));
@@ -400,17 +405,6 @@ export default function FilesManager({
       );
       toast.add({ title: `Failed to upload “${file.name}”.`, type: "error" });
     }
-  };
-
-  const retryUpload = (item: UploadItem) => {
-    setUploads((prev) =>
-      prev.map((i) =>
-        i.id === item.id
-          ? { ...i, status: "pending", progress: 0, error: null }
-          : i,
-      ),
-    );
-    uploadFile(item);
   };
 
   const cancelUpload = (id: string) => {
@@ -788,24 +782,9 @@ export default function FilesManager({
             <FileListTable
               files={files}
               selectedIds={selectedIds}
-              canUpdate={canUpdate}
-              canDelete={canDelete}
               onToggleSelect={toggleSelect}
               onToggleSelectAll={toggleSelectAll}
-              onRename={(mediaId, name) => {
-                setRenameMediaId(mediaId);
-                setRenameName(name);
-                setRenameOpen(true);
-              }}
-              onDelete={(mediaId, name) => {
-                setDeleteMediaId(mediaId);
-                setDeleteName(name);
-                setDeleteOpen(true);
-              }}
               onCopyUrl={copyUrl}
-              onOpen={openFile}
-              onDownload={downloadFile}
-              isImage={isImage}
             />
           )}
           {hasMore && nextCursor && (
@@ -1119,13 +1098,14 @@ function FileCard({
         </DropdownMenu>
       </CardHeader>
       {isImageFile && (
-        <CardContent className="aspect-video overflow-hidden bg-muted">
-          <img
+        <CardContent className="relative aspect-video overflow-hidden bg-muted">
+          <Image
+            fill
             src={file.deliveryUrl}
             alt={file.name}
-            className="h-full w-full object-cover"
+            className="object-cover"
+            loader={(props) => props.src}
             loading="lazy"
-            decoding="async"
           />
         </CardContent>
       )}
@@ -1145,31 +1125,17 @@ function FileCard({
 interface FileListTableProps {
   files: MediaFile[];
   selectedIds: Set<string>;
-  canUpdate: boolean;
-  canDelete: boolean;
   onToggleSelect: (id: string) => void;
   onToggleSelectAll: () => void;
-  onRename: (mediaId: string, name: string) => void;
-  onDelete: (mediaId: string, name: string) => void;
   onCopyUrl: (url: string) => void;
-  onOpen: (url: string) => void;
-  onDownload: (url: string, name: string) => void;
-  isImage: (f: MediaFile) => boolean;
 }
 
 function FileListTable({
   files,
   selectedIds,
-  canUpdate,
-  canDelete,
   onToggleSelect,
   onToggleSelectAll,
-  onRename,
-  onDelete,
   onCopyUrl,
-  onOpen,
-  onDownload,
-  isImage: isImageFile,
 }: FileListTableProps) {
   const allSelected =
     files.length > 0 && files.every((f) => selectedIds.has(f.id));

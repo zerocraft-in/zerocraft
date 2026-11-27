@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@zerocraft/ui/card";
 import { VariantEditor } from "@/app/(dashboard)/products/_components/variant-editor";
 import type { VariantBuilderValue } from "../lib/variant-builder";
 

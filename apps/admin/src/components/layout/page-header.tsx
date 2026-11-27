@@ -11,7 +11,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@zerocraft/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const PageHeaderScrollContainerContext =

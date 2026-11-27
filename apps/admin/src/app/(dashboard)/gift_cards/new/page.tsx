@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,13 +14,13 @@ import {
   X,
 } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@zerocraft/ui/toast";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@zerocraft/ui/button";
+import { Input } from "@zerocraft/ui/input";
+import { Label } from "@zerocraft/ui/label";
+import { Textarea } from "@zerocraft/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -29,14 +29,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@zerocraft/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@zerocraft/ui/select";
 import { PriceInput } from "@/components/ui/price-input";
 import { useDirtyForm } from "@/components/providers/dirty-provider";
 import { cn } from "@/lib/utils";
@@ -652,13 +652,13 @@ export default function NewGiftCardPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-[#616161]">Gift card code</span>
                     <span className="font-medium text-foreground truncate">
-                      {form.watch("code")}
+                      {useWatch({ control: form.control, name: "code" })}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-[#616161]">Initial value</span>
                     <span className="font-medium text-foreground">
-                      ₹{form.watch("initialValue") || "0.00"}
+                      ₹{useWatch({ control: form.control, name: "initialValue" }) || "0.00"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -670,7 +670,7 @@ export default function NewGiftCardPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-[#616161]">Customer</span>
                     <span className="font-medium text-foreground truncate">
-                      {form.watch("customer") || "—"}
+                      {useWatch({ control: form.control, name: "customer" }) || "—"}
                     </span>
                   </div>
                 </div>

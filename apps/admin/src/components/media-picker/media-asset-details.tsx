@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "@/components/ui/toast";
+import Image from "next/image";
+import { toast } from "@zerocraft/ui/toast";
 
 import {
   Dialog,
@@ -11,19 +12,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@zerocraft/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@zerocraft/ui/dropdown-menu";
+import { Separator } from "@zerocraft/ui/separator";
+import { Badge } from "@zerocraft/ui/badge";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
+import { Label } from "@zerocraft/ui/label";
 import { deleteMediaFile, renameMediaFile } from "@/app/(dashboard)/content/files/actions";
 import {
   Copy,
@@ -149,17 +150,18 @@ export function MediaAssetDetails({
           <div className="flex items-center justify-center">
             <div
               className={cn(
-                "flex items-center justify-center rounded-lg border border-border bg-muted",
+                "relative flex items-center justify-center rounded-lg border border-border bg-muted",
                 isImage ? "aspect-video overflow-hidden" : "w-48 h-32",
               )}
             >
               {isImage ? (
-                <img
+                <Image
+                  fill
                   src={asset.url}
                   alt={asset.name}
-                  className="h-full w-full object-contain"
+                  className="object-contain"
+                  loader={() => asset.url}
                   loading="lazy"
-                  decoding="async"
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">

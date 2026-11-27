@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type * as React from "react";
 import localFont from "next/font/local";
 
-import { Toaster } from "@/components/ui/toast";
+import { Toaster } from "@zerocraft/ui/toast";
 
 import "./globals.css";
 

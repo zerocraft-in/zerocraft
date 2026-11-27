@@ -1,0 +1,112 @@
+
+import * as React from "react"
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Info,
+} from "lucide-react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "cn"
+
+const alertVariants = cva(
+  "group/alert relative grid w-full gap-0.5 rounded-lg border px-2.5 py-2 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
+  {
+    variants: {
+      variant: {
+        default: "bg-card text-card-foreground",
+        destructive:
+          "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
+        success:
+          "border-emerald-500/20 bg-emerald-500/5 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 *:data-[slot=alert-description]:text-emerald-700/90 dark:*:data-[slot=alert-description]:text-emerald-400/90",
+        error:
+          "border-destructive/20 bg-destructive/5 text-destructive *:data-[slot=alert-description]:text-destructive/90",
+        warning:
+          "border-amber-500/20 bg-amber-500/5 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400 *:data-[slot=alert-description]:text-amber-700/90 dark:*:data-[slot=alert-description]:text-amber-400/90",
+        info:
+          "border-blue-500/20 bg-blue-500/5 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400 *:data-[slot=alert-description]:text-blue-700/90 dark:*:data-[slot=alert-description]:text-blue-400/90",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+type AlertProps = React.ComponentProps<"div"> &
+  VariantProps<typeof alertVariants> & {
+    showIcon?: boolean
+  }
+
+function Alert({
+  className,
+  variant = "default",
+  showIcon = false,
+  children,
+  ...props
+}: AlertProps) {
+  const icons = {
+    success: CheckCircle2,
+    error: AlertCircle,
+    warning: AlertTriangle,
+    info: Info,
+    destructive: AlertCircle,
+  }
+
+  const Icon = icons[variant as keyof typeof icons]
+
+  return (
+    <div
+      data-slot="alert"
+      role="alert"
+      className={cn(alertVariants({ variant }), className)}
+      {...props}
+    >
+      {showIcon && Icon && (
+        <Icon aria-hidden="true" className="size-4" />
+      )}
+      {children}
+    </div>
+  )
+}
+
+function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="alert-title"
+      className={cn(
+        "font-medium group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function AlertDescription({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="alert-description"
+      className={cn(
+        "text-sm text-balance text-muted-foreground md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="alert-action"
+      className={cn("absolute top-2 right-2", className)}
+      {...props}
+    />
+  )
+}
+
+export { Alert, AlertTitle, AlertDescription, AlertAction }

@@ -1,14 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { createOrganization } from "./actions";
-import { fetchTaxonomyManifest } from "@/lib/shopify-taxonomy";
-import { Button } from "@/components/ui/button";
+import { fetchTaxonomyManifest } from "@/lib/taxonomy";
+import { Button } from "@zerocraft/ui/button";
 
 const onboardingSchema = z.object({
   organizationName: z
@@ -22,7 +23,7 @@ const onboardingSchema = z.object({
 type OnboardingFormValues = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-  const [submitted, setSubmitted] = React.useState(false);
+  const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [taxonomyRoots, setTaxonomyRoots] = React.useState<Array<{ id: string; name: string }>>([]);
@@ -91,34 +92,13 @@ export default function OnboardingPage() {
         return;
       }
 
-      setSubmitted(true);
+      // Redirect to the Store Setup Wizard with the new organization id.
+      router.push(`/onboarding/setup?organizationId=${encodeURIComponent(result.organizationId)}`);
     } catch {
       setError("Unable to create organization. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
-
-  if (submitted) {
-    return (
-      <div className="mx-auto flex h-full w-full flex-col items-center justify-center">
-        <div className="mx-auto flex max-w-[340px] flex-col items-center text-center">
-          <div
-            aria-hidden="true"
-            className="flex size-8 shrink-0 items-center justify-center rounded-md bg-success text-[13px] font-bold text-success-fg mb-6"
-          >
-            ✓
-          </div>
-          <h2 className="text-sm font-semibold tracking-[-0.02em]">
-            Business created
-          </h2>
-          <p className="mt-2 text-2xs text-meta">
-            Your organization is set up. You are the Owner.
-          </p>
-          <Button render={<Link href="/overview" className="text-sm">Go to dashboard</Link>} className="mt-6 w-auto" />
-        </div>
-      </div>
-    );
   }
 
   return (

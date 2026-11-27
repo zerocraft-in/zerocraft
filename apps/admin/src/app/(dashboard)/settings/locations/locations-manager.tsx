@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@zerocraft/ui/toast";
 
 import {
   archiveLocation,
@@ -10,7 +10,7 @@ import {
   unassignUserFromLocation,
 } from "./actions";
 import LocationForm from "./location-form";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 import {
   Card,
   CardContent,
@@ -18,9 +18,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/card";
+import { Badge } from "@zerocraft/ui/badge";
+import { Separator } from "@zerocraft/ui/separator";
 
 type LocationRow = {
   id: string;

@@ -1,0 +1,164 @@
+{
+  "name": "zerocraft-default-commerce",
+  "version": "1.0.0",
+  "schema": "public",
+  "minimumPostgres": 15,
+  "requiredExtensions": [
+    "pgcrypto",
+    "citext"
+  ],
+  "installOrder": [
+    "migrations",
+    "seeds",
+    "initialize_tenant",
+    "verification"
+  ],
+  "migrations": [
+    {
+      "version": "001",
+      "kind": "migration",
+      "file": "migrations/001_core.sql",
+      "checksum": "ff134a034fa4fbf5fa37ba6ef62d81d2f219eb53b80742cc1a810a25d19f50e3"
+    },
+    {
+      "version": "002",
+      "kind": "migration",
+      "file": "migrations/002_identity_and_access.sql",
+      "checksum": "01c09b88a303f148284d4506c448124a2b793877520528c7cbb99d76953f91c2"
+    },
+    {
+      "version": "003",
+      "kind": "migration",
+      "file": "migrations/003_catalog.sql",
+      "checksum": "d007f897b36e3c95aa40ed73e75bae4c2713fa515812d5f1b6971aa78d8db81e"
+    },
+    {
+      "version": "004",
+      "kind": "migration",
+      "file": "migrations/004_product_options_and_variants.sql",
+      "checksum": "575b15bd05b77bc61fc5a9b39ff29855f74613fe87bd646a9515082a85f4075e"
+    },
+    {
+      "version": "005",
+      "kind": "migration",
+      "file": "migrations/005_collections_and_media.sql",
+      "checksum": "fd9e1f9902794b984f00e93215f8350908d622022bcdc3f46125dd0337546b68"
+    },
+    {
+      "version": "006",
+      "kind": "migration",
+      "file": "migrations/006_taxonomy_integration.sql",
+      "checksum": "10bd278b79ea9e98036e4ff2cdae0c4f99a4304d271cba0d72e0a8182c12644e"
+    },
+    {
+      "version": "007",
+      "kind": "migration",
+      "file": "migrations/007_inventory.sql",
+      "checksum": "0d0a2870458a13397fc38391b568d93d5be6b19ee73a42e2023f0041926a4632"
+    },
+    {
+      "version": "008",
+      "kind": "migration",
+      "file": "migrations/008_customers.sql",
+      "checksum": "730bb7abbcb1476fd1a073fdcba6b6e56fe608118adb95e31ba62acd23738ddf"
+    },
+    {
+      "version": "009",
+      "kind": "migration",
+      "file": "migrations/009_orders.sql",
+      "checksum": "2b00e13345545e6f409699e5b8bfa7557b75d3091044186ee89a20227ce549b0"
+    },
+    {
+      "version": "010",
+      "kind": "migration",
+      "file": "migrations/010_payments.sql",
+      "checksum": "e3197472acb9b9b881b88674e23159abc66170ab098a97e141c03bc25fb8961b"
+    },
+    {
+      "version": "011",
+      "kind": "migration",
+      "file": "migrations/011_shipping.sql",
+      "checksum": "8821ff09bb17907a5b100ae4b47c082f320fca0e3a8a1bc2614b548a4abbcf0f"
+    },
+    {
+      "version": "012",
+      "kind": "migration",
+      "file": "migrations/012_sales_channels.sql",
+      "checksum": "488bffceaf2a283f3510a91e96708a955d1f91a9997617c5aeab47c53f9c5589"
+    },
+    {
+      "version": "013",
+      "kind": "migration",
+      "file": "migrations/013_pos.sql",
+      "checksum": "f23457727ee1c8fb0856b1aede89785beed3bb80c8e6404d774e42301f79857d"
+    },
+    {
+      "version": "014",
+      "kind": "migration",
+      "file": "migrations/014_audit_and_webhooks.sql",
+      "checksum": "318ac92bd98383a1b2782deac060db9f1f17485fe7240fab4253666e35533674"
+    },
+    {
+      "version": "015",
+      "kind": "migration",
+      "file": "migrations/015_rls_and_security.sql",
+      "checksum": "023893aa404e36a6974952789e5106f487648983d7435e0e67f8d794747be4f2"
+    }
+  ],
+  "seeds": [
+    {
+      "version": "def",
+      "kind": "seed",
+      "file": "seeds/default_permissions.sql",
+      "checksum": "ce12abc4cd8bfb014a7d68650d22c34cedfbff717071a3e3291316d31ea60722"
+    },
+    {
+      "version": "def",
+      "kind": "seed",
+      "file": "seeds/default_roles.sql",
+      "checksum": "04258173673f637eb3ca9148d6643dee755c1c142c5c45cc38615728a30ccda9"
+    },
+    {
+      "version": "def",
+      "kind": "seed",
+      "file": "seeds/default_sales_channels.sql",
+      "checksum": "e6f40ed0cd01109529389ab1f08cb17cafbbe7727fd511b20938aeb1d2740ac7"
+    },
+    {
+      "version": "def",
+      "kind": "seed",
+      "file": "seeds/default_settings.sql",
+      "checksum": "8dbacbb24d087a16ca55a8a58e4d72ca4a418f1b9b08ad733cc9eae37ad1a3c7"
+    }
+  ],
+  "verification": [
+    {
+      "version": "hea",
+      "kind": "verify",
+      "file": "tests/health-verification.sql",
+      "checksum": "46da74e0b0ac28fc072b1ad4a74f81c38e0e14464d5db309bb29ea3d77534b6f"
+    },
+    {
+      "version": "rls",
+      "kind": "verify",
+      "file": "tests/rls-verification.sql",
+      "checksum": "42ee9caa92e7887390b052a4ee41c0fabeaf8516afeedeec236868268f367aee"
+    },
+    {
+      "version": "sch",
+      "kind": "verify",
+      "file": "tests/schema-verification.sql",
+      "checksum": "d1a592bd3fb9053172b921c40a1bc3b58d71703b3ec0b6d23d3109a071a1eee8"
+    }
+  ],
+  "protectedProjects": [
+    "ftcvyhlzeyqceosdqyxn",
+    "qvjhwxriafgobxknpqtq"
+  ],
+  "protectedProjectNote": "Never install this template into a Zerocraft Platform project. These refs are documented protected projects and the installer must refuse them.",
+  "notes": [
+    "Checksums are SHA-256 of the exact file bytes.",
+    "Applied files are never edited; add a new migration instead.",
+    "The provisioning Worker records the same checksums in the Platform DB table tenant_migrations."
+  ]
+}

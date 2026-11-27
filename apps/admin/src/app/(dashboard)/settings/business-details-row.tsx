@@ -8,11 +8,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@zerocraft/ui/dropdown-menu";
+import { Button } from "@zerocraft/ui/button";
 import { AboutYourBusinessDrawer } from "./about-your-business-drawer";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@zerocraft/ui/card";
 import Link from "next/link";
+import Image from "next/image";
 
 type BusinessDetailsRowProps = {
   org: {
@@ -34,11 +35,12 @@ export function BusinessDetailsRow({ org }: BusinessDetailsRowProps) {
       <Card className="overflow-hidden">
         <CardContent className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex shrink-0 items-center justify-center size-10 w-10 h-5 rounded-md">
-              <img
+            <div className="relative flex shrink-0 items-center justify-center size-10 w-10 h-5 rounded-md">
+              <Image
+                fill
                 src="https://flagcdn.com/w40/in.png"
                 alt="India flag"
-                className="size-10 rounded-md object-contain"
+                className="object-contain"
               />
             </div>
             <div className="min-w-0 flex flex-col leading-none">

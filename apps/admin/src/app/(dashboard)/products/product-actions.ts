@@ -6,7 +6,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import { slugify } from "@/lib/utils";
-import { fetchTaxonomyVertical } from "@/lib/shopify-taxonomy";
+import { fetchTaxonomyVertical } from "@/lib/taxonomy";
 
 export type ProductResult =
   | { ok: true; id?: string }

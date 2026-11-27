@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "@/components/ui/toast";
+import Image from "next/image";
+import { toast } from "@zerocraft/ui/toast";
 
 import {
   Dialog,
@@ -11,18 +12,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@zerocraft/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@zerocraft/ui/dropdown-menu";
+import { Separator } from "@zerocraft/ui/separator";
+import { Badge } from "@zerocraft/ui/badge";
+import { Progress } from "@zerocraft/ui/progress";
+import { Checkbox } from "@zerocraft/ui/checkbox";
+import { Skeleton } from "@zerocraft/ui/skeleton";
 import {
   Empty,
   EmptyContent,
@@ -30,38 +31,27 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@zerocraft/ui/empty";
+import { Input } from "@zerocraft/ui/input";
+import { Label } from "@zerocraft/ui/label";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@zerocraft/ui/card";
 import {
   registerMediaFile,
   deleteMediaFile,
-  renameMediaFile,
 } from "@/app/(dashboard)/content/files/actions";
 import {
   Folder,
   Upload,
-  Image,
   Trash2,
-  Edit,
   Copy,
   Search,
-  Download,
   ExternalLink,
   Plus,
-  FileText,
-  Video,
-  Music,
   MoreHorizontal,
-  AlertCircle,
   Clock,
   RefreshCw,
-  X,
-  Check,
   ArrowDown,
-  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -70,7 +60,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@zerocraft/ui/select";
 
 export type PickedMedia = {
   id: string;
@@ -107,23 +97,6 @@ const TYPE_LABELS: Record<string, string> = {
   other: "Other",
 };
 
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-}
-
-function fileIcon(contentType: string | null, name: string) {
-  const type = (contentType ?? "").toLowerCase();
-  if (type.startsWith("image/")) return <Image className="size-5" />;
-  if (type.startsWith("video/")) return <Video className="size-5" />;
-  if (type.startsWith("audio/")) return <Music className="size-5" />;
-  if (type.includes("pdf")) return <FileText className="size-5" />;
-  return <FileText className="size-5 text-muted-foreground" />;
-}
-
 function isImage(f: MediaFile) {
   return Boolean(f.contentType?.startsWith("image/"));
 }
@@ -150,7 +123,6 @@ export function MediaPicker({
   acceptedTypes,
   selectedMedia: initialSelected = [],
   onConfirm,
-  onCancel,
   disabled = false,
   folder = "uploads",
 }: MediaPickerProps) {
@@ -158,10 +130,10 @@ export function MediaPicker({
   const [nextCursor, setNextCursor] = React.useState<string | null>(null);
   const [hasMore, setHasMore] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const [, setError] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState("");
   const [typeFilter, setTypeFilter] = React.useState("all");
-  const [sort, setSort] = React.useState("newest");
+  const [sort] = React.useState("newest");
   const [uploads, setUploads] = React.useState<UploadItem[]>([]);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [isNextLoading, setIsNextLoading] = React.useState(false);
@@ -178,7 +150,7 @@ export function MediaPicker({
     );
   };
 
-  const buildParams = () => {
+  const buildParams = React.useCallback(() => {
     const params = new URLSearchParams();
     params.set("limit", String(PAGE_SIZE));
     if (nextCursor) params.set("cursor", nextCursor);
@@ -186,9 +158,9 @@ export function MediaPicker({
     if (typeFilter !== "all") params.set("type", typeFilter);
     params.set("sort", sort);
     return params;
-  };
+  }, [nextCursor, search, typeFilter, sort]);
 
-  const loadFiles = async (resetCursor = true) => {
+  const loadFiles = React.useCallback(async (resetCursor = true) => {
     if (resetCursor) {
       setNextCursor(null);
       setHasMore(false);
@@ -210,7 +182,7 @@ export function MediaPicker({
       setIsRefreshing(false);
       setIsNextLoading(false);
     }
-  };
+  }, [buildParams]);
 
   const loadMore = async () => {
     if (!nextCursor || isNextLoading || !hasMore) return;
@@ -231,12 +203,12 @@ export function MediaPicker({
 
   React.useEffect(() => {
     if (open) loadFiles(true);
-  }, [open]);
+  }, [open, loadFiles]);
 
   // Re-seed selection when initialSelected changes externally.
   React.useEffect(() => {
     setSelectedIds(new Set(initialSelected.map((m) => m.id)));
-  }, [JSON.stringify(initialSelected)]);
+  }, [initialSelected]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -407,7 +379,7 @@ export function MediaPicker({
     }
   };
 
-  const handleDelete = async (mediaId: string, name: string) => {
+  const handleDelete = async (mediaId: string) => {
     try {
       const result = await deleteMediaFile({ mediaId });
       if (result.ok) {
@@ -424,10 +396,6 @@ export function MediaPicker({
 
   const copyUrl = (url: string) => {
     navigator.clipboard.writeText(url).then(() => toast.add({ title: "URL copied.", type: "success" }));
-  };
-
-  const handleDrop = (accepted: File[]) => {
-    startUploads(accepted.filter((f) => isTypeAllowed(categoryFromType(f.type))));
   };
 
   if (!open) return null;
@@ -562,7 +530,7 @@ export function MediaPicker({
                     selected={sel}
                     disabledSelect={disabledSelect}
                     onToggleSelect={() => toggleSelect(file.id)}
-                    onDelete={(id, name) => handleDelete(id, name)}
+                    onDelete={(id) => handleDelete(id)}
                     onCopyUrl={copyUrl}
                     isImage={isImage(file)}
                     canUse={isTypeAllowed(categoryFromType(file.contentType ?? ""))}
@@ -664,8 +632,14 @@ function PickerCard({
         </DropdownMenu>
       </CardHeader>
       {isImageFile && (
-        <CardContent className="aspect-video overflow-hidden bg-muted">
-          <img src={file.deliveryUrl} alt={file.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+        <CardContent className="relative aspect-video overflow-hidden bg-muted">
+          <Image
+            fill
+            src={file.deliveryUrl}
+            alt={file.name}
+            className="object-cover"
+            loading="lazy"
+          />
         </CardContent>
       )}
       <CardFooter className="p-3 flex justify-between items-center">

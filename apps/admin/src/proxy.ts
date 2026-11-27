@@ -204,8 +204,10 @@ export async function proxy(request: NextRequest) {
   response.headers.set("X-Request-Id", requestId);
 
   // API handlers own authentication and must return JSON errors rather than
-  // receiving browser redirects to the login page.
+  // receiving browser redirects to the login page. The cross-subdomain auth
+  // routes must also run without a pre-existing admin session.
   if (reqPathname.startsWith("/api/")) return response;
+  if (reqPathname.startsWith("/auth/")) return response;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

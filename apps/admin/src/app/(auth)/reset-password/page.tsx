@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@zerocraft/ui/button";
 
 const resetPasswordSchema = z
   .object({
@@ -16,7 +16,7 @@ const resetPasswordSchema = z
       .min(12, "Password must be at least 12 characters")
       .regex(
         /^(?=.*[a-zA-Z])(?=.*[0-9])/,
-        "Password must contain letters and digits"
+        "Password must contain letters and digits",
       ),
     confirmPassword: z.string().min(1, "Confirm your password"),
   })
@@ -77,7 +77,15 @@ export default function ResetPasswordPage() {
           <p className="mt-2 text-2xs text-meta">
             Your password has been changed. You can now sign in.
           </p>
-<Button render={<Link href="/login" className="text-sm">Back to login</Link>} variant="outline" className="mt-6 w-auto" />
+          <Button
+            render={
+              <Link href="/login" className="text-sm">
+                Back to login
+              </Link>
+            }
+            variant="outline"
+            className="mt-6 w-auto"
+          />
         </div>
       </div>
     );
@@ -93,7 +101,9 @@ export default function ResetPasswordPage() {
           >
             M
           </div>
-          <p className="text-sm font-semibold tracking-[-0.02em]">Maara Merch</p>
+          <p className="text-sm font-semibold tracking-[-0.02em]">
+            Maara Merch
+          </p>
         </div>
 
         <h2 className="mb-6 text-sm font-semibold tracking-[-0.02em]">
@@ -109,7 +119,10 @@ export default function ResetPasswordPage() {
           className="flex flex-col gap-4"
         >
           <div className="flex flex-col gap-2">
-            <label htmlFor="password" className="text-2xs font-semibold text-meta">
+            <label
+              htmlFor="password"
+              className="text-2xs font-semibold text-meta"
+            >
               New password
             </label>
             <input
@@ -128,7 +141,10 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="confirmPassword" className="text-2xs font-semibold text-meta">
+            <label
+              htmlFor="confirmPassword"
+              className="text-2xs font-semibold text-meta"
+            >
               Confirm password
             </label>
             <input

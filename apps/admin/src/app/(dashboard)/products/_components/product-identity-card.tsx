@@ -2,14 +2,14 @@
 
 import * as React from "react";
 import { Controller, type UseFormReturn } from "react-hook-form";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@zerocraft/ui/card";
+import { Button } from "@zerocraft/ui/button";
+import { Input } from "@zerocraft/ui/input";
+import { Label } from "@zerocraft/ui/label";
+import Image from "next/image";
 import type { ProductFormValues } from "@/app/(dashboard)/products/lib/product-schema";
 import { RichTextEditor } from "@/components/tiptap/rich-text-editor";
-import { ShopifyCategoryPicker } from "./shopify-category-picker";
+import { CategoryPicker } from "./category-picker";
 
 type ProductForm = UseFormReturn<ProductFormValues>;
 
@@ -26,55 +26,6 @@ export function ProductIdentityCard({
   setMediaPickerOpen,
   organizationId,
 }: ProductIdentityCardProps) {
-  const descriptionRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const descriptionField = form.register("description");
-
-  const applyDescriptionFormat = React.useCallback(
-    (prefix: string, suffix = prefix) => {
-      const field = descriptionRef.current;
-      const value = form.getValues("description") ?? "";
-      if (!field) return;
-
-      const start = field.selectionStart ?? value.length;
-      const end = field.selectionEnd ?? start;
-      const selected = value.slice(start, end) || "text";
-      const nextValue = `${value.slice(0, start)}${prefix}${selected}${suffix}${value.slice(end)}`;
-
-      form.setValue("description", nextValue, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-
-      requestAnimationFrame(() => {
-        field.focus();
-        const nextStart = start + prefix.length;
-        field.setSelectionRange(nextStart, nextStart + selected.length);
-      });
-    },
-    [form],
-  );
-
-  const insertDescriptionText = React.useCallback(
-    (text: string) => {
-      const field = descriptionRef.current;
-      const value = form.getValues("description") ?? "";
-      if (!field) return;
-      const start = field.selectionStart ?? value.length;
-      const end = field.selectionEnd ?? start;
-      const nextValue = `${value.slice(0, start)}${text}${value.slice(end)}`;
-      form.setValue("description", nextValue, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      requestAnimationFrame(() => {
-        field.focus();
-        const cursor = start + text.length;
-        field.setSelectionRange(cursor, cursor);
-      });
-    },
-    [form],
-  );
-
   return (
     <Card className="overflow-hidden">
       <CardContent className="space-y-6 p-4">
@@ -127,7 +78,12 @@ export function ProductIdentityCard({
                     : "relative h-28 w-28 overflow-hidden rounded-xl border border-[#c9c9c9] bg-[#f6f6f6]"}
                   aria-label={`Edit ${media.name}`}
                 >
-                  <img src={media.url} alt={media.name} className="h-full w-full object-cover" />
+                  <Image
+                    fill
+                    src={media.url}
+                    alt={media.name}
+                    className="object-cover"
+                  />
                 </button>
               ))
             ) : null}
@@ -146,7 +102,7 @@ export function ProductIdentityCard({
             <p className="text-xs text-[#616161]">Accepts images, videos, or 3D models</p>
           </div>
         </div>
-        <ShopifyCategoryPicker form={form} organizationId={organizationId} />
+        <CategoryPicker form={form} organizationId={organizationId} />
       </CardContent>
     </Card>
   );

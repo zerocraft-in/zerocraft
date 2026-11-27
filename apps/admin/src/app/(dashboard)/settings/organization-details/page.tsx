@@ -8,14 +8,14 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+} from "@zerocraft/ui/card";
+import { Badge } from "@zerocraft/ui/badge";
+import { Button } from "@zerocraft/ui/button";
+import { Separator } from "@zerocraft/ui/separator";
 import { MapPin, Mail, Phone, Globe } from "lucide-react";
+import Image from "next/image";
 
 type OrganizationRow = {
   id: string;
@@ -160,11 +160,11 @@ export default async function OrganizationDetailsPage() {
             </h2>
             <div className="flex gap-4">
               <div className="relative flex-1 aspect-video rounded-xl border border-border overflow-hidden">
-                <img
+                <Image
+                  fill
                   src="/map-placeholder.svg"
                   alt="Organization map"
-                  className="object-cover w-full h-full"
-                  loading="lazy"
+                  className="object-cover"
                 />
               </div>
             </div>

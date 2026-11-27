@@ -17,7 +17,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@zerocraft/ui/table";
 
 import { buildColumns, type AuditLogDisplayRow } from "./columns";
 import { DEFAULT_SORTING } from "./data-table-features";

@@ -8,10 +8,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "@zerocraft/ui/table";
+import { Button } from "@zerocraft/ui/button";
+import { Input } from "@zerocraft/ui/input";
+import { Checkbox } from "@zerocraft/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@zerocraft/ui/dialog";
 import {
   ChevronDown,
   ChevronRight,
@@ -496,7 +496,6 @@ export function VariantTable({
     const open = !!q || expanded.has(g.id);
     const keys = g.items.map((v) => v.key);
     const all = keys.every((k) => selected.has(k));
-    const some = keys.some((k) => selected.has(k));
     const prices = new Set(g.items.map((v) => v.price));
     const commonPrice = prices.size === 1 ? g.items[0].price : "";
     const total = g.items.reduce((n, v) => n + (Number(v.quantity) || 0), 0);

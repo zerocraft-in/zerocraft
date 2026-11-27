@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Code2,
   DiagramFlowHorizontal,
@@ -12,17 +12,15 @@ import {
   X,
 } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Button } from "@zerocraft/ui/button";
+import { Card, CardContent, CardTitle } from "@zerocraft/ui/card";
+import { Input } from "@zerocraft/ui/input";
 
-type Channel = { id: string; key: string; name: string; channel_type: string };
+type Channel = { id: string; key: string; name: string; provider_key: string | null };
 const icons = {
-  online_store: Store,
-  point_of_sale: ShoppingBag,
-  shop: ShoppingBag,
-  buy_button: Code2,
-  agentic: Sparkles,
+  maara: Store,
+  meta: ShoppingBag,
+  amazon: ShoppingBag,
 };
 
 export function PublishingCard({
@@ -40,6 +38,10 @@ export function PublishingCard({
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
+  const onDirtyChangeRef = useRef(onDirtyChange);
+  useEffect(() => {
+    onDirtyChangeRef.current = onDirtyChange;
+  }, [onDirtyChange]);
   useEffect(() => {
     let active = true;
     const load = async () => {
@@ -54,36 +56,31 @@ export function PublishingCard({
         .maybeSingle();
       if (!membership) return;
       const { data: installations } = await supabase
+        .schema("sales_channels")
         .from("channel_installations")
-        .select("sales_channel_id")
+        .select("channel_id")
         .eq("organization_id", membership.organization_id)
         .in("status", ["active", "paused"]);
-      const ids = (installations ?? []).map((row) => row.sales_channel_id);
+      const ids = (installations ?? []).map((row) => row.channel_id);
       const { data: rows } = await supabase
-        .from("sales_channels")
-        .select("id,key,name,channel_type")
+        .schema("sales_channels")
+        .from("channels")
+        .select("id,key,name,provider_key")
         .in("id", ids)
         .order("name");
       const available = (rows ?? []) as Channel[];
       let next = available.map((channel) => channel.key);
+      // Note: product_publications table does not exist yet.
+      // Publishing status is tracked in sales_channels.product_listings.
+      // Published channels cannot be determined until that table is populated.
       if (productId) {
-        const { data: publications } = await supabase
-          .from("product_publications")
-          .select("sales_channel_id,status")
-          .eq("product_id", productId)
-          .eq("status", "published");
-        const publishedIds = new Set(
-          (publications ?? []).map((row) => row.sales_channel_id),
-        );
-        next = available
-          .filter((channel) => publishedIds.has(channel.id))
-          .map((channel) => channel.key);
+        next = available.map((channel) => channel.key);
       }
       if (active) {
         setChannels(available);
         setSelected(next);
         onSelectionChange?.(next);
-        onDirtyChange?.(false);
+        onDirtyChangeRef.current?.(false);
         setLoading(false);
       }
     };
@@ -179,7 +176,7 @@ export function PublishingCard({
                   <span className="rounded bg-muted px-1.5 py-0.5 text-xs">
                     {
                       channels.filter(
-                        (channel) => channel.channel_type === "agentic",
+                        (channel) => channel.provider_key === "agentic",
                       ).length
                     }
                   </span>
