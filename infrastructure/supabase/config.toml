@@ -1,14 +1,14 @@
 #:schema https://supabase.com/schemas/config/v1.json
-# Zerocraft Platform — local Supabase project configuration
-# Generated with `supabase init` (CLI 3.1.0) and adapted for the platform.
-# This is the Zerocraft Platform control-plane database ONLY.
-# Customer commerce data lives in customer-owned Supabase projects, never here.
+# Zerocraft Platform — hosted Supabase project configuration.
+# This directory is the source of truth for the Zerocraft Platform control-plane
+# database only. Commerce data belongs in the separate shared Commerce project.
+# Hosted Development project: zerocraft (yabctjohmktiwgqtuwlw).
 
 project_id = "zerocraft-platform"
 
 [api]
-# Disabled — using hosted Supabase only, no local API proxy.
-enabled = false
+# The hosted Platform project must keep its Data API enabled.
+enabled = true
 port = 54321
 schemas = ["public", "graphql_public", "sales_channels"]
 extra_search_path = ["public", "extensions"]
@@ -28,8 +28,8 @@ orioledb_version = ""
 enabled = false
 port = 54329
 pool_mode = "transaction"
-default_pool_size = 20
-max_client_conn = 100
+default_pool_size = 15
+max_client_conn = 200
 
 [db.migrations]
 enabled = true
@@ -59,7 +59,7 @@ port = 54324
 
 [storage]
 enabled = true
-file_size_limit = "10MiB"
+file_size_limit = "50MiB"
 
 [storage.s3_protocol]
 enabled = true
@@ -71,18 +71,17 @@ max_tables = 10
 max_catalogs = 2
 
 [storage.vector]
-enabled = true
+enabled = false
 max_buckets = 10
 max_indexes = 5
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
+site_url = "https://accounts.zerocraft.in"
 additional_redirect_urls = [
-  "http://localhost:3000/auth/callback",
-  "http://127.0.0.1:3000/auth/callback",
   "http://localhost:3001/callback",
   "http://127.0.0.1:3001/callback",
+  "https://accounts.zerocraft.in/callback",
 ]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
@@ -107,7 +106,7 @@ enabled = true
 double_confirm_changes = true
 enable_confirmations = true
 secure_password_change = false
-max_frequency = "1s"
+max_frequency = "1m0s"
 otp_length = 6
 otp_expiry = 3600
 
@@ -125,15 +124,15 @@ content_path = "./supabase/templates/magic_link.html"
 
 [auth.sms]
 enabled = false
-enable_confirmations = false
+enable_confirmations = true
 template = "Your code is {{ .Code }}"
 max_frequency = "5s"
 
 [auth.mfa]
 max_enrolled_factors = 10
 [auth.mfa.totp]
-enroll_enabled = false
-verify_enabled = false
+enroll_enabled = true
+verify_enabled = true
 [auth.mfa.phone]
 enroll_enabled = false
 verify_enabled = false

@@ -24,6 +24,8 @@ blob-report/
 supabase/.temp/
 supabase/.branches/
 supabase/.env
+infrastructure/supabase/.temp/
+infrastructure/supabase/.branches/
 
 # deployment
 .vercel/

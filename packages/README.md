@@ -5,15 +5,15 @@ applications. All packages use the `@zerocraft/*` scope.
 
 ## Package inventory
 
-| Package | Name | Type | Purpose |
-| --- | --- | --- | --- |
-| `auth-core` | `@zerocraft/auth-core` | Library | Auth security primitives (redirects, rate-limit, crypto, email) |
-| `ui` | `@zerocraft/ui` | Library | Shared shadcn/ui components |
-| `utils` | `@zerocraft/utils` | Library | INR formatting, SKU helpers, constants |
-| `validators` | `@zerocraft/validators` | Library | Shared Zod schemas |
-| `eslint-config` | `@zerocraft/eslint-config` | Config | Shared ESLint flat config |
-| `tsconfig` | `@zerocraft/tsconfig` | Config | Shared TypeScript presets |
-| `mcp` | `@zerocraft/mcp` | Library | MCP server (pre-built dist) |
+| Package         | Name                       | Type    | Purpose                                                         |
+| --------------- | -------------------------- | ------- | --------------------------------------------------------------- |
+| `auth-core`     | `@zerocraft/auth-core`     | Library | Auth security primitives (redirects, rate-limit, crypto, email) |
+| `ui`            | `@zerocraft/ui`            | Library | Shared shadcn/ui components                                     |
+| `utils`         | `@zerocraft/utils`         | Library | INR formatting, SKU helpers, constants                          |
+| `validators`    | `@zerocraft/validators`    | Library | Shared Zod schemas                                              |
+| `eslint-config` | `@zerocraft/eslint-config` | Config  | Shared ESLint flat config                                       |
+| `tsconfig`      | `@zerocraft/tsconfig`      | Config  | Shared TypeScript presets                                       |
+| `mcp`           | `@zerocraft/mcp`           | Library | MCP server (pre-built dist)                                     |
 
 ## Workspace configuration
 
@@ -39,15 +39,15 @@ import { cn } from "../../lib/utils";
 
 ## Current package consumers
 
-| Package | Consumers | Status |
-| --- | --- | --- |
-| `@zerocraft/auth-core` | `apps/admin`, `apps/accounts` | Fully integrated |
-| `@zerocraft/ui` | `apps/admin`, `apps/accounts` | Fully integrated (subpath exports) |
-| `@zerocraft/utils` | `apps/admin` (declared dep) | Declared dependency — not actively imported (behavior incompatible with `money.ts`) |
-| `@zerocraft/validators` | `apps/admin` (declared dep) | Declared dependency — not actively imported (`skuSchema` incompatible with admin SKU validation) |
-| `@zerocraft/eslint-config` | `apps/admin`, `apps/accounts`, `packages/ui` | Integrated as base config |
-| `@zerocraft/tsconfig` | `apps/admin`, `apps/accounts`, all packages | Integrated as base preset |
-| `@zerocraft/mcp` | None | Pre-built dist, no consumers |
+| Package                    | Consumers                                    | Status                                                                                           |
+| -------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `@zerocraft/auth-core`     | `apps/admin`, `apps/accounts`                | Fully integrated                                                                                 |
+| `@zerocraft/ui`            | `apps/admin`, `apps/accounts`                | Fully integrated (subpath exports)                                                               |
+| `@zerocraft/utils`         | `apps/admin` (declared dep)                  | Declared dependency — not actively imported (behavior incompatible with `money.ts`)              |
+| `@zerocraft/validators`    | `apps/admin` (declared dep)                  | Declared dependency — not actively imported (`skuSchema` incompatible with admin SKU validation) |
+| `@zerocraft/eslint-config` | `apps/admin`, `apps/accounts`, `packages/ui` | Integrated as base config                                                                        |
+| `@zerocraft/tsconfig`      | `apps/admin`, `apps/accounts`, all packages  | Integrated as base preset                                                                        |
+| `@zerocraft/mcp`           | None                                         | Pre-built dist, no consumers                                                                     |
 
 ## Adding a new package
 
@@ -59,11 +59,11 @@ import { cn } from "../../lib/utils";
 
 ## Duplicated implementations (intentionally not merged)
 
-| Area | Locations | Decision | Reason |
-| --- | --- | --- | --- |
-| Money / INR formatting | `apps/admin/src/lib/money.ts`, `packages/utils/src/currency.ts` | `money.ts` remains source of truth | Different units (paise vs rupees), different error handling |
-| Auth utilities | `packages/auth-core/src/`, app-local auth logic | auth-core consumed where applicable | Apps have app-specific Supabase cookie handling |
-| SKU validation | `packages/utils/src/sku.ts`, `packages/validators/src/schemas.ts`, app-local validation | Not merged | Incompatible behaviors |
+| Area                   | Locations                                                                               | Decision                            | Reason                                                      |
+| ---------------------- | --------------------------------------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------- |
+| Money / INR formatting | `apps/admin/src/lib/money.ts`, `packages/utils/src/currency.ts`                         | `money.ts` remains source of truth  | Different units (paise vs rupees), different error handling |
+| Auth utilities         | `packages/auth-core/src/`, app-local auth logic                                         | auth-core consumed where applicable | Apps have app-specific Supabase cookie handling             |
+| SKU validation         | `packages/utils/src/sku.ts`, `packages/validators/src/schemas.ts`, app-local validation | Not merged                          | Incompatible behaviors                                      |
 
 See `docs/architecture/package-architecture.md` for the complete package
 reference.
