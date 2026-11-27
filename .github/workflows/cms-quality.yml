@@ -1,0 +1,38 @@
+name: CMS quality gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "apps/cms/**"
+      - "packages/supabase/**"
+      - "scripts/**"
+      - "eslint.config.mjs"
+      - ".github/workflows/cms-quality.yml"
+      - "package.json"
+      - "package-lock.json"
+
+concurrency:
+  group: cms-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify:release
+      - run: npm run build:cms:release
+      - run: npm run smoke:cms:build
+

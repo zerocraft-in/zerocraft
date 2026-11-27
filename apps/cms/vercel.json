@@ -1,0 +1,13 @@
+{
+  "ignoreCommand": "TURBO_SCM_BASE=$VERCEL_GIT_PREVIOUS_SHA npx turbo query affected --packages=@zerocraft/cms --exit-code",
+  "crons": [
+    {
+      "path": "/api/admin/notifications/reports/worker",
+      "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/admin/team/expiry",
+      "schedule": "30 2 * * *"
+    }
+  ]
+}

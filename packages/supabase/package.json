@@ -1,0 +1,16 @@
+{
+  "name": "@zerocraft/supabase",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./config": "./src/config.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./middleware": "./src/middleware.ts",
+    "./store-server": "./src/store-server.ts"
+  },
+  "peerDependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "next": ">=16.0.0"
+  }
+}

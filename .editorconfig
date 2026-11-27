@@ -1,0 +1,5 @@
+root = true
+
+[*.css]
+# A BOM is preserved by PostCSS and breaks the generated CSS parser.
+charset = utf-8

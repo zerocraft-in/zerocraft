@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="480" viewBox="0 0 1280 480" role="img" aria-labelledby="title desc">
+<title id="title">Zerocraft — Everything Starts at Zero.</title>
+<desc id="desc">Original Zerocraft mark on charcoal with lime accents. Studio, Store and CMS.</desc>
+<rect width="1280" height="480" rx="24" fill="#111210"/>
+<circle cx="1150" cy="150" r="220" fill="none" stroke="#252820" stroke-width="1"/>
+<circle cx="1150" cy="150" r="150" fill="none" stroke="#353a28" stroke-width="1"/>
+<circle cx="1150" cy="150" r="80" fill="none" stroke="#D3FF00" stroke-opacity=".35"/>
+<g transform="translate(72 65) scale(2.8)"><path fill="#D3FF00" d="M5.16.43c4.97,7.25,9.93,8.51,14.9,3.78,1.09,1.24,1.94,2.48,2.53,3.71-2.41,3.97-7.69,4.08-11.59,6.41,4.15-.64,8.18-.19,12.08,1.37-.44,1.21-1.13,2.42-2.07,3.63-5.6-5.34-11.2-3.92-16.8,4.26-1.48-1.89-2.57-3.78-3.3-5.67,2.87-6.36,8.78-7.1,12.63-8.59-3.92-.16-7.97-1.26-12.14-3.32.88-1.86,2.13-3.72,3.76-5.58h0Z"/></g>
+<text x="72" y="220" fill="#f7f8f2" font-family="Arial,Helvetica,sans-serif" font-size="100" font-weight="700" letter-spacing="-5">zerocraft.</text>
+<text x="78" y="280" fill="#D3FF00" font-family="Arial,Helvetica,sans-serif" font-size="30">Everything Starts at Zero.</text>
+<path d="M78 334H1202" stroke="#35382d"/>
+<text x="78" y="391" fill="#b7bcb0" font-family="monospace" font-size="18" letter-spacing="3">STUDIO / STORE / CMS</text>
+<text x="1202" y="391" text-anchor="end" fill="#b7bcb0" font-family="monospace" font-size="18">zerocraft.in</text>
+</svg>

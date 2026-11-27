@@ -1,0 +1,97 @@
+import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const configDirectory = path.dirname(fileURLToPath(import.meta.url));
+const releaseDistDirectory = process.env.CMS_BUILD_DIR?.trim();
+
+const supabaseHostname = (() => {
+  const value = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!value) return null;
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return null;
+  }
+})();
+
+const mediaHostname = (() => {
+  const value = process.env.CLOUDFLARE_R2_PUBLIC_BASE_URL;
+  if (!value) return null;
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return null;
+  }
+})();
+
+const nextConfig: NextConfig = {
+  turbopack: {},
+  experimental: {
+    cpus: 1,
+    workerThreads: false,
+    webpackBuildWorker: false,
+  },
+  distDir:
+    releaseDistDirectory || (process.env.VERCEL ? ".next" : ".next-local"),
+  ...(releaseDistDirectory
+    ? {
+        experimental: {
+          cpus: 1,
+          workerThreads: false,
+          webpackBuildWorker: false,
+        },
+      }
+    : {}),
+  outputFileTracingRoot: path.join(configDirectory, "../.."),
+  transpilePackages: ["@zerocraft/supabase", "@zerocraft/ui"],
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "*.supabase.co" },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      },
+      {
+        protocol: "https",
+        hostname: "flagcdn.com",
+      },
+      ...(supabaseHostname
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: supabaseHostname,
+              pathname: "/storage/v1/object/public/**",
+            },
+          ]
+        : []),
+      ...(mediaHostname
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: mediaHostname,
+              pathname: "/**",
+            },
+          ]
+        : []),
+    ],
+  },
+  async headers() {
+    return [{
+      source: "/(.*)",
+      headers: [
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        { key: "X-Frame-Options", value: "DENY" },
+        { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+      ],
+    }];
+  },
+};
+
+export default nextConfig;

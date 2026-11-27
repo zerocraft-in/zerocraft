@@ -1,0 +1,40 @@
+[data-studio-scroll]:has(.users-settings) { background: #fff; }
+[data-studio-content]:has(.users-settings) { max-width: 864px; padding-top: 58px; }
+.users-settings { color: #171717; font-size: 13px; }
+.users-settings main { max-width: 100%; gap: 32px; }
+.users-page-header h1 { margin: 0; font-size: 28px; font-weight: 500; line-height: 36px; letter-spacing: -.6px; }
+.users-page-actions { position: absolute; top: 12px; left: 16px; right: 16px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; pointer-events: none; }
+.users-actions-group { margin-left: auto; display: flex; gap: 6px; pointer-events: auto; }
+.users-page-actions button, .users-page-actions a[data-slot=button] { height: 29px; border-radius: 999px; font-size: 12px; padding: 0 13px; box-shadow: 0 1px 3px #00000014; }
+.users-page-actions button svg, .users-actions-group a svg { display: none; }
+.users-back-link { display: flex; align-items: center; gap: 10px; color: #4a4a4a; font-size: 13px; pointer-events: auto; }
+.users-back-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #e6e6e6; border-radius: 50%; box-shadow: 0 2px 6px #00000008; }
+.users-settings [data-slot=card] { gap: 0; padding: 0; border-radius: 18px; border-color: #e3e3e3; box-shadow: 0 2px 6px #00000006, 0 8px 28px #00000003; }
+.users-settings table { font-size: 13px; }
+.users-settings table th { height: 36px; padding-top: 6px; padding-bottom: 6px; background: #f7f7f7; font-size: 12px; font-weight: 400; color: #444; }
+.users-settings table td { height: 33px; padding-top: 5px; padding-bottom: 5px; }
+.users-settings table td p { margin: 0; }
+.users-settings table tr { border-color: #efefef; }
+.users-settings input[type=checkbox] { width: 15px; height: 15px; accent-color: #303030; vertical-align: middle; }
+.users-settings .users-help { text-align: center; margin-top: 24px; font-size: 12px; }
+.users-settings .users-table-card { margin-top: -20px; }
+.users-settings .users-table-toolbar { display: flex; min-height: 44px; align-items: center; justify-content: space-between; padding: 7px 12px; border-bottom: 1px solid #ddd; gap: 12px; }
+.users-settings .users-table-toolbar button { height: 28px; border-radius: 999px; }
+.users-settings .users-table-toolbar input { height: 28px; font-size: 12px; }
+.users-settings .security-section { display: grid; gap: 12px; }
+.users-settings .security-section h2, .users-settings .security-section h3 { font-size: 15px; font-weight: 500; }
+.users-settings .security-section p { font-size: 13px; line-height: 21px; }
+.users-settings .security-empty { min-height: 152px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+.users-settings .security-empty p + p { color: #616161; margin-top: 3px; }
+.users-settings .security-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px; }
+.users-settings .security-section button, .users-settings .security-section a[data-slot=button] { height: 28px; border-radius: 999px; font-size: 12px; }
+@media (max-width: 640px) {
+  [data-studio-content]:has(.users-settings) { padding-top: 64px; }
+  .users-page-actions { gap: 6px; left: 12px; right: 12px; }
+  .users-page-actions button, .users-page-actions a[data-slot=button] { padding: 0 9px; }
+  .users-back-link { gap: 5px; }
+}
+
+.users-settings .users-list-section { position: relative; margin-top: -20px; }
+.users-settings .users-list-section > div:first-child { position: absolute; right: 0; top: -39px; }
+.users-settings .users-list-section > div:first-child:has(input) { position: static; margin-bottom: 10px; }

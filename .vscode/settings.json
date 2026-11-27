@@ -1,0 +1,5 @@
+{
+    "workbench.externalBrowser": "chrome",
+    "workbench.browser.openLocalhostLinks": true,
+    "liveServer.settings.CustomBrowser": "chrome"
+}
